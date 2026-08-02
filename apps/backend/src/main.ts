@@ -3,11 +3,14 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { ZodValidationPipe } from './common/pipes/zod-validation.pipe';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
+
+  app.useGlobalPipes(new ZodValidationPipe());
 
   const corsOrigins = (
     config.get<string>('CORS_ORIGINS') ?? 'http://localhost:3000'
