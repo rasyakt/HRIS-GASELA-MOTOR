@@ -362,6 +362,42 @@ async function main() {
     console.log('  Admin sudah ada, dilewati');
   }
 
+  // --- User karyawan contoh (untuk pengujian RBAC & pengembangan) ---
+  const employeeUserExists = await prisma.user.findUnique({
+    where: { username: 'employee' },
+  });
+  if (!employeeUserExists) {
+    const empEmployee = await prisma.employee.create({
+      data: {
+        employeeNumber: 'EMP-0002',
+        fullName: 'Budi Santoso',
+        email: 'budi@gaselamotor.com',
+        phone: '081298765432',
+        birthDate: new Date('1995-06-15'),
+        joinDate: new Date('2022-03-01'),
+        employmentStatus: 'active',
+        employmentType: 'permanent',
+        basicSalary: 4500000,
+        departmentId: deptSales.id,
+        positionId: (await prisma.position.findUnique({ where: { code: 'ADMS' } }))!.id,
+      },
+    });
+    const passwordHash = await bcrypt.hash('Employee123!', 10);
+    await prisma.user.create({
+      data: {
+        employeeId: empEmployee.id,
+        username: 'employee',
+        passwordHash,
+        role: 'employee',
+      },
+    });
+    console.log(
+      '  User karyawan dibuat: employee / Employee123! (role employee, utk uji RBAC)',
+    );
+  } else {
+    console.log('  User karyawan sudah ada, dilewati');
+  }
+
   // --- Leave balance tahun berjalan untuk semua employee ---
   const year = new Date().getFullYear();
   const employees = await prisma.employee.findMany({ where: { isActive: true } });

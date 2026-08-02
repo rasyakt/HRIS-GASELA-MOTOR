@@ -1,12 +1,6 @@
 import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type {
-  AuthUser,
-  ChangePasswordInput,
-  LoginInput,
-  LoginResponse,
-  RefreshTokenInput,
-} from '@gasela/shared-types';
+import type { AuthUser, LoginResponse } from '@gasela/shared-types';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -24,7 +18,7 @@ export class AuthController {
     description: 'Berhasil login, mengembalikan token & profil',
   })
   @Post('login')
-  login(@Body() body: LoginInput & LoginDto): Promise<LoginResponse> {
+  login(@Body() body: LoginDto): Promise<LoginResponse> {
     return this.authService.login(body);
   }
 
@@ -32,9 +26,7 @@ export class AuthController {
   @HttpCode(200)
   @ApiOperation({ summary: 'Perbarui (refresh) token' })
   @Post('refresh')
-  refresh(
-    @Body() body: RefreshTokenInput & RefreshTokenDto,
-  ): Promise<LoginResponse> {
+  refresh(@Body() body: RefreshTokenDto): Promise<LoginResponse> {
     return this.authService.refresh(body);
   }
 
@@ -57,7 +49,7 @@ export class AuthController {
   @Post('change-password')
   async changePassword(
     @CurrentUser() user: AuthUser,
-    @Body() body: ChangePasswordInput & ChangePasswordDto,
+    @Body() body: ChangePasswordDto,
   ): Promise<void> {
     await this.authService.changePassword(user.id, body);
   }

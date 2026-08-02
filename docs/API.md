@@ -8,7 +8,7 @@
 Semua endpoint (kecuali `POST /auth/login` & `GET /health`) dilindungi bearer token.
 Header: `Authorization: Bearer <accessToken>`.
 
-## Endpoint aktif (Fase 1 — Autentikasi)
+## Endpoint aktif (Fase 1 — Autentikasi, Master Data, Shift & Kehadiran)
 
 | Method | Path | Deskripsi | Auth |
 |---|---|---|---|
@@ -18,6 +18,27 @@ Header: `Authorization: Bearer <accessToken>`.
 | POST | `/auth/logout` | Cabut sesi (hapus refresh hash) | bearer |
 | GET | `/auth/me` | Profil user yang login | bearer |
 | POST | `/auth/change-password` | Ganti password sendiri | bearer |
+| GET/POST | `/departments`, `/departments/:id` (GET/PATCH/DELETE) | Master departemen (hierarki, soft delete) | GET: bearer; tulis: admin/hrd |
+| GET/POST | `/positions`, `/positions/:id` (GET/PATCH/DELETE) | Master posisi | GET: bearer; tulis: admin/hrd |
+| GET | `/employees?page&limit&search&departmentId&positionId&employmentStatus` | List karyawan (pagination) | admin/hrd/manager |
+| GET | `/employees/:id` | Detail karyawan (+ user akun) | admin/hrd/manager |
+| POST | `/employees` | Buat karyawan | admin/hrd |
+| PATCH | `/employees/:id` | Update karyawan | admin/hrd |
+| DELETE | `/employees/:id` | Nonaktifkan (soft delete + akun user) | admin/hrd |
+| GET/POST | `/shifts`, `/shifts/:id` (GET/PATCH/DELETE) | Master shift kerja | GET: bearer; tulis: admin/hrd |
+| POST | `/attendances/check-in` | Check-in + geofence (`office.location`, `office.radius_meters`) | bearer |
+| POST | `/attendances/check-out` | Check-out + hitung `workHours`/`earlyLeaveMinutes` | bearer |
+| GET | `/attendances/my?page&limit&from&to` | Riwayat kehadiran sendiri | bearer |
+| GET | `/attendances?page&limit&employeeId&from&to` | Rekap semua karyawan | admin/hrd |
+
+Aturan tulis (write) dilindungi `@Roles('admin','hrd')`; role hierarki memungkinkan level lebih tinggi (mis. owner) tetap bisa.
+
+### Shift & Kehadiran
+
+- Shift: `startTime`/`endTime` format `HH:mm` atau `HH:mm:ss` (dinormalisasi ke `HH:mm:ss`); `gracePeriodMinutes` (default 15) & `workHours` (default 8) wajib dikirim; DELETE shift ditolak bila sudah dipakai attendance.
+- Check-in: dalam radius kantor (default 100 m dari `office.location`) → status `present`/`late` (late = melewati `startTime + grace`); satu baris per `(employee_id, attendance_date)` — check-in ganda → `409`.
+- Check-out: tanpa check-in → `404`; dua kali → `409`; `workHours` dihitung (check-out − check-in), `earlyLeaveMinutes` bila pulang sebelum akhir shift.
+- Tanggal disimpan sebagai UTC-midnight dari tanggal lokal (`localDateKey`) agar konsisten lintas zona server/database.
 
 ### RBAC
 
@@ -34,7 +55,7 @@ Guard global: `JwtAuthGuard` (401 jika token hilang/tidak valid) + `RolesGuard` 
 
 ## Roadmap endpoint (per fase — lihat PROJECT_PLAN Bagian 4)
 
-- **Fase 1:** `auth/*`, `employees/*`, `departments/*`, `positions/*`, `attendances/*`, `shifts/*`, `overtime/*`, `leaves/*`, `dashboard/*`
+- **Fase 1 (sisa):** `overtime/*`, `leaves/*`, `dashboard/*`
 - **Fase 2:** `payroll/*`, `announcements/*`, `notifications/*`, `settings/company`, `uploads`
 - **Fase 3:** `reports/*`, performance/training/asset/document modules
 

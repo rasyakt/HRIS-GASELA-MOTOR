@@ -30,3 +30,9 @@ export const createPositionSchema = z.object({
 export type CreateAnnouncementInput = z.infer<typeof createAnnouncementSchema>;
 export type CreateDepartmentInput = z.infer<typeof createDepartmentSchema>;
 export type CreatePositionInput = z.infer<typeof createPositionSchema>;
+
+export const updateDepartmentSchema = createDepartmentSchema.partial();
+export const updatePositionSchema = createPositionSchema.partial();
+
+export type UpdateDepartmentInput = z.infer<typeof updateDepartmentSchema>;
+export type UpdatePositionInput = z.infer<typeof updatePositionSchema>;
