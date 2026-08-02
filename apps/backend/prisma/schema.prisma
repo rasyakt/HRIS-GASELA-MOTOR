@@ -220,6 +220,7 @@ model Employee {
   assetAssignments     AssetAssignment[]
   announcementsCreated Announcement[]
   announcementReads    AnnouncementRead[]
+  devices              DeviceToken[]        @relation("EmployeeDevices")
 
   @@map("employees")
 }
@@ -466,18 +467,34 @@ model CompanySetting {
 }
 
 // ===================== ANNOUNCEMENT =====================
+model DeviceToken {
+  id         Int      @id @default(autoincrement())
+  employeeId Int      @map("employee_id")
+  employee   Employee @relation("EmployeeDevices", fields: [employeeId], references: [id], onDelete: Cascade)
+  token      String   @db.VarChar(512)
+  platform   String   @default("android") @db.VarChar(20)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([employeeId, token])
+  @@map("device_tokens")
+}
+
 model Announcement {
-  id             Int                  @id @default(autoincrement()) @map("announcement_id")
-  title          String               @db.VarChar(200)
-  content        String               @db.Text
-  priority       AnnouncementPriority @default(normal)
-  targetAudience TargetAudience       @default(all) @map("target_audience")
-  publishDate    DateTime             @map("publish_date") @db.Date
-  expiryDate     DateTime?            @map("expiry_date") @db.Date
-  createdById    Int                  @map("created_by")
-  createdBy      Employee             @relation(fields: [createdById], references: [id])
-  isPublished    Boolean              @default(false) @map("is_published")
-  createdAt      DateTime             @default(now()) @map("created_at")
+  id                 Int                  @id @default(autoincrement()) @map("announcement_id")
+  title              String               @db.VarChar(200)
+  content            String               @db.Text
+  priority           AnnouncementPriority @default(normal)
+  targetAudience     TargetAudience       @default(all) @map("target_audience")
+  targetDepartmentId Int?                 @map("target_department_id")
+  targetPositionId   Int?                 @map("target_position_id")
+  targetEmployeeId   Int?                 @map("target_employee_id")
+  publishDate        DateTime             @map("publish_date") @db.Date
+  expiryDate         DateTime?            @map("expiry_date") @db.Date
+  createdById        Int                  @map("created_by")
+  createdBy          Employee             @relation(fields: [createdById], references: [id])
+  isPublished        Boolean              @default(false) @map("is_published")
+  createdAt          DateTime             @default(now()) @map("created_at")
 
   reads AnnouncementRead[]
 

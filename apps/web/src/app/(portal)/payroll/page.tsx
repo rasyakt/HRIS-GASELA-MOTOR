@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCheck, Loader2, Wallet, PlusCircle } from 'lucide-react';
+import { CheckCheck, Loader2, Wallet, PlusCircle, Download } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
+import { downloadWithAuth } from '@/lib/download';
 import {
   badgeClass,
   fmtDate,
@@ -50,10 +51,32 @@ const MONTH_NAMES = [
 function DetailModal({
   detail,
   onClose,
+  isAdmin,
+  token,
 }: {
   detail: PayrollDetailDto;
   onClose: () => void;
+  isAdmin: boolean;
+  token: string | null;
 }) {
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  async function handleDownload() {
+    setDownloading(true);
+    setDownloadError(null);
+    try {
+      const path = isAdmin
+        ? `/api/payroll/${detail.id}/payslip`
+        : `/api/payroll/my/${detail.id}/payslip`;
+      await downloadWithAuth(path, token, `payslip_${detail.payrollNumber}.pdf`);
+    } catch (err) {
+      setDownloadError(err instanceof Error ? err.message : 'Gagal unduh PDF');
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
@@ -163,9 +186,27 @@ function DetailModal({
             </table>
           </div>
 
-          <Button variant="outline" className="w-full" onClick={onClose}>
-            Tutup
-          </Button>
+          {downloadError && (
+            <p className="text-sm text-red-600">{downloadError}</p>
+          )}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={handleDownload}
+              disabled={downloading}
+            >
+              {downloading ? (
+                <Loader2 data-icon="inline-start" className="animate-spin" />
+              ) : (
+                <Download data-icon="inline-start" />
+              )}
+              Unduh PDF
+            </Button>
+            <Button variant="outline" className="flex-1" onClick={onClose}>
+              Tutup
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -256,6 +297,7 @@ function GenerateCard({
 export default function PayrollPage() {
   const authApi = useAuthApi();
   const user = useAuthStore((s) => s.user);
+  const token = useAuthStore((s) => s.accessToken);
   const qc = useQueryClient();
 
   const [month, setMonth] = useState<number | undefined>(undefined);
@@ -668,6 +710,8 @@ export default function PayrollPage() {
         <DetailModal
           detail={detail.data}
           onClose={() => setDetailId(null)}
+          isAdmin={isAdmin}
+          token={token}
         />
       )}
     </div>

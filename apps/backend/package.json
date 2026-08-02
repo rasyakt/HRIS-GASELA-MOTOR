@@ -36,6 +36,7 @@
     "@nestjs/swagger": "^11.4.6",
     "@prisma/client": "^6.19.3",
     "bcrypt": "^6.0.0",
+    "pdfkit": "^0.19.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "zod": "^3.25.76"
@@ -50,6 +51,7 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
+    "@types/pdfkit": "^0.17.6",
     "@types/supertest": "^7.0.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",

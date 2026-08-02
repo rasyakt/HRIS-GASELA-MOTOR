@@ -8,10 +8,14 @@ import {
   Patch,
   Post,
   Query,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
 import type { AuthUser } from '@gasela/shared-types';
 import { PayrollService } from './payroll.service';
+import { PayslipPdfService } from './payslip-pdf.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
@@ -27,7 +31,10 @@ import {
 @ApiTags('Payroll')
 @Controller('payroll')
 export class PayrollController {
-  constructor(private readonly payrollService: PayrollService) {}
+  constructor(
+    private readonly payrollService: PayrollService,
+    private readonly payslipPdfService: PayslipPdfService,
+  ) {}
 
   @Get('salary-components')
   @Roles('admin', 'hrd', 'owner')
@@ -115,5 +122,56 @@ export class PayrollController {
   @ApiOperation({ summary: 'Tandai dibayar (approved → paid)' })
   markPaid(@Body() body: MarkPaidDto) {
     return this.payrollService.markPaid(body);
+  }
+
+  @Get('my/:id/payslip')
+  @ApiOperation({ summary: 'Unduh slip gaji saya dalam PDF' })
+  async myPayslipPdf(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const payroll = await this.payrollService.myDetail(user.employeeId, id);
+    return this.streamPayslip(
+      res,
+      id,
+      payroll.payrollNumber,
+      payroll.employeeName,
+    );
+  }
+
+  @Get(':id/payslip')
+  @Roles('admin', 'hrd', 'owner')
+  @ApiOperation({ summary: 'Unduh slip gaji PDF (admin/hrd/owner)' })
+  async payslipPdf(
+    @Param('id', ParseIntPipe) id: number,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const payroll = await this.payrollService.detail(id);
+    return this.streamPayslip(
+      res,
+      id,
+      payroll.payrollNumber,
+      payroll.employeeName,
+    );
+  }
+
+  private async streamPayslip(
+    res: Response,
+    payrollId: number,
+    payrollNumber: string,
+    employeeName: string,
+  ): Promise<StreamableFile> {
+    const data = await this.payslipPdfService.loadPayroll(payrollId);
+    const doc = this.payslipPdfService.generatePdf(data);
+    const stream = this.payslipPdfService.streamPdf(doc);
+    const safeName = employeeName
+      .replace(/[^a-zA-Z0-9 ]/g, '')
+      .replace(/\s+/g, '_');
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="payslip_${safeName}_${payrollNumber}.pdf"`,
+    });
+    return new StreamableFile(stream);
   }
 }

@@ -46,6 +46,43 @@ Header: `Authorization: Bearer <accessToken>`.
 | POST | `/overtime/requests/:id/cancel` | Batalkan sendiri (pending; baris dihapus) | bearer |
 | GET | `/dashboard/summary` | Ringkasan per role: `employee` (kehadiran hari ini, saldo cuti, pending, riwayat 7 hari) / `manager` (+ approvals & statistik tim) / `admin` (+ statistik perusahaan & sebaran departemen) | bearer |
 
+## Endpoint aktif (Fase 2 — Payroll, Pengumuman, Notifikasi, Pengaturan)
+
+| Method | Path | Deskripsi | Auth |
+|---|---|---|---|
+| GET/POST | `/payroll/salary-components`, PATCH/DELETE `:id` | Kelola komponen gaji (fixed/percentage, allowance/deduction; deactivate ditolak jika sudah dipakai slip) | admin/hrd/owner |
+| POST | `/payroll/generate` | Generate slip `{month, year}` — engine: gaji pokok + komponen (snapshot), lembur (basic/173 × 1.5 × jam approved), BPJS dari `bpjs.rates`, PPh21 TER (tabel `ter_rates`); idempotent (`skipped`) | admin/hrd/owner |
+| GET | `/payroll?month&year&status&page&limit` | Semua slip (pagination) | admin/hrd/owner |
+| GET | `/payroll/:id` | Detail slip + komponen | admin/hrd/owner |
+| POST | `/payroll/approve` | Batch `{payPeriods:[{payrollId}]}` draft → approved | admin/hrd/owner |
+| POST | `/payroll/mark-paid` | Batch `{payrollIds}` approved → paid (set `paymentDate`) | admin/hrd/owner |
+| GET | `/payroll/my?month&year&status&page&limit` | Slip gaji sendiri | bearer |
+| GET | `/payroll/my/:id` | Detail slip sendiri (403 jika bukan miliknya) | bearer |
+| GET | `/payroll/:id/payslip` | Unduh PDF slip gaji (header `Content-Disposition: attachment`) | admin/hrd/owner |
+| GET | `/payroll/my/:id/payslip` | Unduh PDF slip sendiri | bearer |
+| POST | `/announcements` | Buat pengumuman draft (title/content/priority/targetAudience/publishDate/expiryDate + target departemen/posisi/karyawan) | admin/hrd/owner |
+| PATCH | `/announcements/:id` | Perbarui pengumuman | admin/hrd/owner |
+| POST | `/announcements/:id/publish` | Publikasikan + kirim push FCM ke token target | admin/hrd/owner |
+| DELETE | `/announcements/:id` | Hapus pengumuman | admin/hrd/owner |
+| GET | `/announcements?page&limit&status&keyword` | Semua pengumuman (filter draft/published) | admin/hrd/owner |
+| GET | `/announcements/my?page&limit` | Pengumuman terbit yang sesuai target user (`all`/departemen/posisi/individu) + `isRead` | bearer |
+| POST | `/announcements/read` | Tandai dibaca `{announcementId}` (upsert `announcement_reads`) | bearer |
+| GET | `/announcements/unread-count` | Jumlah pengumuman belum dibaca untuk user | bearer |
+| POST | `/notifications/register-device` | Daftarkan token FCM `{token, platform}` (upsert per `(employeeId, token)`); FCM dikirim saat publish bila `FCM_SERVER_KEY` terisi, selain itu log warning | bearer |
+| GET/PUT | `/settings/company` | Baca/ubah pengaturan perusahaan (whitelist key: `company.name`, `office.location`, `office.radius_meters`, `bpjs.rates`, `overtime.rate_multiplier_weekday`) | admin/hrd/owner |
+| GET/POST | `/settings/holidays`, PATCH/DELETE `:id` | Kalender hari libur (filter `year`; tanggal unik, `isRecurringYearly` opsional) | admin/hrd |
+
+### Payslip PDF
+
+- PDF di-generate on-demand dengan **pdfkit** (A4): header perusahaan (`company.name`), identitas karyawan, tabel PENERIMAAN (gaji pokok, lembur, komponen allowance, total bruto) & POTONGAN (BPJS, PPh21, komponen deduction, total potongan), lalu **GAJI BERSIH**.
+- Dikenai RBAC yang sama dengan detail slip: karyawan hanya bisa slip sendiri (`/my/:id/payslip`), admin/hrd/owner semua.
+
+### Pengumuman & Notifikasi
+
+- Targeting: `all` → semua; `department` → wajib `targetDepartmentId`; `position` → wajib `targetPositionId`; `specific` → wajib `targetEmployeeId`. `/my` & `/unread-count` memfilter sesuai departemen/posisi user.
+- Publish mengirim push notification (FCM legacy API) ke `device_tokens` target; jika `FCM_SERVER_KEY` kosong → request sukses dengan mode `unconfigured` (log warning) — API tetap stabil.
+- `expiryDate` opsional; pengumuman kedaluwarsa tidak muncul di `/my`.
+
 Aturan tulis (write) dilindungi `@Roles('admin','hrd')`; role hierarki memungkinkan level lebih tinggi (mis. owner) tetap bisa.
 
 ### Shift & Kehadiran
@@ -92,7 +129,7 @@ Guard global: `JwtAuthGuard` (401 jika token hilang/tidak valid) + `RolesGuard` 
 ## Roadmap endpoint (per fase — lihat PROJECT_PLAN Bagian 4)
 
 - **Fase 1:** ✅ selesai (auth, master data, shifts, attendances, leaves, overtime, dashboard) — UI web ✅ (login, dashboard role-aware, kehadiran, cuti, lembur, persetujuan, karyawan) — UI mobile ✅ (login, home, check-in/out GPS, cuti, lembur, profil) — sisa: hardening
-- **Fase 2 (sedang berjalan):** `payroll/*` ✅ backend + web (salary-components CRUD, generate engine BPJS+PPh21 TER, list/detail, approve, mark-paid, my payslip; UI penggajian role-aware: admin generate/tinjau/setujui/bayar, karyawan lihat slip) — sisa: payslip PDF, `announcements/*`, `notifications/*` (FCM), `settings/company`, `uploads`
+- **Fase 2:** ✅ `payroll/*` (salary-components CRUD, generate engine BPJS+PPh21 TER, list/detail, approve, mark-paid, my payslip; UI web penggajian role-aware) · ✅ payslip PDF (`GET /payroll/:id/payslip`, `GET /payroll/my/:id/payslip` — unduh PDF via tombol di web) · ✅ `announcements/*` (CRUD, publish + push FCM, my list target-aware, mark-read, unread-count; UI web pengumuman role-aware) · ✅ `notifications/*` (register-device token FCM; graceful skip jika `FCM_SERVER_KEY` kosong) · ✅ `settings/company` + `settings/holidays` (UI web pengaturan) — sisa: `uploads`, notifikasi FCM aktif (isi `FCM_SERVER_KEY`), UI mobile announcements/payslip
 - **Fase 3:** `reports/*`, performance/training/asset/document modules
 
 ## Contoh request/response kunci

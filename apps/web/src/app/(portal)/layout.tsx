@@ -6,8 +6,10 @@ import {
   Clock,
   LayoutDashboard,
   LogOut,
+  Megaphone,
   Menu,
   ReceiptText,
+  Settings,
   Timer,
   Users,
   X,
@@ -35,8 +37,10 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/leave', label: 'Cuti', icon: CalendarDays, minRole: 'employee' },
   { href: '/overtime', label: 'Lembur', icon: Timer, minRole: 'employee' },
   { href: '/payroll', label: 'Penggajian', icon: ReceiptText, minRole: 'employee' },
+  { href: '/announcements', label: 'Pengumuman', icon: Megaphone, minRole: 'employee' },
   { href: '/approvals', label: 'Persetujuan', icon: CheckCheck, minRole: 'manager' },
   { href: '/employees', label: 'Karyawan', icon: Users, minRole: 'admin' },
+  { href: '/settings', label: 'Pengaturan', icon: Settings, minRole: 'admin' },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
@@ -45,8 +49,10 @@ const PAGE_TITLES: Record<string, string> = {
   '/leave': 'Cuti',
   '/overtime': 'Lembur',
   '/payroll': 'Penggajian',
+  '/announcements': 'Pengumuman',
   '/approvals': 'Persetujuan',
   '/employees': 'Karyawan',
+  '/settings': 'Pengaturan',
 };
 
 export default function PortalLayout({

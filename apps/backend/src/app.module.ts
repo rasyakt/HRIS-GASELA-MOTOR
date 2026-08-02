@@ -12,6 +12,9 @@ import { LeavesModule } from './modules/leaves/leaves.module';
 import { OvertimeModule } from './modules/overtime/overtime.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { PayrollModule } from './modules/payroll/payroll.module';
+import { AnnouncementsModule } from './modules/announcements/announcements.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { SettingsModule } from './modules/settings/settings.module';
 import { validateEnv } from './config/configuration';
 import configuration from './config/configuration';
 
@@ -34,6 +37,9 @@ import configuration from './config/configuration';
     OvertimeModule,
     DashboardModule,
     PayrollModule,
+    AnnouncementsModule,
+    NotificationsModule,
+    SettingsModule,
   ],
 })
 export class AppModule {}

@@ -7,4 +7,6 @@ export * from './leave-request.schema';
 export * from './overtime.schema';
 export * from './dashboard.schema';
 export * from './payroll.schema';
+export * from './announcement.schema';
+export * from './settings.schema';
 export * from './common.schema';
