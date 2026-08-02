@@ -91,7 +91,7 @@ Guard global: `JwtAuthGuard` (401 jika token hilang/tidak valid) + `RolesGuard` 
 
 ## Roadmap endpoint (per fase — lihat PROJECT_PLAN Bagian 4)
 
-- **Fase 1:** ✅ selesai (auth, master data, shifts, attendances, leaves, overtime, dashboard) — roadmap turun: Minggu 4 sisa UI web/mobile + hardening
+- **Fase 1:** ✅ selesai (auth, master data, shifts, attendances, leaves, overtime, dashboard) — UI web ✅ (login, dashboard role-aware, kehadiran, cuti, lembur, persetujuan, karyawan) — sisa: mobile + hardening
 - **Fase 2:** `payroll/*`, `announcements/*`, `notifications/*`, `settings/company`, `uploads`
 - **Fase 3:** `reports/*`, performance/training/asset/document modules
 
