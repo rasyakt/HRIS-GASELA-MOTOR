@@ -12,13 +12,18 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ZodValidationPipe());
 
+  const isDev = config.get<string>('NODE_ENV') === 'development';
   const corsOrigins = (
     config.get<string>('CORS_ORIGINS') ?? 'http://localhost:3000'
   )
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
-  app.enableCors({ origin: corsOrigins, credentials: true });
+
+  app.enableCors({
+    origin: isDev ? true : corsOrigins,
+    credentials: true,
+  });
 
   app.setGlobalPrefix('api');
 

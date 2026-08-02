@@ -1,4 +1,9 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+// Di browser → pakai path relatif (/api/...) sehingga request melewati proxy Next.js
+// Di server (SSR) → pakai URL penuh ke backend agar tidak loop
+const isServer = typeof window === 'undefined';
+const API_URL = isServer
+  ? (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001')
+  : '';
 
 interface ApiOptions extends RequestInit {
   token?: string | null;

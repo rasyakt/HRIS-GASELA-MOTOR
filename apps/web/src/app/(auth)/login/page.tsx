@@ -52,47 +52,67 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center bg-zinc-50 px-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-xl">HRIS Gasela Motor</CardTitle>
-          <CardDescription>Masuk menggunakan akun karyawan Anda.</CardDescription>
+    <main className="flex min-h-screen flex-1 items-center justify-center bg-slate-900 px-4 py-12">
+      <Card className="w-full max-w-md border-slate-800 bg-slate-950/90 text-slate-100 shadow-2xl backdrop-blur-md">
+        <CardHeader className="space-y-3 text-center">
+          <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-indigo-600 text-lg font-bold text-white shadow-lg shadow-indigo-600/30">
+            G
+          </div>
+          <div>
+            <CardTitle className="text-2xl font-bold tracking-tight text-white">
+              HRIS Gasela Motor
+            </CardTitle>
+            <CardDescription className="mt-1 text-sm text-slate-400">
+              Masuk menggunakan akun karyawan Anda.
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="username">Username</Label>
+            <div className="space-y-2">
+              <Label htmlFor="username" className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+                Username
+              </Label>
               <Input
                 id="username"
                 autoComplete="username"
-                placeholder="mis. employee"
+                placeholder="mis. employee / admin"
+                className="border-slate-700 bg-slate-900/90 text-white placeholder:text-slate-500 focus-visible:border-indigo-500 focus-visible:ring-indigo-500/30"
                 aria-invalid={!!errors.username}
                 {...register('username')}
               />
               {errors.username && (
-                <p className="text-xs text-red-600">{errors.username.message}</p>
+                <p className="text-xs font-medium text-red-400">{errors.username.message}</p>
               )}
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
+                className="border-slate-700 bg-slate-900/90 text-white placeholder:text-slate-500 focus-visible:border-indigo-500 focus-visible:ring-indigo-500/30"
                 aria-invalid={!!errors.password}
                 {...register('password')}
               />
               {errors.password && (
-                <p className="text-xs text-red-600">{errors.password.message}</p>
+                <p className="text-xs font-medium text-red-400">{errors.password.message}</p>
               )}
             </div>
             {error && (
-              <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+              <p className="rounded-lg border border-red-500/30 bg-red-950/50 px-3 py-2 text-xs font-medium text-red-300">
                 {error}
               </p>
             )}
-            <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              className="mt-2 w-full bg-indigo-600 font-semibold text-white hover:bg-indigo-500 active:bg-indigo-700"
+              size="lg"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? (
                 <Loader2 className="animate-spin" data-icon="inline-start" />
               ) : (
