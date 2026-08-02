@@ -37,6 +37,7 @@ describe('EmployeesService', () => {
     joinDate: '2024-01-01',
     employmentStatus: 'active' as const,
     employmentType: 'permanent' as const,
+    ptkpStatus: 'K2' as const,
     basicSalary: 5000000,
   };
 

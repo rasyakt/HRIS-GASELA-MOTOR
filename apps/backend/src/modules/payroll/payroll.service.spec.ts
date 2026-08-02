@@ -39,19 +39,27 @@ describe('PayrollService', () => {
 
   describe('salary component', () => {
     it('menolak kode komponen duplikat', async () => {
-      prisma.salaryComponent.findFirst.mockResolvedValue({ id: 1, code: 'GAJI' });
+      prisma.salaryComponent.findFirst.mockResolvedValue({
+        id: 1,
+        code: 'GAJI',
+      });
       await expect(
         service.createSalaryComponent({
           code: 'GAJI',
           name: 'Gaji Pokok',
           type: 'allowance',
           calculationType: 'fixed',
+          isTaxable: true,
+          isActive: true,
         }),
       ).rejects.toThrow(ConflictException);
     });
 
     it('menonaktifkan komponen hanya jika belum dipakai slip gaji', async () => {
-      prisma.salaryComponent.findUnique.mockResolvedValue({ id: 3, code: 'POT' });
+      prisma.salaryComponent.findUnique.mockResolvedValue({
+        id: 3,
+        code: 'POT',
+      });
       prisma.payrollComponent.count.mockResolvedValue(2);
       await expect(service.deactivateSalaryComponent(3)).rejects.toThrow(
         ConflictException,
@@ -74,15 +82,45 @@ describe('PayrollService', () => {
         },
       ]);
       prisma.salaryComponent.findMany.mockResolvedValue([
-        { id: 1, code: 'GAJI', name: 'Gaji Pokok', type: 'allowance', calculationType: 'fixed', defaultAmount: null },
-        { id: 2, code: 'TJM', name: 'Tunjangan Makan', type: 'allowance', calculationType: 'fixed', defaultAmount: 500_000 },
-        { id: 3, code: 'TJT', name: 'Tunjangan Transport', type: 'allowance', calculationType: 'fixed', defaultAmount: 400_000 },
-        { id: 4, code: 'POT', name: 'Potongan Lain', type: 'deduction', calculationType: 'fixed', defaultAmount: 100_000 },
+        {
+          id: 1,
+          code: 'GAJI',
+          name: 'Gaji Pokok',
+          type: 'allowance',
+          calculationType: 'fixed',
+          defaultAmount: null,
+        },
+        {
+          id: 2,
+          code: 'TJM',
+          name: 'Tunjangan Makan',
+          type: 'allowance',
+          calculationType: 'fixed',
+          defaultAmount: 500_000,
+        },
+        {
+          id: 3,
+          code: 'TJT',
+          name: 'Tunjangan Transport',
+          type: 'allowance',
+          calculationType: 'fixed',
+          defaultAmount: 400_000,
+        },
+        {
+          id: 4,
+          code: 'POT',
+          name: 'Potongan Lain',
+          type: 'deduction',
+          calculationType: 'fixed',
+          defaultAmount: 100_000,
+        },
       ]);
       prisma.companySetting.findUnique.mockResolvedValue(null);
       prisma.payroll.findMany.mockResolvedValue([]);
       prisma.payroll.count.mockResolvedValue(0);
-      prisma.overtimeRequest.aggregate.mockResolvedValue({ _sum: { hours: 10 } });
+      prisma.overtimeRequest.aggregate.mockResolvedValue({
+        _sum: { hours: 10 },
+      });
       prisma.terRate.findFirst.mockResolvedValue({
         category: 'A',
         incomeFrom: 6_300_000,
@@ -93,6 +131,8 @@ describe('PayrollService', () => {
         ({ data }: { data: Record<string, unknown> }) =>
           Promise.resolve({
             id: 1,
+            status: 'draft',
+            approvedById: null,
             ...data,
             employee: {
               fullName: 'Budi Santoso',
@@ -118,7 +158,7 @@ describe('PayrollService', () => {
       expect(p.grossSalary).toBe(6_333_526);
       expect(p.bpjsKesehatanEmployee).toBe(63_335);
       expect(p.bpjsKesehatanCompany).toBe(253_341);
-      expect(p.bpjsKetenagakerjaanEmployee).toBe(253_341);
+      expect(p.bpjsKetenagakerjaanEmployee).toBe(190_006);
       expect(p.taxPph21).toBe(63_335);
       expect(p.netSalary).toBe(5_916_850);
       expect(p.status).toBe('draft');

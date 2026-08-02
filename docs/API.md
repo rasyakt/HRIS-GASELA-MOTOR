@@ -92,7 +92,7 @@ Guard global: `JwtAuthGuard` (401 jika token hilang/tidak valid) + `RolesGuard` 
 ## Roadmap endpoint (per fase — lihat PROJECT_PLAN Bagian 4)
 
 - **Fase 1:** ✅ selesai (auth, master data, shifts, attendances, leaves, overtime, dashboard) — UI web ✅ (login, dashboard role-aware, kehadiran, cuti, lembur, persetujuan, karyawan) — UI mobile ✅ (login, home, check-in/out GPS, cuti, lembur, profil) — sisa: hardening
-- **Fase 2:** `payroll/*`, `announcements/*`, `notifications/*`, `settings/company`, `uploads`
+- **Fase 2 (sedang berjalan):** `payroll/*` ✅ backend + web (salary-components CRUD, generate engine BPJS+PPh21 TER, list/detail, approve, mark-paid, my payslip; UI penggajian role-aware: admin generate/tinjau/setujui/bayar, karyawan lihat slip) — sisa: payslip PDF, `announcements/*`, `notifications/*` (FCM), `settings/company`, `uploads`
 - **Fase 3:** `reports/*`, performance/training/asset/document modules
 
 ## Contoh request/response kunci

@@ -62,7 +62,9 @@ export class PayrollController {
 
   @Post('generate')
   @Roles('admin', 'hrd', 'owner')
-  @ApiOperation({ summary: 'Generate gaji periode bulan/tahun (admin/hrd/owner)' })
+  @ApiOperation({
+    summary: 'Generate gaji periode bulan/tahun (admin/hrd/owner)',
+  })
   generate(@Body() body: GeneratePayrollDto) {
     return this.payrollService.generate(body);
   }
@@ -87,7 +89,9 @@ export class PayrollController {
 
   @Get()
   @Roles('admin', 'hrd', 'owner')
-  @ApiOperation({ summary: 'Semua slip gaji (admin/hrd/owner, filter periode/status)' })
+  @ApiOperation({
+    summary: 'Semua slip gaji (admin/hrd/owner, filter periode/status)',
+  })
   list(@Query(new ZodValidationPipe()) query: PayrollQueryDto) {
     return this.payrollService.list(query);
   }
@@ -102,10 +106,7 @@ export class PayrollController {
   @Post('approve')
   @Roles('admin', 'hrd', 'owner')
   @ApiOperation({ summary: 'Approve slip gaji terpilih (draft → approved)' })
-  approve(
-    @CurrentUser() user: AuthUser,
-    @Body() body: ApprovePayrollDto,
-  ) {
+  approve(@CurrentUser() user: AuthUser, @Body() body: ApprovePayrollDto) {
     return this.payrollService.batchApprove(user.employeeId, body);
   }
 

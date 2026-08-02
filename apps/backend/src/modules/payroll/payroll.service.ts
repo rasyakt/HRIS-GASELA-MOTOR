@@ -58,7 +58,9 @@ export class PayrollService {
 
   // ===================== SALARY COMPONENT =====================
 
-  async listSalaryComponents(includeInactive = false): Promise<SalaryComponentDto[]> {
+  async listSalaryComponents(
+    includeInactive = false,
+  ): Promise<SalaryComponentDto[]> {
     const rows = await this.prisma.salaryComponent.findMany({
       where: includeInactive ? undefined : { isActive: true },
       orderBy: { code: 'asc' },
@@ -79,7 +81,9 @@ export class PayrollService {
       where: { code: input.code },
     });
     if (existing) {
-      throw new ConflictException(`Kode komponen '${input.code}' sudah dipakai`);
+      throw new ConflictException(
+        `Kode komponen '${input.code}' sudah dipakai`,
+      );
     }
     const row = await this.prisma.salaryComponent.create({ data: input });
     return this.toSalaryComponentDto(row);
@@ -92,7 +96,9 @@ export class PayrollService {
         where: { code: input.code, NOT: { id } },
       });
       if (existing) {
-        throw new ConflictException(`Kode komponen '${input.code}' sudah dipakai`);
+        throw new ConflictException(
+          `Kode komponen '${input.code}' sudah dipakai`,
+        );
       }
     }
     const updated = await this.prisma.salaryComponent.update({
@@ -157,7 +163,8 @@ export class PayrollService {
     let rates: BpjsRates = DEFAULT_BPJS_RATES;
     if (ratesSetting) {
       try {
-        rates = { ...DEFAULT_BPJS_RATES, ...JSON.parse(ratesSetting.value) };
+        const parsed = JSON.parse(ratesSetting.value) as Partial<BpjsRates>;
+        rates = { ...DEFAULT_BPJS_RATES, ...parsed };
       } catch {
         rates = DEFAULT_BPJS_RATES;
       }
@@ -338,7 +345,10 @@ export class PayrollService {
     };
   }
 
-  async myList(employeeId: number, query: PayrollQuery): Promise<Paginated<PayrollDto>> {
+  async myList(
+    employeeId: number,
+    query: PayrollQuery,
+  ): Promise<Paginated<PayrollDto>> {
     return this.list({ ...query, employeeId });
   }
 
@@ -465,7 +475,11 @@ export class PayrollService {
     id: number;
     payrollNumber: string;
     employeeId: number;
-    employee: { fullName: string; employeeNumber: string; department: { name: string } | null };
+    employee: {
+      fullName: string;
+      employeeNumber: string;
+      department: { name: string } | null;
+    };
     month: number;
     year: number;
     basicSalary: unknown;
@@ -507,7 +521,6 @@ export class PayrollService {
       taxPph21: Number(r.taxPph21),
       netSalary: Number(r.netSalary),
       status: r.status,
-      approvedById: r.approvedById,
       approvedByName: r.approvedBy?.fullName ?? null,
       approvedAt: r.approvedAt ? r.approvedAt.toISOString() : null,
       paymentDate: r.paymentDate ? dayKey(r.paymentDate) : null,
@@ -515,14 +528,16 @@ export class PayrollService {
     };
   }
 
-  private toPayrollDetailDto(r: Parameters<PayrollService['toPayrollDto']>[0] & {
-    components: Array<{
-      salaryComponentId: number;
-      salaryComponent: { code: string; name: string };
-      type: 'allowance' | 'deduction';
-      amount: unknown;
-    }>;
-  }): PayrollDetailDto {
+  private toPayrollDetailDto(
+    r: Parameters<PayrollService['toPayrollDto']>[0] & {
+      components: Array<{
+        salaryComponentId: number;
+        salaryComponent: { code: string; name: string };
+        type: 'allowance' | 'deduction';
+        amount: unknown;
+      }>;
+    },
+  ): PayrollDetailDto {
     return {
       ...this.toPayrollDto(r),
       components: r.components.map((c) => ({
@@ -535,4 +550,3 @@ export class PayrollService {
     };
   }
 }
-

@@ -59,6 +59,18 @@ export function fmtNumber(value: number | string | null | undefined): string {
   return n.toLocaleString('id-ID');
 }
 
+export function fmtRupiah(value: number | string | null | undefined): string {
+  if (value === null || value === undefined) return '—';
+  const n = typeof value === 'string' ? Number.parseFloat(value) : value;
+  if (Number.isNaN(n)) return String(value);
+  return `Rp${Math.round(n).toLocaleString('id-ID')}`;
+}
+
+export function fmtMonthYear(month: number, year: number): string {
+  const d = new Date(Date.UTC(year, month - 1, 1));
+  return d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+}
+
 export function fmtHours(value: number | string | null | undefined): string {
   if (value === null || value === undefined) return '—';
   const n = typeof value === 'string' ? Number.parseFloat(value) : value;
@@ -85,6 +97,9 @@ const STATUS_LABELS: Record<string, string> = {
   approved: 'Disetujui',
   rejected: 'Ditolak',
   cancelled: 'Dibatalkan',
+  draft: 'Draft',
+  pending_approval: 'Menunggu Persetujuan',
+  paid: 'Dibayar',
   active: 'Aktif',
   probation: 'Percobaan',
   resigned: 'Mengundurkan Diri',
@@ -116,6 +131,9 @@ const STATUS_CLASSES: Record<string, string> = {
   leave: 'bg-sky-100 text-sky-700',
   holiday: 'bg-zinc-100 text-zinc-600',
   cancelled: 'bg-zinc-100 text-zinc-600',
+  draft: 'bg-zinc-100 text-zinc-600',
+  pending_approval: 'bg-amber-100 text-amber-700',
+  paid: 'bg-emerald-100 text-emerald-700',
   contract: 'bg-sky-100 text-sky-700',
   magang: 'bg-violet-100 text-violet-700',
 };

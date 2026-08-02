@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  ReceiptText,
   Timer,
   Users,
   X,
@@ -33,6 +34,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/attendance', label: 'Kehadiran', icon: Clock, minRole: 'employee' },
   { href: '/leave', label: 'Cuti', icon: CalendarDays, minRole: 'employee' },
   { href: '/overtime', label: 'Lembur', icon: Timer, minRole: 'employee' },
+  { href: '/payroll', label: 'Penggajian', icon: ReceiptText, minRole: 'employee' },
   { href: '/approvals', label: 'Persetujuan', icon: CheckCheck, minRole: 'manager' },
   { href: '/employees', label: 'Karyawan', icon: Users, minRole: 'admin' },
 ];
@@ -42,6 +44,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/attendance': 'Kehadiran',
   '/leave': 'Cuti',
   '/overtime': 'Lembur',
+  '/payroll': 'Penggajian',
   '/approvals': 'Persetujuan',
   '/employees': 'Karyawan',
 };

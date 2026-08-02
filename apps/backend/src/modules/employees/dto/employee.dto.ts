@@ -4,6 +4,7 @@ import type {
   EmployeeQuery,
   EmploymentStatus,
   EmploymentType,
+  PtkpStatus,
   UpdateEmployeeInput,
 } from '@gasela/shared-types';
 import {
@@ -51,6 +52,11 @@ export class CreateEmployeeDto
   employmentStatus: EmploymentStatus;
   @ApiProperty({ example: 'permanent' })
   employmentType: EmploymentType;
+  @ApiPropertyOptional({
+    example: 'K2',
+    description: 'Status PTKP untuk PPh21 (default K2)',
+  })
+  ptkpStatus: PtkpStatus;
   @ApiProperty({ example: 5000000 })
   basicSalary: number;
   @ApiPropertyOptional()
@@ -99,6 +105,8 @@ export class UpdateEmployeeDto
   employmentStatus?: EmploymentStatus;
   @ApiPropertyOptional()
   employmentType?: EmploymentType;
+  @ApiPropertyOptional({ description: 'Status PTKP untuk PPh21' })
+  ptkpStatus?: PtkpStatus;
   @ApiPropertyOptional({ example: 5000000 })
   basicSalary?: number;
   @ApiPropertyOptional()
