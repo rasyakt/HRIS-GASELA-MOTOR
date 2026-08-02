@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EMPLOYMENT_STATUSES, EMPLOYMENT_TYPES } from './enums';
+import { EMPLOYMENT_STATUSES, EMPLOYMENT_TYPES, PTKP_STATUSES } from './enums';
 
 const dateString = z.string().date();
 
@@ -21,6 +21,7 @@ export const createEmployeeSchema = z.object({
   permanentDate: dateString.optional().nullable(),
   employmentStatus: z.enum(EMPLOYMENT_STATUSES).default('probation'),
   employmentType: z.enum(EMPLOYMENT_TYPES),
+  ptkpStatus: z.enum(PTKP_STATUSES).default('K2'),
   basicSalary: z.number().nonnegative(),
   bankAccountName: z.string().max(100).optional().nullable(),
   bankAccountNumber: z.string().max(30).optional().nullable(),

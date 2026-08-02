@@ -342,6 +342,7 @@ async function main() {
         joinDate: new Date('2020-01-01'),
         employmentStatus: 'active',
         employmentType: 'permanent',
+        ptkpStatus: 'K2',
         basicSalary: 7500000,
         departmentId: deptHrd.id,
         positionId: (await prisma.position.findUnique({ where: { code: 'HRD' } }))!.id,
@@ -377,6 +378,7 @@ async function main() {
         joinDate: new Date('2022-03-01'),
         employmentStatus: 'active',
         employmentType: 'permanent',
+        ptkpStatus: 'TK0',
         basicSalary: 4500000,
         departmentId: deptSales.id,
         positionId: (await prisma.position.findUnique({ where: { code: 'ADMS' } }))!.id,
@@ -397,6 +399,12 @@ async function main() {
   } else {
     console.log('  User karyawan sudah ada, dilewati');
   }
+
+  // --- Backfill ptkpStatus untuk employee lama ---
+  await prisma.employee.updateMany({
+    where: { employeeNumber: 'EMP-0002' },
+    data: { ptkpStatus: 'TK0' },
+  });
 
   // --- Leave balance tahun berjalan untuk semua employee ---
   const year = new Date().getFullYear();

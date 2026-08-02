@@ -3,8 +3,11 @@ import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { useAuthStore } from './src/store/auth-store';
 
 export default function App() {
+  const accessToken = useAuthStore((s) => s.accessToken);
+
   const queryClient = useMemo(
     () =>
       new QueryClient({
@@ -21,7 +24,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <NavigationContainer>
-        <RootNavigator />
+        <RootNavigator loggedIn={!!accessToken} />
         <StatusBar style="auto" />
       </NavigationContainer>
     </QueryClientProvider>

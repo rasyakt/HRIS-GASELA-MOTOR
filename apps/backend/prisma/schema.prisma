@@ -123,6 +123,17 @@ enum TerCategory {
   C
 }
 
+enum PtkpStatus {
+  TK0
+  TK1
+  TK2
+  TK3
+  K0
+  K1
+  K2
+  K3
+}
+
 // ===================== CORE =====================
 model Department {
   id             Int          @id @default(autoincrement()) @map("department_id")
@@ -181,6 +192,7 @@ model Employee {
   resignDate            DateTime?        @map("resign_date") @db.Date
   employmentStatus      EmploymentStatus @default(probation) @map("employment_status")
   employmentType        EmploymentType   @map("employment_type")
+  ptkpStatus            PtkpStatus       @default(K2) @map("ptkp_status")
   basicSalary           Decimal          @map("basic_salary") @db.Decimal(15, 2)
   bankAccountName       String?          @map("bank_account_name") @db.VarChar(100)
   bankAccountNumber     String?          @map("bank_account_number") @db.VarChar(30)

@@ -1,6 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { DashboardSummary } from '@gasela/shared-types';
+import type { DashboardSummary, Paginated } from '@gasela/shared-types';
 import { useCallback, useState } from 'react';
 import {
   RefreshControl,
@@ -10,27 +10,45 @@ import {
   View,
 } from 'react-native';
 import { Button, Card, CardTitle, ErrorBanner, Row, StatusBadge } from '../../components/ui';
-import { fmtDate, fmtHours, fmtTime, ROLE_LABEL } from '../../lib/format';
+import { fmtDate, fmtHours, fmtTime, OFFICE_LOCATION } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
 import { getPosition } from '../../services/location';
-import { useAuthStore } from '../../store/auth-store';
 
-export function HomeScreen() {
+interface AttendanceRow {
+  id: number;
+  attendanceDate: string;
+  status: string;
+  checkInTime: string | null;
+  checkOutTime: string | null;
+  workHours: number | string | null;
+  lateMinutes?: number | null;
+  shift?: { id: number; name: string } | null;
+}
+
+export function AttendanceScreen() {
   const authApi = useAuthApi();
   const queryClient = useQueryClient();
-  const user = useAuthStore((s) => s.user);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [geoFallback, setGeoFallback] = useState(false);
   const [actionLoading, setActionLoading] = useState<'in' | 'out' | null>(null);
 
-  const { data, isLoading, isError, refetch } = useQuery({
+  const dashboard = useQuery({
     queryKey: ['dashboard-summary'],
     queryFn: () => authApi<DashboardSummary>('/api/dashboard/summary'),
   });
 
+  const history = useQuery({
+    queryKey: ['attendance-my'],
+    queryFn: () =>
+      authApi<Paginated<AttendanceRow>>('/api/attendances/my?page=1&limit=20'),
+  });
+
   useFocusEffect(
     useCallback(() => {
-      refetch();
-    }, [refetch]),
+      dashboard.refetch();
+      history.refetch();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
   );
 
   async function handleCheck(kind: 'in' | 'out') {
@@ -38,6 +56,7 @@ export function HomeScreen() {
     setActionLoading(kind);
     try {
       const pos = await getPosition();
+      setGeoFallback(pos.fallback);
       await authApi(`/api/attendances/check-${kind}`, {
         method: 'POST',
         body: JSON.stringify({ latitude: pos.latitude, longitude: pos.longitude }),
@@ -51,33 +70,37 @@ export function HomeScreen() {
     }
   }
 
-  const today = data?.today.attendance ?? null;
+  const today = dashboard.data?.today.attendance ?? null;
+  const rows = history.data?.items ?? [];
+  const loading = dashboard.isLoading || history.isLoading;
 
   return (
     <ScrollView
       style={styles.flex}
       contentContainerStyle={styles.container}
       refreshControl={
-        <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#18181b" />
+        <RefreshControl
+          refreshing={loading}
+          onRefresh={() => {
+            dashboard.refetch();
+            history.refetch();
+          }}
+          tintColor="#18181b"
+        />
       }
     >
-      <Text style={styles.greeting}>
-        Halo, {user?.fullName ?? 'Karyawan'}
-      </Text>
-      <Text style={styles.date}>
+      <Text style={styles.header}>Kehadiran</Text>
+      <Text style={styles.subheader}>
         {new Date().toLocaleDateString('id-ID', {
           weekday: 'long',
           day: 'numeric',
           month: 'long',
           year: 'numeric',
         })}
-        {user ? ` · ${ROLE_LABEL[user.role]}` : ''}
       </Text>
 
-      {isError && <ErrorBanner message="Gagal memuat data. Tarik untuk muat ulang." />}
-
       <Card style={styles.card}>
-        <CardTitle>Kehadiran Hari Ini</CardTitle>
+        <CardTitle>Hari Ini</CardTitle>
         {today ? (
           <View>
             <StatusBadge status={today.status} />
@@ -113,48 +136,32 @@ export function HomeScreen() {
             />
           </View>
         )}
+        {geoFallback && (
+          <Text style={styles.note}>
+            Lokasi perangkat tidak terdeteksi; memakai koordinat kantor.
+          </Text>
+        )}
         {actionError && <ErrorBanner message={actionError} />}
       </Card>
 
       <Card style={styles.card}>
-        <CardTitle>Pengajuan Menunggu</CardTitle>
-        <Row label="Cuti" value={`${data?.pendingLeave ?? 0}`} big />
-        <Row label="Lembur" value={`${data?.pendingOvertime ?? 0}`} big />
-      </Card>
-
-      <Card style={styles.card}>
-        <CardTitle>Saldo Cuti</CardTitle>
-        {data && data.leaveBalances.length > 0 ? (
-          data.leaveBalances.map((b) => (
-            <Row
-              key={b.leaveTypeId}
-              label={b.leaveTypeName}
-              value={`sisa ${b.remaining}/${b.quota}`}
-              big
-            />
-          ))
+        <CardTitle>Riwayat</CardTitle>
+        {rows.length === 0 ? (
+          <Text style={styles.emptyText}>Belum ada riwayat kehadiran.</Text>
         ) : (
-          <Text style={styles.emptyText}>Belum ada saldo cuti.</Text>
-        )}
-      </Card>
-
-      <Card style={styles.card}>
-        <CardTitle>Kehadiran Terakhir</CardTitle>
-        {data && data.recentAttendance.length > 0 ? (
-          data.recentAttendance.map((r) => (
-            <View key={r.date} style={styles.recentRow}>
-              <View style={styles.recentLeft}>
-                <Text style={styles.recentDate}>{fmtDate(r.date)}</Text>
-                <Text style={styles.recentTime}>
+          rows.map((r) => (
+            <View key={r.id} style={styles.row}>
+              <View style={styles.rowLeft}>
+                <Text style={styles.rowDate}>{fmtDate(r.attendanceDate)}</Text>
+                <Text style={styles.rowTime}>
                   {fmtTime(r.checkInTime)} – {fmtTime(r.checkOutTime)} ·{' '}
                   {fmtHours(r.workHours)} jam
+                  {r.lateMinutes && r.lateMinutes > 0 ? ` · telat ${r.lateMinutes}m` : ''}
                 </Text>
               </View>
               <StatusBadge status={r.status} />
             </View>
           ))
-        ) : (
-          <Text style={styles.emptyText}>Belum ada riwayat kehadiran.</Text>
         )}
       </Card>
     </ScrollView>
@@ -164,12 +171,13 @@ export function HomeScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: '#fafafa' },
   container: { padding: 16, paddingBottom: 32 },
-  greeting: { fontSize: 20, fontWeight: '700', color: '#18181b' },
-  date: { fontSize: 13, color: '#71717a', marginTop: 2, marginBottom: 16 },
+  header: { fontSize: 20, fontWeight: '700', color: '#18181b' },
+  subheader: { fontSize: 13, color: '#71717a', marginTop: 2, marginBottom: 16 },
   card: { marginBottom: 12 },
   actionRow: { marginTop: 12 },
   emptyText: { color: '#71717a', fontSize: 14, marginBottom: 12 },
-  recentRow: {
+  note: { fontSize: 12, color: '#a1a1aa', marginTop: 10 },
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -177,7 +185,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f4f4f5',
   },
-  recentLeft: { flex: 1, marginRight: 12 },
-  recentDate: { fontSize: 14, fontWeight: '600', color: '#18181b' },
-  recentTime: { fontSize: 12, color: '#71717a', marginTop: 2 },
+  rowLeft: { flex: 1, marginRight: 12 },
+  rowDate: { fontSize: 14, fontWeight: '600', color: '#18181b' },
+  rowTime: { fontSize: 12, color: '#71717a', marginTop: 2 },
 });

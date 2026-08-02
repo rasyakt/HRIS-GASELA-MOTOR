@@ -1,20 +1,112 @@
-import { View, Text, StyleSheet } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../navigation/RootNavigator';
+import type { LoginResponse } from '@gasela/shared-types';
+import { useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { Button, ErrorBanner, TextField } from '../../components/ui';
+import { ApiError } from '../../services/api-client';
+import { api } from '../../services/api-client';
+import { useAuthStore } from '../../store/auth-store';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+export function LoginScreen() {
+  const setSession = useAuthStore((s) => s.setSession);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-export function LoginScreen({}: Props) {
+  async function handleLogin() {
+    if (!username || !password) {
+      setError('Username dan password wajib diisi.');
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      const session = await api<LoginResponse>('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      });
+      setSession(session);
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'Gagal menghubungi server. Periksa koneksi & alamat API.',
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>HRIS Gasela Motor</Text>
-      <Text style={styles.subtitle}>Login form diimplementasikan pada Fase 1.</Text>
-    </View>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.logo}>
+          <Text style={styles.logoText}>G</Text>
+        </View>
+        <Text style={styles.title}>HRIS Gasela Motor</Text>
+        <Text style={styles.subtitle}>Masuk menggunakan akun karyawan Anda.</Text>
+
+        <View style={styles.form}>
+          {error && <ErrorBanner message={error} />}
+          <TextField
+            label="Username"
+            value={username}
+            onChangeText={setUsername}
+            placeholder="mis. employee"
+            autoCapitalize="none"
+          />
+          <TextField
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            placeholder="••••••••"
+            secureTextEntry
+          />
+          <Button title="Masuk" onPress={handleLogin} loading={loading} />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', padding: 24 },
-  title: { fontSize: 24, fontWeight: '600' },
-  subtitle: { marginTop: 8, fontSize: 14, color: '#71717a', textAlign: 'center' },
+  flex: { flex: 1, backgroundColor: '#fafafa' },
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  logo: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: '#18181b',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    alignSelf: 'center',
+  },
+  logoText: { color: '#fff', fontSize: 26, fontWeight: '700' },
+  title: { fontSize: 24, fontWeight: '700', color: '#18181b', textAlign: 'center' },
+  subtitle: {
+    marginTop: 6,
+    fontSize: 14,
+    color: '#71717a',
+    textAlign: 'center',
+    marginBottom: 28,
+  },
+  form: { gap: 0 },
 });
