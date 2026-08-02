@@ -5,5 +5,6 @@ export * from './attendance.schema';
 export * from './shift.schema';
 export * from './leave-request.schema';
 export * from './overtime.schema';
+export * from './dashboard.schema';
 export * from './payroll.schema';
 export * from './common.schema';

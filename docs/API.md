@@ -8,7 +8,7 @@
 Semua endpoint (kecuali `POST /auth/login` & `GET /health`) dilindungi bearer token.
 Header: `Authorization: Bearer <accessToken>`.
 
-## Endpoint aktif (Fase 1 — Autentikasi, Master Data, Shift & Kehadiran)
+## Endpoint aktif (Fase 1 — Autentikasi, Master Data, Shift, Kehadiran, Cuti, Lembur & Dashboard)
 
 | Method | Path | Deskripsi | Auth |
 |---|---|---|---|
@@ -30,6 +30,21 @@ Header: `Authorization: Bearer <accessToken>`.
 | POST | `/attendances/check-out` | Check-out + hitung `workHours`/`earlyLeaveMinutes` | bearer |
 | GET | `/attendances/my?page&limit&from&to` | Riwayat kehadiran sendiri | bearer |
 | GET | `/attendances?page&limit&employeeId&from&to` | Rekap semua karyawan | admin/hrd |
+| GET | `/leaves/types?includeInactive` | Daftar jenis cuti | bearer |
+| POST/PATCH/DELETE | `/leaves/types` `/leaves/types/:id` | Kelola jenis cuti | admin/hrd |
+| GET | `/leaves/balances/my?year` | Saldo cuti sendiri per tahun | bearer |
+| GET | `/leaves/balances?year&employeeId` | Semua saldo cuti | admin/hrd |
+| POST | `/leaves/requests` | Ajukan cuti (diri sendiri) | bearer |
+| GET | `/leaves/requests/my?page&limit&status` | Pengajuan sendiri | bearer |
+| GET | `/leaves/requests?page&limit&status&employeeId` | Semua pengajuan | admin/hrd/manager |
+| POST | `/leaves/requests/:id/decide` | Approve/tolak (`{status, rejectionReason?}`) | admin/hrd/manager |
+| POST | `/leaves/requests/:id/cancel` | Batalkan pengajuan sendiri (hanya pending) | bearer |
+| POST | `/overtime/requests` | Ajukan lembur (`overtimeDate`, `startTime`, `endTime`, `purpose`; jam dihitung otomatis) | bearer |
+| GET | `/overtime/requests/my?page&limit&status` | Pengajuan lembur sendiri | bearer |
+| GET | `/overtime/requests?page&limit&status&employeeId` | Semua pengajuan lembur | admin/hrd/manager |
+| POST | `/overtime/requests/:id/decide` | Approve/tolak lembur | admin/hrd/manager |
+| POST | `/overtime/requests/:id/cancel` | Batalkan sendiri (pending; baris dihapus) | bearer |
+| GET | `/dashboard/summary` | Ringkasan per role: `employee` (kehadiran hari ini, saldo cuti, pending, riwayat 7 hari) / `manager` (+ approvals & statistik tim) / `admin` (+ statistik perusahaan & sebaran departemen) | bearer |
 
 Aturan tulis (write) dilindungi `@Roles('admin','hrd')`; role hierarki memungkinkan level lebih tinggi (mis. owner) tetap bisa.
 
@@ -39,6 +54,27 @@ Aturan tulis (write) dilindungi `@Roles('admin','hrd')`; role hierarki memungkin
 - Check-in: dalam radius kantor (default 100 m dari `office.location`) → status `present`/`late` (late = melewati `startTime + grace`); satu baris per `(employee_id, attendance_date)` — check-in ganda → `409`.
 - Check-out: tanpa check-in → `404`; dua kali → `409`; `workHours` dihitung (check-out − check-in), `earlyLeaveMinutes` bila pulang sebelum akhir shift.
 - Tanggal disimpan sebagai UTC-midnight dari tanggal lokal (`localDateKey`) agar konsisten lintas zona server/database.
+
+### Cuti
+
+- Jenis cuti (seed: CT 12th, CS, CM, CK, CA, CIS) — syarat `minNoticeDays` & `maxConsecutiveDays` per jenis; `annualQuota > 0` wajib punya saldo `leave_balances`.
+- `totalDays` dihitung dari **hari kerja** (Sen–Jum) inklusif.
+- Validasi ajuan: jenis aktif, notifikasi minimum, panjang maks hari beruntun, tidak tumpang tindih (pending/approved), saldo cukup (`409` saat kurang).
+- Approve → `leaveBalance.used` naik & `remaining` turun di dalam transaksi (`$transaction`); hanya ajuan `pending` yang bisa diputuskan (ulang → `409`); tolak wajib `rejectionReason`.
+- Cancel hanya untuk pemilik & status `pending`.
+
+### Lembur
+
+- `hours` dihitung otomatis dari `startTime`–`endTime` (desimal, 2 digit); `startTime`/`endTime` `HH:mm`/`HH:mm:ss`.
+- Nomor request `OT-YYYYMMDD-XXXX`; decide ulang → `409`; cancel hanya pemilik & `pending` (baris dihapus — enum tanpa status `cancelled`).
+
+### Dashboard
+
+- `GET /dashboard/summary` memilih payload berdasarkan role pemanggil (union `role` field):
+  - `employee`: `today.attendance` (status/jam/telat/jam kerja/nama shift), `leaveBalances` (tahun berjalan), `pendingLeave`, `pendingOvertime`, `recentAttendance` (7 hari terakhir).
+  - `manager`: tambahan `approvals` (10 pending cuti+lembur teratas) & `team` (total bawahan, hadir/telat/cuti hari ini).
+  - `hrd/admin/owner`: tambahan `stats` (karyawan aktif, hadir/telat/absent/cuti hari ini, pending, jam lembur bulan berjalan) & `departments` (sebaran karyawan aktif per departemen).
+- `absentToday` = karyawan aktif − hadir − telat − cuti (approval hari ini).
 
 ### RBAC
 
@@ -55,7 +91,7 @@ Guard global: `JwtAuthGuard` (401 jika token hilang/tidak valid) + `RolesGuard` 
 
 ## Roadmap endpoint (per fase — lihat PROJECT_PLAN Bagian 4)
 
-- **Fase 1 (sisa):** `overtime/*`, `leaves/*`, `dashboard/*`
+- **Fase 1:** ✅ selesai (auth, master data, shifts, attendances, leaves, overtime, dashboard) — roadmap turun: Minggu 4 sisa UI web/mobile + hardening
 - **Fase 2:** `payroll/*`, `announcements/*`, `notifications/*`, `settings/company`, `uploads`
 - **Fase 3:** `reports/*`, performance/training/asset/document modules
 

@@ -8,6 +8,9 @@ import { PositionsModule } from './modules/positions/positions.module';
 import { EmployeesModule } from './modules/employees/employees.module';
 import { ShiftsModule } from './modules/shifts/shifts.module';
 import { AttendancesModule } from './modules/attendances/attendances.module';
+import { LeavesModule } from './modules/leaves/leaves.module';
+import { OvertimeModule } from './modules/overtime/overtime.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { validateEnv } from './config/configuration';
 import configuration from './config/configuration';
 
@@ -26,6 +29,9 @@ import configuration from './config/configuration';
     EmployeesModule,
     ShiftsModule,
     AttendancesModule,
+    LeavesModule,
+    OvertimeModule,
+    DashboardModule,
   ],
 })
 export class AppModule {}
