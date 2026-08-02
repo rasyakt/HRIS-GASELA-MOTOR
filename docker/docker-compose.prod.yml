@@ -1,0 +1,60 @@
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: gasela_hris
+      MYSQL_USER_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - mysql-backups:/backups
+
+  backend:
+    build:
+      context: ../apps/backend
+    restart: unless-stopped
+    env_file: ../apps/backend/.env
+    ports:
+      - '3001:3001'
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - backend-uploads:/app/uploads
+
+  web:
+    build:
+      context: ../apps/web
+    restart: unless-stopped
+    env_file: ../apps/web/.env
+    ports:
+      - '3000:3000'
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - certbot-www:/var/www/certbot
+      - certbot-conf:/etc/letsencrypt
+    depends_on:
+      - backend
+      - web
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - certbot-www:/var/www/certbot
+      - certbot-conf:/etc/letsencrypt
+
+volumes:
+  mysql-data:
+  mysql-backups:
+  backend-uploads:
+  certbot-www:
+  certbot-conf:

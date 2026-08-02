@@ -1,0 +1,19 @@
+{
+  "name": "gasela-hris",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.18.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,prisma,md}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "prisma": "^6.19.3",
+    "turbo": "^2.3.3"
+  }
+}

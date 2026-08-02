@@ -1,0 +1,552 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ===================== ENUMS =====================
+enum EmploymentStatus {
+  active
+  probation
+  resigned
+  terminated
+}
+
+enum EmploymentType {
+  permanent
+  contract
+  magang
+}
+
+enum FamilyRelation {
+  spouse
+  child
+  parent
+  sibling
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum AttendanceStatus {
+  present
+  late
+  early_leave
+  absent
+  leave
+  holiday
+}
+
+enum LeaveReqStatus {
+  pending
+  approved
+  rejected
+  cancelled
+}
+
+enum OvertimeStatus {
+  pending
+  approved
+  rejected
+}
+
+enum PayrollStatus {
+  draft
+  pending_approval
+  approved
+  paid
+}
+
+enum ComponentType {
+  allowance
+  deduction
+}
+
+enum CalculationType {
+  fixed
+  percentage
+  formula
+}
+
+enum AnnouncementPriority {
+  low
+  normal
+  high
+  urgent
+}
+
+enum TargetAudience {
+  all
+  department
+  position
+  specific
+}
+
+enum UserRole {
+  admin
+  hrd
+  manager
+  employee
+  owner
+}
+
+enum DocumentType {
+  ktp
+  npwp
+  ijazah
+  sertifikat
+  kontrak
+  skck
+  cv
+  other
+}
+
+enum ReviewStatus {
+  draft
+  submitted
+  completed
+}
+
+enum AssetStatus {
+  assigned
+  returned
+}
+
+enum TerCategory {
+  A
+  B
+  C
+}
+
+// ===================== CORE =====================
+model Department {
+  id             Int          @id @default(autoincrement()) @map("department_id")
+  code           String       @unique @map("department_code") @db.VarChar(10)
+  name           String       @map("department_name") @db.VarChar(100)
+  parentId       Int?         @map("parent_department_id")
+  parent         Department?  @relation("DeptHierarchy", fields: [parentId], references: [id])
+  children       Department[] @relation("DeptHierarchy")
+  headEmployeeId Int?         @map("head_of_department")
+  headEmployee   Employee?    @relation("DepartmentHead", fields: [headEmployeeId], references: [id])
+  isActive       Boolean      @default(true) @map("is_active")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  employees Employee[] @relation("DepartmentMembers")
+
+  @@map("departments")
+}
+
+model Position {
+  id             Int      @id @default(autoincrement()) @map("position_id")
+  code           String   @unique @map("position_code") @db.VarChar(10)
+  name           String   @map("position_name") @db.VarChar(100)
+  jobDescription String?  @map("job_description") @db.Text
+  level          Int?
+  minSalary      Decimal? @map("min_salary") @db.Decimal(15, 2)
+  maxSalary      Decimal? @map("max_salary") @db.Decimal(15, 2)
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  employees Employee[]
+
+  @@map("positions")
+}
+
+model Employee {
+  id                    Int              @id @default(autoincrement()) @map("employee_id")
+  employeeNumber        String           @unique @map("employee_number") @db.VarChar(20)
+  fullName              String           @map("full_name") @db.VarChar(100)
+  email                 String           @unique @db.VarChar(100)
+  phone                 String?          @db.VarChar(20)
+  birthDate             DateTime?        @map("birth_date") @db.Date
+  idCardNumber          String?          @unique @map("id_card_number") @db.VarChar(20)
+  taxNumber             String?          @map("tax_number") @db.VarChar(20)
+  address               String?          @db.Text
+  emergencyContactName  String?          @map("emergency_contact_name") @db.VarChar(100)
+  emergencyContactPhone String?          @map("emergency_contact_phone") @db.VarChar(20)
+  departmentId          Int?             @map("department_id")
+  department            Department?      @relation("DepartmentMembers", fields: [departmentId], references: [id])
+  positionId            Int?             @map("position_id")
+  position              Position?        @relation(fields: [positionId], references: [id])
+  managerId             Int?             @map("reports_to")
+  manager               Employee?        @relation("EmployeeHierarchy", fields: [managerId], references: [id])
+  subordinates          Employee[]       @relation("EmployeeHierarchy")
+  joinDate              DateTime         @map("join_date") @db.Date
+  permanentDate         DateTime?        @map("permanent_date") @db.Date
+  resignDate            DateTime?        @map("resign_date") @db.Date
+  employmentStatus      EmploymentStatus @default(probation) @map("employment_status")
+  employmentType        EmploymentType   @map("employment_type")
+  basicSalary           Decimal          @map("basic_salary") @db.Decimal(15, 2)
+  bankAccountName       String?          @map("bank_account_name") @db.VarChar(100)
+  bankAccountNumber     String?          @map("bank_account_number") @db.VarChar(30)
+  bankName              String?          @map("bank_name") @db.VarChar(50)
+  profilePhotoUrl       String?          @map("profile_photo_url") @db.VarChar(255)
+  isActive              Boolean          @default(true) @map("is_active")
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+
+  user                 User?
+  departmentsHeaded    Department[]        @relation("DepartmentHead")
+  familyMembers        FamilyMember[]
+  attendances          Attendance[]
+  leaveBalances        LeaveBalance[]
+  leaveRequests        LeaveRequest[]      @relation("LeaveOwner")
+  leaveApprovals       LeaveRequest[]      @relation("LeaveApprover")
+  overtimeRequests     OvertimeRequest[]   @relation("OvertimeOwner")
+  overtimeApprovals    OvertimeRequest[]   @relation("OvertimeApprover")
+  payrolls             Payroll[]           @relation("PayrollOwner")
+  payrollApprovals     Payroll[]           @relation("PayrollApprover")
+  documents            EmployeeDocument[]
+  reviewsReceived      PerformanceReview[] @relation("Reviewee")
+  reviewsGiven         PerformanceReview[] @relation("Reviewer")
+  trainingRecords      TrainingRecord[]
+  assetAssignments     AssetAssignment[]
+  announcementsCreated Announcement[]
+  announcementReads    AnnouncementRead[]
+
+  @@map("employees")
+}
+
+model FamilyMember {
+  id              Int            @id @default(autoincrement()) @map("family_id")
+  employeeId      Int            @map("employee_id")
+  employee        Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  fullName        String         @map("full_name") @db.VarChar(100)
+  relationship    FamilyRelation
+  idCardNumber    String?        @map("id_card_number") @db.VarChar(20)
+  birthDate       DateTime?      @map("birth_date") @db.Date
+  gender          Gender?
+  isBpjsDependent Boolean        @default(false) @map("is_bpjs_dependent")
+  isActive        Boolean        @default(true) @map("is_active")
+
+  @@map("family_members")
+}
+
+model User {
+  id               Int       @id @default(autoincrement()) @map("user_id")
+  employeeId       Int       @unique @map("employee_id")
+  employee         Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  username         String    @unique @db.VarChar(50)
+  passwordHash     String    @map("password_hash") @db.VarChar(255)
+  role             UserRole
+  refreshTokenHash String?   @map("refresh_token_hash") @db.VarChar(255)
+  lastLogin        DateTime? @map("last_login")
+  isActive         Boolean   @default(true) @map("is_active")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+// ===================== ATTENDANCE =====================
+model Shift {
+  id                 Int      @id @default(autoincrement()) @map("shift_id")
+  name               String   @map("shift_name") @db.VarChar(50)
+  startTime          DateTime @map("start_time") @db.Time()
+  endTime            DateTime @map("end_time") @db.Time()
+  gracePeriodMinutes Int      @default(15) @map("grace_period_minutes")
+  workHours          Decimal  @map("work_hours") @db.Decimal(5, 2)
+  isActive           Boolean  @default(true) @map("is_active")
+
+  attendances Attendance[]
+
+  @@map("shifts")
+}
+
+model Attendance {
+  id                Int              @id @default(autoincrement()) @map("attendance_id")
+  employeeId        Int              @map("employee_id")
+  employee          Employee         @relation(fields: [employeeId], references: [id])
+  attendanceDate    DateTime         @map("attendance_date") @db.Date
+  checkInTime       DateTime?        @map("check_in_time") @db.Time()
+  checkOutTime      DateTime?        @map("check_out_time") @db.Time()
+  checkInLat        Decimal?         @map("check_in_lat") @db.Decimal(10, 7)
+  checkInLng        Decimal?         @map("check_in_lng") @db.Decimal(10, 7)
+  checkOutLat       Decimal?         @map("check_out_lat") @db.Decimal(10, 7)
+  checkOutLng       Decimal?         @map("check_out_lng") @db.Decimal(10, 7)
+  shiftId           Int?             @map("shift_id")
+  shift             Shift?           @relation(fields: [shiftId], references: [id])
+  status            AttendanceStatus @default(present)
+  lateMinutes       Int              @default(0) @map("late_minutes")
+  earlyLeaveMinutes Int              @default(0) @map("early_leave_minutes")
+  workHours         Decimal          @default(0) @map("work_hours") @db.Decimal(5, 2)
+  notes             String?          @db.Text
+  checkInPhotoUrl   String?          @map("check_in_photo_url") @db.VarChar(255)
+  checkOutPhotoUrl  String?          @map("check_out_photo_url") @db.VarChar(255)
+  createdAt         DateTime         @default(now()) @map("created_at")
+
+  @@unique([employeeId, attendanceDate], name: "uq_employee_date")
+  @@index([employeeId, attendanceDate])
+  @@map("attendances")
+}
+
+// ===================== LEAVE =====================
+model LeaveType {
+  id                 Int     @id @default(autoincrement()) @map("leave_type_id")
+  code               String  @unique @map("leave_type_code") @db.VarChar(10)
+  name               String  @map("leave_type_name") @db.VarChar(50)
+  annualQuota        Int     @map("annual_quota")
+  isPaid             Boolean @default(true) @map("is_paid")
+  requiresDocument   Boolean @default(false) @map("requires_document")
+  maxConsecutiveDays Int?    @map("max_consecutive_days")
+  minNoticeDays      Int?    @map("min_notice_days")
+  isActive           Boolean @default(true) @map("is_active")
+
+  balances LeaveBalance[]
+  requests LeaveRequest[]
+
+  @@map("leave_types")
+}
+
+model LeaveBalance {
+  id          Int       @id @default(autoincrement()) @map("balance_id")
+  employeeId  Int       @map("employee_id")
+  employee    Employee  @relation(fields: [employeeId], references: [id])
+  leaveTypeId Int       @map("leave_type_id")
+  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id])
+  year        Int
+  quota       Int
+  used        Int       @default(0)
+  remaining   Int
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([employeeId, leaveTypeId, year])
+  @@map("leave_balances")
+}
+
+model LeaveRequest {
+  id              Int            @id @default(autoincrement()) @map("leave_request_id")
+  requestNumber   String         @unique @map("request_number") @db.VarChar(30)
+  employeeId      Int            @map("employee_id")
+  employee        Employee       @relation("LeaveOwner", fields: [employeeId], references: [id])
+  leaveTypeId     Int            @map("leave_type_id")
+  leaveType       LeaveType      @relation(fields: [leaveTypeId], references: [id])
+  startDate       DateTime       @map("start_date") @db.Date
+  endDate         DateTime       @map("end_date") @db.Date
+  totalDays       Int            @map("total_days")
+  reason          String?        @db.Text
+  documentUrl     String?        @map("document_url") @db.VarChar(255)
+  status          LeaveReqStatus @default(pending)
+  approvedById    Int?           @map("approved_by")
+  approvedBy      Employee?      @relation("LeaveApprover", fields: [approvedById], references: [id])
+  approvedAt      DateTime?      @map("approved_at")
+  rejectionReason String?        @map("rejection_reason") @db.Text
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  @@map("leave_requests")
+}
+
+// ===================== OVERTIME =====================
+model OvertimeRequest {
+  id            Int            @id @default(autoincrement()) @map("overtime_id")
+  requestNumber String         @unique @map("request_number") @db.VarChar(30)
+  employeeId    Int            @map("employee_id")
+  employee      Employee       @relation("OvertimeOwner", fields: [employeeId], references: [id])
+  overtimeDate  DateTime       @map("overtime_date") @db.Date
+  startTime     DateTime       @map("start_time") @db.Time()
+  endTime       DateTime       @map("end_time") @db.Time()
+  hours         Decimal        @db.Decimal(5, 2)
+  purpose       String?        @db.Text
+  status        OvertimeStatus @default(pending)
+  approvedById  Int?           @map("approved_by")
+  approvedBy    Employee?      @relation("OvertimeApprover", fields: [approvedById], references: [id])
+  approvedAt    DateTime?      @map("approved_at")
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  @@map("overtime_requests")
+}
+
+// ===================== PAYROLL =====================
+model SalaryComponent {
+  id              Int             @id @default(autoincrement()) @map("salary_component_id")
+  code            String          @unique @map("component_code") @db.VarChar(10)
+  name            String          @map("component_name") @db.VarChar(100)
+  type            ComponentType
+  calculationType CalculationType @map("calculation_type")
+  defaultAmount   Decimal?        @map("default_amount") @db.Decimal(15, 2)
+  isTaxable       Boolean         @default(true) @map("is_taxable")
+  isActive        Boolean         @default(true) @map("is_active")
+
+  payrollComponents PayrollComponent[]
+
+  @@map("salary_components")
+}
+
+model Payroll {
+  id                          Int           @id @default(autoincrement()) @map("payroll_id")
+  payrollNumber               String        @unique @map("payroll_number") @db.VarChar(30)
+  employeeId                  Int           @map("employee_id")
+  employee                    Employee      @relation("PayrollOwner", fields: [employeeId], references: [id])
+  month                       Int
+  year                        Int
+  basicSalary                 Decimal       @map("basic_salary") @db.Decimal(15, 2)
+  totalAllowance              Decimal       @default(0) @map("total_allowance") @db.Decimal(15, 2)
+  totalDeduction              Decimal       @default(0) @map("total_deduction") @db.Decimal(15, 2)
+  overtimePay                 Decimal       @default(0) @map("overtime_pay") @db.Decimal(15, 2)
+  grossSalary                 Decimal       @map("gross_salary") @db.Decimal(15, 2)
+  bpjsKesehatanEmployee       Decimal       @default(0) @map("bpjs_kesehatan_employee") @db.Decimal(15, 2)
+  bpjsKesehatanCompany        Decimal       @default(0) @map("bpjs_kesehatan_company") @db.Decimal(15, 2)
+  bpjsKetenagakerjaanEmployee Decimal       @default(0) @map("bpjs_ketenagakerjaan_employee") @db.Decimal(15, 2)
+  bpjsKetenagakerjaanCompany  Decimal       @default(0) @map("bpjs_ketenagakerjaan_company") @db.Decimal(15, 2)
+  taxPph21                    Decimal       @default(0) @map("tax_pph21") @db.Decimal(15, 2)
+  netSalary                   Decimal       @map("net_salary") @db.Decimal(15, 2)
+  status                      PayrollStatus @default(draft)
+  approvedById                Int?          @map("approved_by")
+  approvedBy                  Employee?     @relation("PayrollApprover", fields: [approvedById], references: [id])
+  approvedAt                  DateTime?     @map("approved_at")
+  paymentDate                 DateTime?     @map("payment_date") @db.Date
+  payslipUrl                  String?       @map("payslip_url") @db.VarChar(255)
+  createdAt                   DateTime      @default(now()) @map("created_at")
+
+  components PayrollComponent[]
+
+  @@unique([employeeId, month, year])
+  @@map("payrolls")
+}
+
+model PayrollComponent {
+  id                Int             @id @default(autoincrement()) @map("component_id")
+  payrollId         Int             @map("payroll_id")
+  payroll           Payroll         @relation(fields: [payrollId], references: [id], onDelete: Cascade)
+  salaryComponentId Int             @map("salary_component_id")
+  salaryComponent   SalaryComponent @relation(fields: [salaryComponentId], references: [id])
+  amount            Decimal         @db.Decimal(15, 2)
+  type              ComponentType
+
+  @@map("payroll_components")
+}
+
+// ===================== CONFIG / REFERENCE (extra) =====================
+model TerRate {
+  id          Int         @id @default(autoincrement())
+  category    TerCategory
+  incomeFrom  Decimal     @map("income_from") @db.Decimal(15, 2)
+  incomeTo    Decimal?    @map("income_to") @db.Decimal(15, 2)
+  ratePercent Decimal     @map("rate_percent") @db.Decimal(5, 2)
+
+  @@index([category])
+  @@map("ter_rates")
+}
+
+model Holiday {
+  id                Int      @id @default(autoincrement())
+  date              DateTime @db.Date
+  name              String   @db.VarChar(150)
+  isRecurringYearly Boolean  @default(false) @map("is_recurring_yearly")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@unique([date])
+  @@map("holidays")
+}
+
+model CompanySetting {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique @db.VarChar(100)
+  value       String   @db.Text
+  description String?  @db.Text
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("company_settings")
+}
+
+// ===================== ANNOUNCEMENT =====================
+model Announcement {
+  id             Int                  @id @default(autoincrement()) @map("announcement_id")
+  title          String               @db.VarChar(200)
+  content        String               @db.Text
+  priority       AnnouncementPriority @default(normal)
+  targetAudience TargetAudience       @default(all) @map("target_audience")
+  publishDate    DateTime             @map("publish_date") @db.Date
+  expiryDate     DateTime?            @map("expiry_date") @db.Date
+  createdById    Int                  @map("created_by")
+  createdBy      Employee             @relation(fields: [createdById], references: [id])
+  isPublished    Boolean              @default(false) @map("is_published")
+  createdAt      DateTime             @default(now()) @map("created_at")
+
+  reads AnnouncementRead[]
+
+  @@map("announcements")
+}
+
+model AnnouncementRead {
+  id             Int          @id @default(autoincrement()) @map("read_id")
+  announcementId Int          @map("announcement_id")
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  employeeId     Int          @map("employee_id")
+  employee       Employee     @relation(fields: [employeeId], references: [id])
+  readAt         DateTime     @default(now()) @map("read_at")
+
+  @@unique([announcementId, employeeId])
+  @@map("announcement_reads")
+}
+
+// ===================== DOCUMENT / PERFORMANCE / TRAINING / ASSET =====================
+model EmployeeDocument {
+  id           Int          @id @default(autoincrement()) @map("document_id")
+  employeeId   Int          @map("employee_id")
+  employee     Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  documentType DocumentType @map("document_type")
+  documentName String       @map("document_name") @db.VarChar(200)
+  documentUrl  String       @map("document_url") @db.VarChar(255)
+  uploadDate   DateTime     @map("upload_date") @db.Date
+  expiryDate   DateTime?    @map("expiry_date") @db.Date
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  @@map("employee_documents")
+}
+
+model PerformanceReview {
+  id                  Int          @id @default(autoincrement()) @map("review_id")
+  employeeId          Int          @map("employee_id")
+  employee            Employee     @relation("Reviewee", fields: [employeeId], references: [id])
+  reviewerId          Int          @map("reviewer_id")
+  reviewer            Employee     @relation("Reviewer", fields: [reviewerId], references: [id])
+  periodMonth         Int          @map("period_month")
+  periodYear          Int          @map("period_year")
+  reviewDate          DateTime     @map("review_date") @db.Date
+  overallScore        Decimal?     @map("overall_score") @db.Decimal(5, 2)
+  strengths           String?      @db.Text
+  areasForImprovement String?      @map("areas_for_improvement") @db.Text
+  goalsNextPeriod     String?      @map("goals_next_period") @db.Text
+  status              ReviewStatus @default(draft)
+  createdAt           DateTime     @default(now()) @map("created_at")
+
+  @@map("performance_reviews")
+}
+
+model TrainingRecord {
+  id               Int      @id @default(autoincrement()) @map("training_record_id")
+  employeeId       Int      @map("employee_id")
+  employee         Employee @relation(fields: [employeeId], references: [id])
+  trainingName     String   @map("training_name") @db.VarChar(200)
+  trainingProvider String?  @map("training_provider") @db.VarChar(200)
+  startDate        DateTime @map("start_date") @db.Date
+  endDate          DateTime @map("end_date") @db.Date
+  durationHours    Int?     @map("duration_hours")
+  certificateUrl   String?  @map("certificate_url") @db.VarChar(255)
+  cost             Decimal? @db.Decimal(15, 2)
+  notes            String?  @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@map("training_records")
+}
+
+model AssetAssignment {
+  id             Int         @id @default(autoincrement()) @map("assignment_id")
+  employeeId     Int         @map("employee_id")
+  employee       Employee    @relation(fields: [employeeId], references: [id])
+  assetName      String      @map("asset_name") @db.VarChar(100)
+  assetCode      String      @unique @map("asset_code") @db.VarChar(50)
+  serialNumber   String?     @map("serial_number") @db.VarChar(100)
+  assignmentDate DateTime    @map("assignment_date") @db.Date
+  returnDate     DateTime?   @map("return_date") @db.Date
+  status         AssetStatus @default(assigned)
+  conditionNotes String?     @map("condition_notes") @db.Text
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  @@map("asset_assignments")
+}

@@ -1,0 +1,9 @@
+{
+  "extends": "@gasela/tsconfig/base/tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}
