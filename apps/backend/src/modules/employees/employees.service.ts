@@ -274,11 +274,13 @@ export class EmployeesService {
     }
 
     const passwordHash = await bcrypt.hash(input.password, 10);
+    // Invalidate all refresh tokens on password reset for security
     await this.prisma.user.update({
       where: { employeeId },
       data: {
         passwordHash,
         refreshTokenHash: null,
+        refreshTokenExpiry: null,
       },
       select: { id: true },
     });

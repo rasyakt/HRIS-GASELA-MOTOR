@@ -230,6 +230,13 @@ model Employee {
   warningLetters       WarningLetter[]      @relation("WarningOwner")
   issuedWarningLetters WarningLetter[]      @relation("WarningIssuer")
 
+  @@index([departmentId])
+  @@index([positionId])
+  @@index([managerId])
+  @@index([employmentStatus])
+  @@index([isActive])
+  @@index([fullName])
+  @@index([email])
   @@map("employees")
 }
 
@@ -249,16 +256,17 @@ model FamilyMember {
 }
 
 model User {
-  id               Int       @id @default(autoincrement()) @map("user_id")
-  employeeId       Int       @unique @map("employee_id")
-  employee         Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  username         String    @unique @db.VarChar(50)
-  passwordHash     String    @map("password_hash") @db.VarChar(255)
-  role             UserRole
-  refreshTokenHash String?   @map("refresh_token_hash") @db.VarChar(255)
-  lastLogin        DateTime? @map("last_login")
-  isActive         Boolean   @default(true) @map("is_active")
-  createdAt        DateTime  @default(now()) @map("created_at")
+  id                  Int       @id @default(autoincrement()) @map("user_id")
+  employeeId          Int       @unique @map("employee_id")
+  employee            Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  username            String    @unique @db.VarChar(50)
+  passwordHash        String    @map("password_hash") @db.VarChar(255)
+  role                UserRole
+  refreshTokenHash    String?   @map("refresh_token_hash") @db.VarChar(255)
+  refreshTokenExpiry  DateTime? @map("refresh_token_expiry")
+  lastLogin           DateTime? @map("last_login")
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at")
 
   @@map("users")
 }
@@ -358,6 +366,12 @@ model LeaveRequest {
   rejectionReason String?        @map("rejection_reason") @db.Text
   createdAt       DateTime       @default(now()) @map("created_at")
 
+  @@index([employeeId])
+  @@index([leaveTypeId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([approvedById])
   @@map("leave_requests")
 }
 
@@ -378,6 +392,10 @@ model OvertimeRequest {
   approvedAt    DateTime?      @map("approved_at")
   createdAt     DateTime       @default(now()) @map("created_at")
 
+  @@index([employeeId])
+  @@index([overtimeDate])
+  @@index([status])
+  @@index([approvedById])
   @@map("overtime_requests")
 }
 
@@ -426,6 +444,10 @@ model Payroll {
   components PayrollComponent[]
 
   @@unique([employeeId, month, year])
+  @@index([employeeId])
+  @@index([month, year])
+  @@index([status])
+  @@index([approvedById])
   @@map("payrolls")
 }
 

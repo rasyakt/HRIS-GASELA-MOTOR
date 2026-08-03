@@ -82,9 +82,28 @@ export class AuthService {
     user: UserWithEmployee,
   ): Promise<LoginResponse> {
     const tokens = await this.issueTokens(user);
+    
+    // Get access token TTL in seconds
+    const ttlConfig = this.config.getOrThrow<string>('app.jwtAccessTtl');
+    let expiresIn = 900; // default 15 minutes
+    
+    // Parse TTL (e.g., "15m", "1h", "3600")
+    if (typeof ttlConfig === 'string') {
+      if (ttlConfig.endsWith('m')) {
+        expiresIn = parseInt(ttlConfig) * 60;
+      } else if (ttlConfig.endsWith('h')) {
+        expiresIn = parseInt(ttlConfig) * 3600;
+      } else if (ttlConfig.endsWith('d')) {
+        expiresIn = parseInt(ttlConfig) * 86400;
+      } else {
+        expiresIn = parseInt(ttlConfig);
+      }
+    }
+    
     return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
+      expiresIn,
       user: this.toAuthUser(user),
     };
   }
@@ -114,9 +133,31 @@ export class AuthService {
     const accessToken = this.signAccessToken(user);
     const refreshToken = this.signRefreshToken(user);
     const refreshHash = await bcrypt.hash(refreshToken, 10);
+    
+    // Set refresh token expiry (default 7 days)
+    const refreshTtl = this.config.getOrThrow<string>('app.jwtRefreshTtl');
+    let expiryDays = 7;
+    
+    if (typeof refreshTtl === 'string') {
+      if (refreshTtl.endsWith('d')) {
+        expiryDays = parseInt(refreshTtl);
+      } else if (refreshTtl.endsWith('h')) {
+        expiryDays = parseInt(refreshTtl) / 24;
+      } else if (refreshTtl.endsWith('m')) {
+        expiryDays = parseInt(refreshTtl) / (24 * 60);
+      }
+    }
+    
+    const refreshTokenExpiry = new Date();
+    refreshTokenExpiry.setDate(refreshTokenExpiry.getDate() + expiryDays);
+    
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { refreshTokenHash: refreshHash, lastLogin: new Date() },
+      data: { 
+        refreshTokenHash: refreshHash,
+        refreshTokenExpiry,
+        lastLogin: new Date(),
+      },
       select: { id: true },
     });
     return { accessToken, refreshToken };
@@ -149,6 +190,18 @@ export class AuthService {
       );
     }
 
+    // Check if refresh token has expired
+    if (user.refreshTokenExpiry && user.refreshTokenExpiry < new Date()) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { refreshTokenHash: null, refreshTokenExpiry: null },
+        select: { id: true },
+      });
+      throw new UnauthorizedException(
+        'Refresh token kadaluarsa, silakan login ulang',
+      );
+    }
+
     const hashMatches = await bcrypt.compare(
       input.refreshToken,
       user.refreshTokenHash,
@@ -157,7 +210,7 @@ export class AuthService {
       // Token refresh diduga dicuri → cabut seluruh sesi
       await this.prisma.user.update({
         where: { id: user.id },
-        data: { refreshTokenHash: null },
+        data: { refreshTokenHash: null, refreshTokenExpiry: null },
         select: { id: true },
       });
       throw new UnauthorizedException(
@@ -171,7 +224,7 @@ export class AuthService {
   async logout(userId: number): Promise<void> {
     await this.prisma.user.update({
       where: { id: userId },
-      data: { refreshTokenHash: null },
+      data: { refreshTokenHash: null, refreshTokenExpiry: null },
       select: { id: true },
     });
   }
@@ -205,9 +258,14 @@ export class AuthService {
       throw new ConflictException('Password baru tidak boleh sama dengan lama');
     }
     const newHash = await bcrypt.hash(input.newPassword, 10);
+    // Invalidate all sessions on password change
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { passwordHash: newHash, refreshTokenHash: null },
+      data: { 
+        passwordHash: newHash, 
+        refreshTokenHash: null,
+        refreshTokenExpiry: null,
+      },
       select: { id: true },
     });
   }

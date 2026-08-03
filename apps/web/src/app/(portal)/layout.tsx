@@ -23,6 +23,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { OfflineBanner } from '@/components/offline-banner';
 import { api } from '@/lib/api-client';
 import { ROLE_LABEL, roleAtLeast } from '@/lib/format';
 import { useAuthStore } from '@/store/auth-store';
@@ -140,6 +141,7 @@ export default function PortalLayout({
 
   return (
     <div className="flex h-screen w-screen overflow-hidden">
+      <OfflineBanner />
       <div className="hidden lg:block h-full">{sidebar}</div>
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">

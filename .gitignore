@@ -43,3 +43,9 @@ yarn-debug.log*
 
 # build info
 *.tsbuildinfo
+
+# .md
+CRITICAL_FIXES_REPORT.md
+HIGH_PRIORITY_FIXES_REPORT.md
+REMAINING_ISSUES.md
+SESSION_SUMMARY.md

@@ -17,6 +17,7 @@ import { TrainingPanel } from './training-panel';
 import { AssetPanel } from './assets-panel';
 import { AccountPanel } from './account-panel';
 import { FamilyPanel } from './family-panel';
+import { useDebounce } from '@/hooks/use-debounce';
 
 interface EmployeeRow {
   id: number;
@@ -93,6 +94,7 @@ export default function EmployeesPage() {
 
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 300);
   const [page, setPage] = useState(1);
 
   // Detail & Form Drawer States
@@ -146,6 +148,12 @@ export default function EmployeesPage() {
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [selectedPosition, setSelectedPosition] = useState<string>('all');
+
+  // Sync debounced search to actual search
+  useEffect(() => {
+    setSearch(debouncedSearch);
+    setPage(1); // Reset to page 1 when search changes
+  }, [debouncedSearch]);
 
   const employees = useQuery({
     queryKey: ['employees', search, page, selectedRole, selectedDepartment, selectedPosition],
@@ -443,14 +451,7 @@ export default function EmployeesPage() {
             ))}
           </div>
 
-          <form
-            className="mb-4 flex flex-wrap items-center gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setPage(1);
-              setSearch(searchInput.trim());
-            }}
-          >
+          <div className="mb-4 flex flex-wrap items-center gap-2">
             <Label htmlFor="search" className="sr-only">
               Cari karyawan
             </Label>
@@ -494,11 +495,6 @@ export default function EmployeesPage() {
               ))}
             </select>
 
-            <Button type="submit" variant="outline" size="sm" className="text-xs">
-              <Search className="mr-1.5 size-3.5" />
-              Cari
-            </Button>
-
             <Button
               type="button"
               variant="outline"
@@ -530,7 +526,7 @@ export default function EmployeesPage() {
             >
               <Download className="size-3.5" /> Ekspor CSV
             </Button>
-          </form>
+          </div>
 
           {employees.isLoading ? (
             <div className="flex items-center justify-center py-10">
