@@ -1,0 +1,38 @@
+<svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="40" height="40" rx="10" fill="#09090B"/>
+  <rect x="0.5" y="0.5" width="39" height="39" rx="9.5" stroke="#27272A"/>
+  
+  <!-- Outer Stylized 'G' Ring -->
+  <path
+    d="M26 12C23.5 9.5 19.5 9 15.5 10.5C11.5 12 9 16 9 20.5C9 25 11.5 29 15.5 30.5C19.5 32 24 31 27 28C29 26 30 23.5 30 21H20"
+    stroke="url(#favicon_g_gradient)"
+    stroke-width="3.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  
+  <!-- Inner Dynamic Pulse Peak -->
+  <path
+    d="M10 20H15L18 14L22 26L25 20H30"
+    stroke="#10B981"
+    stroke-width="2.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.9"
+  />
+  
+  <defs>
+    <linearGradient
+      id="favicon_g_gradient"
+      x1="9"
+      y1="9"
+      x2="30"
+      y2="31"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="#FFFFFF" />
+      <stop offset="0.5" stop-color="#E4E4E7" />
+      <stop offset="1" stop-color="#71717A" />
+    </linearGradient>
+  </defs>
+</svg>

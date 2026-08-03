@@ -14,8 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HRIS Gasela Motor",
-  description: "Sistem HRIS Gasela Motor — HRD, Attendance, Payroll",
+  title: "GaselaPulse · HRIS GASELA MOTOR",
+  description: "GaselaPulse — Sistem HRIS Gasela Motor (HRD, Presensi, Payroll & Karyawan)",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
