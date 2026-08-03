@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Param,
   ParseIntPipe,
@@ -40,10 +41,16 @@ export class EmployeesController {
     return this.employeesService.list(query);
   }
 
-  @Roles('admin', 'hrd', 'manager')
+  @Roles('admin', 'hrd', 'manager', 'owner', 'employee')
   @Get(':id')
   @ApiOperation({ summary: 'Detail karyawan' })
-  getById(@Param('id', ParseIntPipe) id: number) {
+  getById(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthUser,
+  ) {
+    if (user.role === 'employee' && user.employeeId !== id) {
+      throw new ForbiddenException('Anda hanya dapat melihat data profil Anda sendiri');
+    }
     return this.employeesService.getById(id);
   }
 

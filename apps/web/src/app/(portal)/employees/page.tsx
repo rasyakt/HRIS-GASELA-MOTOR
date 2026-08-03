@@ -548,7 +548,7 @@ export default function EmployeesPage() {
         <div className="fixed inset-0 z-50 overflow-hidden">
           <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm transition-opacity" onClick={() => setDrawerOpen(false)} />
           <div className="pointer-events-none fixed inset-0 flex items-center justify-center p-4">
-            <div className="pointer-events-auto w-full max-w-3xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="pointer-events-auto w-full max-w-3xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 p-6">
                 <div>

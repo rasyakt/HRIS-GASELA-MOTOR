@@ -14,6 +14,7 @@ import {
   Timer,
   Users,
   X,
+  User,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -68,6 +69,7 @@ export default function PortalLayout({
   const clearSession = useAuthStore((s) => s.clearSession);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!token) router.replace('/login');
@@ -131,31 +133,12 @@ export default function PortalLayout({
           );
         })}
       </nav>
-      <div className="border-t border-zinc-100 p-3">
-        <div className="px-2 pb-2">
-          <div className="truncate text-sm font-medium text-zinc-900">
-            {user.fullName}
-          </div>
-          <div className="text-xs text-zinc-500">
-            {ROLE_LABEL[user.role] ?? user.role}
-          </div>
-        </div>
-        <Button
-          variant="outline"
-          className="w-full justify-start"
-          onClick={handleLogout}
-          disabled={loggingOut}
-        >
-          <LogOut data-icon="inline-start" />
-          {loggingOut ? 'Keluar…' : 'Keluar'}
-        </Button>
-      </div>
     </aside>
   );
 
   return (
-    <div className="flex min-h-full flex-1">
-      <div className="hidden lg:block">{sidebar}</div>
+    <div className="flex h-screen w-screen overflow-hidden">
+      <div className="hidden lg:block h-full">{sidebar}</div>
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
@@ -166,14 +149,14 @@ export default function PortalLayout({
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-3 left-[17rem] text-white"
+            className="absolute top-3 left-68 text-white"
             onClick={() => setMobileOpen(false)}
           >
             <X />
           </Button>
         </div>
       )}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col h-full overflow-hidden">
         <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 lg:px-6">
           <div className="flex items-center gap-3">
             <Button
@@ -186,7 +169,54 @@ export default function PortalLayout({
             </Button>
             <h1 className="text-base font-semibold text-zinc-900">{pageTitle}</h1>
           </div>
-          <Badge className="hidden sm:inline-flex">{ROLE_LABEL[user.role]}</Badge>
+          <div className="relative">
+            <button
+              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              className="flex items-center gap-2.5 rounded-full p-1.5 hover:bg-zinc-100 transition-colors focus:outline-none"
+            >
+              <div className="flex size-7 items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white uppercase">
+                {user.fullName.split(' ').map((n) => n[0]).slice(0, 2).join('')}
+              </div>
+              <span className="hidden sm:inline text-sm font-semibold text-zinc-700 mr-1">
+                {user.fullName}
+              </span>
+            </button>
+
+            {profileMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-30"
+                  onClick={() => setProfileMenuOpen(false)}
+                />
+                <div className="absolute right-0 top-11 z-40 w-56 rounded-lg border border-zinc-200 bg-white p-2 shadow-lg">
+                  <div className="px-3 py-2 border-b border-zinc-100 mb-1">
+                    <p className="text-sm font-bold text-zinc-900 truncate">
+                      {user.fullName}
+                    </p>
+                    <p className="text-xs text-zinc-500 truncate">
+                      {ROLE_LABEL[user.role]}
+                    </p>
+                  </div>
+                  <Link
+                    href="/profile"
+                    onClick={() => setProfileMenuOpen(false)}
+                    className="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+                  >
+                    <User className="size-4" />
+                    Profil Saya
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    disabled={loggingOut}
+                    className="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="size-4" />
+                    {loggingOut ? 'Keluar…' : 'Keluar'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </header>
         <main className="flex-1 overflow-y-auto bg-zinc-50 p-4 lg:p-6">{children}</main>
       </div>
