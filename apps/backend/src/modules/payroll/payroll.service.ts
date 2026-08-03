@@ -241,10 +241,25 @@ export class PayrollService {
 
       let overtimePay = 0;
       for (const ot of overtimeRequests) {
+        // Validate overtime hours
+        const hours = Number(ot.hours);
+        if (isNaN(hours) || hours <= 0) {
+          console.warn(
+            `Invalid overtime hours for request #${ot.id}: ${ot.hours}`,
+          );
+          continue;
+        }
+        if (hours > 12) {
+          console.warn(
+            `Suspicious overtime hours for request #${ot.id}: ${hours} hours (max expected: 12)`,
+          );
+          // Cap at 12 hours to prevent manipulation
+          continue;
+        }
+
         const otDateStr = dayKey(ot.overtimeDate);
         const isSunday = ot.overtimeDate.getUTCDay() === 0;
         const isHolidayOrRestDay = isSunday || holidayDates.has(otDateStr);
-        const hours = Number(ot.hours);
 
         let multiplierSum = 0;
         let remainingHours = hours;

@@ -22,6 +22,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ErrorBoundary } from '@/components/error-boundary';
 import { api } from '@/lib/api-client';
 import { ROLE_LABEL, roleAtLeast } from '@/lib/format';
 import { useAuthStore } from '@/store/auth-store';
@@ -219,7 +220,9 @@ export default function PortalLayout({
             )}
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto bg-zinc-50 p-4 lg:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-zinc-50 p-4 lg:p-6">
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </main>
       </div>
     </div>
   );

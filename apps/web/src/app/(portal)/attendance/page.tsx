@@ -22,9 +22,9 @@ interface AttendanceRow {
 }
 
 function getPosition(): Promise<{ latitude: number; longitude: number }> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      resolve({ latitude: OFFICE_LOCATION.lat, longitude: OFFICE_LOCATION.lng });
+      reject(new Error('GPS tidak tersedia di perangkat Anda. Aktifkan lokasi untuk melakukan absensi.'));
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -33,8 +33,24 @@ function getPosition(): Promise<{ latitude: number; longitude: number }> {
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
         }),
-      () => resolve({ latitude: OFFICE_LOCATION.lat, longitude: OFFICE_LOCATION.lng }),
-      { timeout: 8000, maximumAge: 60000 },
+      (error) => {
+        let message = 'Gagal mendapatkan lokasi GPS. ';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            message += 'Izinkan akses lokasi di browser Anda untuk melakukan absensi.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            message += 'Informasi lokasi tidak tersedia. Pastikan GPS aktif.';
+            break;
+          case error.TIMEOUT:
+            message += 'Permintaan lokasi timeout. Coba lagi.';
+            break;
+          default:
+            message += 'Terjadi kesalahan tidak diketahui.';
+        }
+        reject(new Error(message));
+      },
+      { timeout: 10000, maximumAge: 30000, enableHighAccuracy: true },
     );
   });
 }
@@ -42,7 +58,6 @@ function getPosition(): Promise<{ latitude: number; longitude: number }> {
 export default function AttendancePage() {
   const authApi = useAuthApi();
   const queryClient = useQueryClient();
-  const [geoFallback, setGeoFallback] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const dashboard = useQuery({
@@ -62,8 +77,8 @@ export default function AttendancePage() {
 
   const checkIn = useMutation({
     mutationFn: async () => {
+      setActionError(null);
       const pos = await getPosition();
-      setGeoFallback(Math.abs(pos.latitude - OFFICE_LOCATION.lat) < 0.0001);
       return authApi('/api/attendances/check-in', {
         method: 'POST',
         body: JSON.stringify({ latitude: pos.latitude, longitude: pos.longitude }),
@@ -78,8 +93,8 @@ export default function AttendancePage() {
 
   const checkOut = useMutation({
     mutationFn: async () => {
+      setActionError(null);
       const pos = await getPosition();
-      setGeoFallback(Math.abs(pos.latitude - OFFICE_LOCATION.lat) < 0.0001);
       return authApi('/api/attendances/check-out', {
         method: 'POST',
         body: JSON.stringify({ latitude: pos.latitude, longitude: pos.longitude }),
@@ -186,12 +201,6 @@ export default function AttendancePage() {
             </div>
           )}
 
-          {geoFallback && (
-            <p className="mt-3 flex items-center gap-1 text-xs text-zinc-400">
-              <MapPin className="size-3" />
-              Lokasi perangkat tidak terdeteksi; memakai koordinat kantor.
-            </p>
-          )}
           {actionError && (
             <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
               {actionError}

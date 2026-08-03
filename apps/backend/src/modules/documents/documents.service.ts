@@ -130,11 +130,25 @@ export class DocumentsService {
     });
     if (!doc) throw new NotFoundException('Dokumen tidak ditemukan');
 
-    if (doc.documentUrl.startsWith('/api/uploads/')) {
-      const relative = doc.documentUrl.replace(/^\/api\/uploads\//, '');
-      this.uploadsService.remove(relative);
+    // Delete from database first in a try-catch
+    try {
+      await this.prisma.employeeDocument.delete({ where: { id } });
+    } catch (error) {
+      throw new BadRequestException('Gagal menghapus dokumen dari database');
     }
-    await this.prisma.employeeDocument.delete({ where: { id } });
+
+    // Then try to delete the file from disk
+    // If this fails, the DB record is already deleted which is acceptable
+    // (orphaned files can be cleaned up separately)
+    if (doc.documentUrl.startsWith('/api/uploads/')) {
+      try {
+        const relative = doc.documentUrl.replace(/^\/api\/uploads\//, '');
+        await this.uploadsService.remove(relative);
+      } catch (error) {
+        // Log the error but don't throw - DB record is already deleted
+        console.error(`Failed to delete file ${doc.documentUrl}:`, error);
+      }
+    }
   }
 
   async stats(): Promise<{

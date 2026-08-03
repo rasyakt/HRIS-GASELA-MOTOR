@@ -136,12 +136,17 @@ export class UploadsService {
     return MIME_BY_EXT[ext] ?? 'application/octet-stream';
   }
 
-  remove(relative: string): void {
+  async remove(relative: string): Promise<void> {
     try {
       const full = this.getFilePath(relative);
       rmSync(full, { force: true });
+      this.logger.log(`File deleted: ${relative}`);
     } catch (err) {
-      if (err instanceof NotFoundException) return;
+      if (err instanceof NotFoundException) {
+        this.logger.warn(`File not found for deletion: ${relative}`);
+        return;
+      }
+      this.logger.error(`Error deleting file ${relative}:`, err);
       throw err;
     }
   }

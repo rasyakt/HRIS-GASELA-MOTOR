@@ -121,17 +121,56 @@ export class EmployeesService {
     );
     await this.assertReferences(input);
 
+    // Safely parse dates with null checks
+    let birthDate: Date | null = null;
+    if (input.birthDate !== undefined && input.birthDate !== null) {
+      if (typeof input.birthDate === 'string' && input.birthDate.trim()) {
+        try {
+          birthDate = new Date(input.birthDate);
+          if (isNaN(birthDate.getTime())) {
+            birthDate = null;
+          }
+        } catch {
+          birthDate = null;
+        }
+      }
+    }
+
+    let joinDate: Date | undefined;
+    if (input.joinDate !== undefined && input.joinDate !== null) {
+      if (typeof input.joinDate === 'string' && input.joinDate.trim()) {
+        try {
+          joinDate = new Date(input.joinDate);
+          if (isNaN(joinDate.getTime())) {
+            joinDate = undefined;
+          }
+        } catch {
+          joinDate = undefined;
+        }
+      }
+    }
+
+    let permanentDate: Date | null = null;
+    if (input.permanentDate !== undefined && input.permanentDate !== null) {
+      if (typeof input.permanentDate === 'string' && input.permanentDate.trim()) {
+        try {
+          permanentDate = new Date(input.permanentDate);
+          if (isNaN(permanentDate.getTime())) {
+            permanentDate = null;
+          }
+        } catch {
+          permanentDate = null;
+        }
+      }
+    }
+
     return this.prisma.employee.update({
       where: { id },
       data: {
         ...input,
-        birthDate: input.birthDate
-          ? new Date(input.birthDate)
-          : input.birthDate,
-        joinDate: input.joinDate ? new Date(input.joinDate) : input.joinDate,
-        permanentDate: input.permanentDate
-          ? new Date(input.permanentDate)
-          : input.permanentDate,
+        ...(input.birthDate !== undefined && { birthDate }),
+        ...(input.joinDate !== undefined && { joinDate }),
+        ...(input.permanentDate !== undefined && { permanentDate }),
       },
       include: EMPLOYEE_INCLUDE,
     });
