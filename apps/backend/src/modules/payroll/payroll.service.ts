@@ -149,7 +149,7 @@ export class PayrollService {
       );
     }
 
-    const [components, ratesSetting, multiplierSetting] = await Promise.all([
+    const [components, ratesSetting, multiplierSetting, holidays] = await Promise.all([
       this.prisma.salaryComponent.findMany({
         where: { isActive: true },
         orderBy: { code: 'asc' },
@@ -158,7 +158,12 @@ export class PayrollService {
       this.prisma.companySetting.findUnique({
         where: { key: 'overtime.rate_multiplier_weekday' },
       }),
+      this.prisma.holiday.findMany({
+        where: { date: { gte: start, lt: end } },
+      }),
     ]);
+
+    const holidayDates = new Set(holidays.map((h) => dayKey(h.date)));
 
     let rates: BpjsRates = DEFAULT_BPJS_RATES;
     if (ratesSetting) {
@@ -226,31 +231,74 @@ export class PayrollService {
         else totalDeduction += amount;
       }
 
-      const otAgg = await this.prisma.overtimeRequest.aggregate({
+      const overtimeRequests = await this.prisma.overtimeRequest.findMany({
         where: {
           employeeId: emp.id,
           status: 'approved',
           overtimeDate: { gte: start, lt: end },
         },
-        _sum: { hours: true },
       });
-      const otHours = Number(otAgg._sum.hours ?? 0);
-      const hourlyRate = (basicSalary / 173) * multiplier;
-      const overtimePay = Math.round(otHours * hourlyRate);
+
+      let overtimePay = 0;
+      for (const ot of overtimeRequests) {
+        const otDateStr = dayKey(ot.overtimeDate);
+        const isSunday = ot.overtimeDate.getUTCDay() === 0;
+        const isHolidayOrRestDay = isSunday || holidayDates.has(otDateStr);
+        const hours = Number(ot.hours);
+
+        let multiplierSum = 0;
+        let remainingHours = hours;
+
+        if (isHolidayOrRestDay) {
+          // PP 35/2021: 7 jam pertama = 2.0x, jam ke-8 = 3.0x, jam ke-9 dst = 4.0x
+          const first7 = Math.min(remainingHours, 7);
+          multiplierSum += first7 * 2.0;
+          remainingHours -= first7;
+
+          if (remainingHours > 0) {
+            const eighth = Math.min(remainingHours, 1);
+            multiplierSum += eighth * 3.0;
+            remainingHours -= eighth;
+          }
+
+          if (remainingHours > 0) {
+            multiplierSum += remainingHours * 4.0;
+          }
+        } else {
+          // PP 35/2021: jam pertama = 1.5x, jam berikutnya = 2.0x
+          const first1 = Math.min(remainingHours, 1);
+          multiplierSum += first1 * 1.5;
+          remainingHours -= first1;
+
+          if (remainingHours > 0) {
+            multiplierSum += remainingHours * 2.0;
+          }
+        }
+
+        const hourlyRate = basicSalary / 173;
+        overtimePay += Math.round(multiplierSum * hourlyRate);
+      }
 
       const grossSalary = basicSalary + totalAllowance + overtimePay;
-      const bpjs = calculateBpjs(grossSalary, rates);
+
+      // Dasar pemotongan BPJS: Gaji Pokok + Tunjangan Tetap (overtime dikeluarkan)
+      const bpjsSubjectSalary = basicSalary + totalAllowance;
+      const bpjs = calculateBpjs(bpjsSubjectSalary, rates);
+
+      // Dasar PPh 21 bruto (termasuk premi BPJS Kesehatan 4%, JKK, JKM beban perusahaan)
+      const bpjsCompanyTaxable = bpjs.kesehatanCompany + bpjs.jkkCompany + bpjs.jkmCompany;
+      const pph21Gross = grossSalary + bpjsCompanyTaxable;
 
       const bracket = await this.prisma.terRate.findFirst({
         where: {
           category: PTKP_TO_TER_CATEGORY[emp.ptkpStatus],
-          incomeFrom: { lt: grossSalary },
-          OR: [{ incomeTo: null }, { incomeTo: { gte: grossSalary } }],
+          incomeFrom: { lt: pph21Gross },
+          OR: [{ incomeTo: null }, { incomeTo: { gte: pph21Gross } }],
         },
         orderBy: { incomeFrom: 'desc' },
       });
       const taxPph21 = bracket
-        ? Math.round(grossSalary * (Number(bracket.ratePercent) / 100))
+        ? Math.round(pph21Gross * (Number(bracket.ratePercent) / 100))
         : 0;
 
       const bpjsEmployeeTotal = Math.round(

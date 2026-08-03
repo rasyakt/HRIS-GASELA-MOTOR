@@ -27,7 +27,8 @@ describe('PayrollService', () => {
         count: jest.fn(),
         update: jest.fn(),
       },
-      overtimeRequest: { aggregate: jest.fn() },
+      overtimeRequest: { findMany: jest.fn(), aggregate: jest.fn() },
+      holiday: { findMany: jest.fn() },
       terRate: { findFirst: jest.fn() },
       $transaction: jest.fn(),
     };
@@ -116,11 +117,15 @@ describe('PayrollService', () => {
         },
       ]);
       prisma.companySetting.findUnique.mockResolvedValue(null);
+      prisma.holiday.findMany.mockResolvedValue([]);
       prisma.payroll.findMany.mockResolvedValue([]);
       prisma.payroll.count.mockResolvedValue(0);
-      prisma.overtimeRequest.aggregate.mockResolvedValue({
-        _sum: { hours: 10 },
-      });
+      prisma.overtimeRequest.findMany.mockResolvedValue([
+        {
+          overtimeDate: new Date('2026-08-10'),
+          hours: 10,
+        },
+      ]);
       prisma.terRate.findFirst.mockResolvedValue({
         category: 'A',
         incomeFrom: 6_300_000,
@@ -154,13 +159,13 @@ describe('PayrollService', () => {
       expect(p.basicSalary).toBe(5_000_000);
       expect(p.totalAllowance).toBe(900_000);
       expect(p.totalDeduction).toBe(100_000);
-      expect(p.overtimePay).toBe(433_526);
-      expect(p.grossSalary).toBe(6_333_526);
-      expect(p.bpjsKesehatanEmployee).toBe(63_335);
-      expect(p.bpjsKesehatanCompany).toBe(253_341);
-      expect(p.bpjsKetenagakerjaanEmployee).toBe(190_006);
-      expect(p.taxPph21).toBe(63_335);
-      expect(p.netSalary).toBe(5_916_850);
+      expect(p.overtimePay).toBe(563_584);
+      expect(p.grossSalary).toBe(6_463_584);
+      expect(p.bpjsKesehatanEmployee).toBe(59_000);
+      expect(p.bpjsKesehatanCompany).toBe(236_000);
+      expect(p.bpjsKetenagakerjaanEmployee).toBe(177_000);
+      expect(p.taxPph21).toBe(67_314);
+      expect(p.netSalary).toBe(6_060_270);
       expect(p.status).toBe('draft');
       expect(batch.totalEmployees).toBe(1);
       expect(batch.skipped).toBe(0);

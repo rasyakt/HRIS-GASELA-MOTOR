@@ -160,6 +160,7 @@ export class PayslipPdfService {
     );
     for (const c of data.components) {
       if (c.type !== 'allowance') continue;
+      if (c.code === 'GAJI' || c.name.toLowerCase() === 'gaji pokok') continue;
       y = this.tableRow(doc, y, left, pageWidth, c.name, rupiah(c.amount));
     }
     y = this.tableRow(
@@ -198,13 +199,19 @@ export class PayslipPdfService {
       if (c.type !== 'deduction') continue;
       y = this.tableRow(doc, y, left, pageWidth, c.name, rupiah(c.amount));
     }
+    const totalAllDeductions =
+      data.bpjsKesehatanEmployee +
+      data.bpjsKetenagakerjaanEmployee +
+      data.taxPph21 +
+      data.totalDeduction;
+
     y = this.tableRow(
       doc,
       y,
       left,
       pageWidth,
       'Total Potongan',
-      rupiah(data.totalDeduction),
+      rupiah(totalAllDeductions),
       true,
     );
 
