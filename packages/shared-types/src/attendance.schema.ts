@@ -8,12 +8,22 @@ export const checkInSchema = z.object({
   longitude: z.number().min(-180).max(180),
   shiftId: z.number().int().positive().optional(),
   notes: z.string().max(500).optional(),
+  photoUrl: z
+    .string()
+    .url('URL foto tidak valid')
+    .optional()
+    .describe('URL hasil upload kategori attendance'),
 });
 
 export const checkOutSchema = z.object({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   notes: z.string().max(500).optional(),
+  photoUrl: z
+    .string()
+    .url('URL foto tidak valid')
+    .optional()
+    .describe('URL hasil upload kategori attendance'),
 });
 
 export const attendanceQuerySchema = z.object({

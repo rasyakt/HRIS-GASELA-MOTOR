@@ -19,6 +19,7 @@ import { PayslipPdfService } from './payslip-pdf.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import {
   ApprovePayrollDto,
   CreateSalaryComponentDto,
@@ -34,6 +35,7 @@ export class PayrollController {
   constructor(
     private readonly payrollService: PayrollService,
     private readonly payslipPdfService: PayslipPdfService,
+    private readonly auditLogsService: AuditLogsService,
   ) {}
 
   @Get('salary-components')
@@ -113,15 +115,37 @@ export class PayrollController {
   @Post('approve')
   @Roles('admin', 'hrd', 'owner')
   @ApiOperation({ summary: 'Approve slip gaji terpilih (draft → approved)' })
-  approve(@CurrentUser() user: AuthUser, @Body() body: ApprovePayrollDto) {
-    return this.payrollService.batchApprove(user.employeeId, body);
+  async approve(@CurrentUser() user: AuthUser, @Body() body: ApprovePayrollDto) {
+    const result = await this.payrollService.batchApprove(user.employeeId, body);
+    await this.auditLogsService.record({
+      action: 'approve',
+      resource: 'payroll',
+      payload: {
+        payrollIds: body.payPeriods.map((p) => p.payrollId),
+        payrollNumbers: result.map((r) => r.payrollNumber),
+      },
+      userId: user.id,
+      username: user.username,
+    });
+    return result;
   }
 
   @Post('mark-paid')
   @Roles('admin', 'hrd', 'owner')
   @ApiOperation({ summary: 'Tandai dibayar (approved → paid)' })
-  markPaid(@Body() body: MarkPaidDto) {
-    return this.payrollService.markPaid(body);
+  async markPaid(@CurrentUser() user: AuthUser, @Body() body: MarkPaidDto) {
+    const result = await this.payrollService.markPaid(body);
+    await this.auditLogsService.record({
+      action: 'mark-paid',
+      resource: 'payroll',
+      payload: {
+        payrollIds: body.payrollIds,
+        payrollNumbers: result.map((r) => r.payrollNumber),
+      },
+      userId: user.id,
+      username: user.username,
+    });
+    return result;
   }
 
   @Get('my/:id/payslip')

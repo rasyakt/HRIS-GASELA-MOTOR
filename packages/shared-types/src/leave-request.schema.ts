@@ -25,6 +25,11 @@ export const createLeaveRequestSchema = z
     startDate: z.string().date(),
     endDate: z.string().date(),
     reason: z.string().min(5).max(500),
+    documentUrl: z
+      .string()
+      .url('URL dokumen tidak valid')
+      .optional()
+      .describe('URL hasil upload kategori document'),
   })
   .refine((d) => new Date(d.endDate) >= new Date(d.startDate), {
     message: 'Tanggal selesai harus setelah/sama dengan tanggal mulai',

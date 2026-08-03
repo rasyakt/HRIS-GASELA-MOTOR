@@ -15,6 +15,7 @@ import { LeavesService } from './leaves.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import {
   BalanceQueryDto,
   CreateLeaveRequestDto,
@@ -27,7 +28,10 @@ import {
 @ApiTags('Cuti')
 @Controller('leaves')
 export class LeavesController {
-  constructor(private readonly leavesService: LeavesService) {}
+  constructor(
+    private readonly leavesService: LeavesService,
+    private readonly auditLogsService: AuditLogsService,
+  ) {}
 
   @Get('types')
   @ApiOperation({ summary: 'Daftar jenis cuti (opsi includeInactive)' })
@@ -105,12 +109,21 @@ export class LeavesController {
   @Roles('admin', 'hrd', 'manager')
   @Post('requests/:id/decide')
   @ApiOperation({ summary: 'Approve/tolak pengajuan (admin/hrd/manager)' })
-  decide(
+  async decide(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,
     @Body() body: DecideLeaveDto,
   ) {
-    return this.leavesService.decide(id, user.employeeId, body);
+    const result = await this.leavesService.decide(id, user.employeeId, body);
+    await this.auditLogsService.record({
+      action: body.status === 'approved' ? 'approve' : 'reject',
+      resource: 'leave-request',
+      resourceId: id,
+      payload: { requestNumber: result.requestNumber, reason: body.rejectionReason ?? null },
+      userId: user.id,
+      username: user.username,
+    });
+    return result;
   }
 
   @Post('requests/:id/cancel')

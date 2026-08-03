@@ -3,6 +3,7 @@
 import {
   CalendarDays,
   CheckCheck,
+  BarChart3,
   Clock,
   LayoutDashboard,
   LogOut,
@@ -39,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/payroll', label: 'Penggajian', icon: ReceiptText, minRole: 'employee' },
   { href: '/announcements', label: 'Pengumuman', icon: Megaphone, minRole: 'employee' },
   { href: '/approvals', label: 'Persetujuan', icon: CheckCheck, minRole: 'manager' },
+  { href: '/reports', label: 'Laporan', icon: BarChart3, minRole: 'manager' },
   { href: '/employees', label: 'Karyawan', icon: Users, minRole: 'admin' },
   { href: '/settings', label: 'Pengaturan', icon: Settings, minRole: 'admin' },
 ];
@@ -51,6 +53,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/payroll': 'Penggajian',
   '/announcements': 'Pengumuman',
   '/approvals': 'Persetujuan',
+  '/reports': 'Laporan',
   '/employees': 'Karyawan',
   '/settings': 'Pengaturan',
 };

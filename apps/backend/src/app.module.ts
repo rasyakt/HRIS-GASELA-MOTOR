@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './modules/health/health.module';
@@ -15,6 +17,13 @@ import { PayrollModule } from './modules/payroll/payroll.module';
 import { AnnouncementsModule } from './modules/announcements/announcements.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { DocumentsModule } from './modules/documents/documents.module';
+import { PerformanceReviewsModule } from './modules/performance-reviews/performance-reviews.module';
+import { TrainingRecordsModule } from './modules/training-records/training-records.module';
+import { AssetAssignmentsModule } from './modules/asset-assignments/asset-assignments.module';
+import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { validateEnv } from './config/configuration';
 import configuration from './config/configuration';
 
@@ -25,6 +34,13 @@ import configuration from './config/configuration';
       validate: validateEnv,
       load: [configuration],
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'global',
+        ttl: 60_000,   // 1 menit
+        limit: 120,    // 120 req/menit per IP (endpoint biasa)
+      },
+    ]),
     PrismaModule,
     HealthModule,
     AuthModule,
@@ -40,6 +56,17 @@ import configuration from './config/configuration';
     AnnouncementsModule,
     NotificationsModule,
     SettingsModule,
+    UploadsModule,
+    ReportsModule,
+    DocumentsModule,
+    PerformanceReviewsModule,
+    TrainingRecordsModule,
+    AssetAssignmentsModule,
+    AuditLogsModule,
+  ],
+  providers: [
+    // Rate limiting global — override per-controller/handler pakai @Throttle()
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule {}

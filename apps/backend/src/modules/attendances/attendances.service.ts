@@ -124,6 +124,7 @@ export class AttendancesService {
         status,
         lateMinutes,
         notes: input.notes,
+        checkInPhotoUrl: input.photoUrl,
       },
       create: {
         employeeId,
@@ -135,6 +136,7 @@ export class AttendancesService {
         status,
         lateMinutes,
         notes: input.notes,
+        checkInPhotoUrl: input.photoUrl,
       },
     });
 
@@ -201,6 +203,7 @@ export class AttendancesService {
         earlyLeaveMinutes,
         workHours: Number((workedMinutes / 60).toFixed(2)),
         notes: input.notes ?? attendance.notes,
+        checkOutPhotoUrl: input.photoUrl,
       },
       include: { shift: true },
     });

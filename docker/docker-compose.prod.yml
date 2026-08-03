@@ -4,16 +4,25 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: gasela_hris
-      MYSQL_USER_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Isi DB_ROOT_PASSWORD di .env}
     volumes:
       - mysql-data:/var/lib/mysql
       - mysql-backups:/backups
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   backend:
     build:
-      context: ../apps/backend
+      context: ..
+      dockerfile: apps/backend/Dockerfile
     restart: unless-stopped
     env_file: ../apps/backend/.env
+    environment:
+      DATABASE_URL: mysql://root:${DB_ROOT_PASSWORD:?Isi DB_ROOT_PASSWORD di .env}@mysql:3306/gasela_hris
+      CORS_ORIGINS: ${CORS_ORIGINS:?Isi CORS_ORIGINS di .env}
     ports:
       - '3001:3001'
     depends_on:
@@ -24,9 +33,12 @@ services:
 
   web:
     build:
-      context: ../apps/web
+      context: ..
+      dockerfile: apps/web/Dockerfile
     restart: unless-stopped
     env_file: ../apps/web/.env
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:3001
     ports:
       - '3000:3000'
     depends_on:

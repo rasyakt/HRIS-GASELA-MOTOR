@@ -10,9 +10,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { AuthUser } from '@gasela/shared-types';
 import { EmployeesService } from './employees.service';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import {
   CreateEmployeeDto,
   EmployeeQueryDto,
@@ -22,7 +25,10 @@ import {
 @ApiTags('Karyawan')
 @Controller('employees')
 export class EmployeesController {
-  constructor(private readonly employeesService: EmployeesService) {}
+  constructor(
+    private readonly employeesService: EmployeesService,
+    private readonly auditLogsService: AuditLogsService,
+  ) {}
 
   @Roles('admin', 'hrd', 'manager')
   @Get()
@@ -48,17 +54,40 @@ export class EmployeesController {
   @Roles('admin', 'hrd')
   @Patch(':id')
   @ApiOperation({ summary: 'Perbarui data karyawan (admin/hrd)' })
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthUser,
     @Body() body: UpdateEmployeeDto,
   ) {
-    return this.employeesService.update(id, body);
+    const result = await this.employeesService.update(id, body);
+    if (body.basicSalary !== undefined) {
+      await this.auditLogsService.record({
+        action: 'edit-salary',
+        resource: 'employee',
+        resourceId: id,
+        payload: { basicSalary: body.basicSalary },
+        userId: user.id,
+        username: user.username,
+      });
+    }
+    return result;
   }
 
   @Roles('admin', 'hrd')
   @Delete(':id')
   @ApiOperation({ summary: 'Nonaktifkan karyawan (admin/hrd, soft delete)' })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.employeesService.deactivate(id);
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const result = await this.employeesService.deactivate(id);
+    await this.auditLogsService.record({
+      action: 'deactivate',
+      resource: 'employee',
+      resourceId: id,
+      userId: user.id,
+      username: user.username,
+    });
+    return result;
   }
 }

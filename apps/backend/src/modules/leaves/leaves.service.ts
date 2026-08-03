@@ -242,6 +242,7 @@ export class LeavesService {
           endDate: end,
           totalDays: days,
           reason: input.reason,
+          documentUrl: input.documentUrl,
         },
         include: this.requestInclude,
       }),

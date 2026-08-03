@@ -579,3 +579,18 @@ model AssetAssignment {
 
   @@map("asset_assignments")
 }
+
+model AuditLog {
+  id          Int      @id @default(autoincrement()) @map("audit_log_id")
+  userId      Int?     @map("user_id")
+  username    String?  @db.VarChar(50)
+  action      String   @db.VarChar(100)
+  resource    String   @db.VarChar(100)
+  resourceId  String?  @db.VarChar(50)
+  payload     String?  @db.Text // JSON string of request or values changed
+  ipAddress   String?  @db.VarChar(45)
+  userAgent   String?  @db.VarChar(255)
+  timestamp   DateTime @default(now()) @map("timestamp")
+
+  @@map("audit_logs")
+}

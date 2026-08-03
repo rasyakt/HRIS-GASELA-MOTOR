@@ -10,3 +10,4 @@ export * from './payroll.schema';
 export * from './announcement.schema';
 export * from './settings.schema';
 export * from './common.schema';
+export * from './advanced.schema';

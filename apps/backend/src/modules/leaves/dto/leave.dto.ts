@@ -69,6 +69,11 @@ export class CreateLeaveRequestDto
   endDate: string;
   @ApiProperty({ example: 'Liburan keluarga' })
   reason: string;
+  @ApiPropertyOptional({
+    example: '/api/uploads/document/xxx.pdf',
+    description: 'URL dokumen pendukung (hasil upload kategori document)',
+  })
+  documentUrl?: string;
 }
 
 export class DecideLeaveDto

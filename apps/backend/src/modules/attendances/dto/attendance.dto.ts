@@ -26,6 +26,11 @@ export class CheckInDto
   shiftId?: number;
   @ApiPropertyOptional({ example: 'Berangkat lebih awal' })
   notes?: string;
+  @ApiPropertyOptional({
+    example: '/api/uploads/attendance/xxx.jpg',
+    description: 'URL foto check-in (hasil upload kategori attendance)',
+  })
+  photoUrl?: string;
 }
 
 export class CheckOutDto
@@ -38,6 +43,11 @@ export class CheckOutDto
   longitude: number;
   @ApiPropertyOptional()
   notes?: string;
+  @ApiPropertyOptional({
+    example: '/api/uploads/attendance/xxx.jpg',
+    description: 'URL foto check-out (hasil upload kategori attendance)',
+  })
+  photoUrl?: string;
 }
 
 export class AttendanceQueryDto
