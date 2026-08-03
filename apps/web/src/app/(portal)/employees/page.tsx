@@ -642,97 +642,99 @@ export default function EmployeesPage() {
 
               {/* Detail Tabs (Only when employee selected) */}
               {selectedEmployeeId && (
-                <div className="flex border-b border-zinc-100 px-6 bg-zinc-50/50">
-                  <button
-                    onClick={() => setDrawerTab('profile')}
-                    className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                      drawerTab === 'profile'
-                        ? 'border-zinc-950 text-zinc-950'
-                        : 'border-transparent text-zinc-500 hover:text-zinc-900'
-                    }`}
-                  >
-                    <User className="size-4" />
-                    Profil
-                  </button>
-                  <button
-                    onClick={() => setDrawerTab('job')}
-                    className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                      drawerTab === 'job'
-                        ? 'border-zinc-950 text-zinc-950'
-                        : 'border-transparent text-zinc-500 hover:text-zinc-900'
-                    }`}
-                  >
-                    <Briefcase className="size-4" />
-                    Pekerjaan & Gaji
-                  </button>
-                  <button
-                    onClick={() => setDrawerTab('documents')}
-                    className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                      drawerTab === 'documents'
-                        ? 'border-zinc-950 text-zinc-950'
-                        : 'border-transparent text-zinc-500 hover:text-zinc-900'
-                    }`}
-                  >
-                    <FileText className="size-4" />
-                    Dokumen
-                  </button>
-                  <button
-                    onClick={() => setDrawerTab('review')}
-                    className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                      drawerTab === 'review'
-                        ? 'border-zinc-950 text-zinc-950'
-                        : 'border-transparent text-zinc-500 hover:text-zinc-900'
-                    }`}
-                  >
-                    <Award className="size-4" />
-                    Review
-                  </button>
-                  <button
-                    onClick={() => setDrawerTab('training')}
-                    className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                      drawerTab === 'training'
-                        ? 'border-zinc-950 text-zinc-950'
-                        : 'border-transparent text-zinc-500 hover:text-zinc-900'
-                    }`}
-                  >
-                    <GraduationCap className="size-4" />
-                    Pelatihan
-                  </button>
-                  <button
-                    onClick={() => setDrawerTab('asset')}
-                    className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                      drawerTab === 'asset'
-                        ? 'border-zinc-950 text-zinc-950'
-                        : 'border-transparent text-zinc-500 hover:text-zinc-900'
-                    }`}
-                  >
-                    <Package className="size-4" />
-                    Aset
-                  </button>
-                  <button
-                    onClick={() => setDrawerTab('family' as any)}
-                    className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                      (drawerTab as string) === 'family'
-                        ? 'border-zinc-950 text-zinc-950'
-                        : 'border-transparent text-zinc-500 hover:text-zinc-900'
-                    }`}
-                  >
-                    <HeartHandshake className="size-4 text-emerald-600" />
-                    Keluarga
-                  </button>
-                  {user && roleAtLeast(user.role, 'admin') && (
+                <div className="border-b border-zinc-200 bg-white overflow-x-auto">
+                  <div className="flex min-w-max px-4">
                     <button
-                      onClick={() => setDrawerTab('account')}
-                      className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                        drawerTab === 'account'
-                          ? 'border-zinc-950 text-zinc-950'
-                          : 'border-transparent text-zinc-500 hover:text-zinc-900'
+                      onClick={() => setDrawerTab('profile')}
+                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                        drawerTab === 'profile'
+                          ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
+                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
                       }`}
                     >
-                      <Shield className="size-4" />
-                      Akun
+                      <User className="size-3.5" />
+                      Profil
                     </button>
-                  )}
+                    <button
+                      onClick={() => setDrawerTab('job')}
+                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                        drawerTab === 'job'
+                          ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
+                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
+                      }`}
+                    >
+                      <Briefcase className="size-3.5" />
+                      Pekerjaan & Gaji
+                    </button>
+                    <button
+                      onClick={() => setDrawerTab('documents')}
+                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                        drawerTab === 'documents'
+                          ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
+                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
+                      }`}
+                    >
+                      <FileText className="size-3.5" />
+                      Dokumen
+                    </button>
+                    <button
+                      onClick={() => setDrawerTab('review')}
+                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                        drawerTab === 'review'
+                          ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
+                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
+                      }`}
+                    >
+                      <Award className="size-3.5" />
+                      Review
+                    </button>
+                    <button
+                      onClick={() => setDrawerTab('training')}
+                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                        drawerTab === 'training'
+                          ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
+                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
+                      }`}
+                    >
+                      <GraduationCap className="size-3.5" />
+                      Pelatihan
+                    </button>
+                    <button
+                      onClick={() => setDrawerTab('asset')}
+                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                        drawerTab === 'asset'
+                          ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
+                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
+                      }`}
+                    >
+                      <Package className="size-3.5" />
+                      Aset
+                    </button>
+                    <button
+                      onClick={() => setDrawerTab('family' as any)}
+                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                        (drawerTab as string) === 'family'
+                          ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50'
+                          : 'border-transparent text-zinc-600 hover:text-emerald-700 hover:bg-emerald-50/30'
+                      }`}
+                    >
+                      <HeartHandshake className="size-3.5" />
+                      Keluarga
+                    </button>
+                    {user && roleAtLeast(user.role, 'admin') && (
+                      <button
+                        onClick={() => setDrawerTab('account')}
+                        className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                          drawerTab === 'account'
+                            ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
+                            : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
+                        }`}
+                      >
+                        <Shield className="size-3.5" />
+                        Akun
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
 
