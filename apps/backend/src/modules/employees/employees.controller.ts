@@ -24,6 +24,8 @@ import {
   CreateUserAccountDto,
   UpdateUserAccountDto,
   ResetUserPasswordDto,
+  CreateFamilyMemberDto,
+  UpdateFamilyMemberDto,
 } from './dto/employee.dto';
 
 @ApiTags('Karyawan')
@@ -130,5 +132,32 @@ export class EmployeesController {
   ) {
     await this.employeesService.resetPassword(id, body);
     return { message: 'Password berhasil direset' };
+  }
+
+  @Roles('admin', 'hrd')
+  @Post(':id/family')
+  @ApiOperation({ summary: 'Tambah anggota keluarga karyawan' })
+  addFamilyMember(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(new ZodValidationPipe()) body: CreateFamilyMemberDto,
+  ) {
+    return this.employeesService.addFamilyMember(id, body);
+  }
+
+  @Roles('admin', 'hrd')
+  @Patch(':id/family/:familyId')
+  @ApiOperation({ summary: 'Perbarui data anggota keluarga karyawan' })
+  updateFamilyMember(
+    @Param('familyId', ParseIntPipe) familyId: number,
+    @Body(new ZodValidationPipe()) body: UpdateFamilyMemberDto,
+  ) {
+    return this.employeesService.updateFamilyMember(familyId, body);
+  }
+
+  @Roles('admin', 'hrd')
+  @Delete(':id/family/:familyId')
+  @ApiOperation({ summary: 'Hapus data anggota keluarga karyawan' })
+  deleteFamilyMember(@Param('familyId', ParseIntPipe) familyId: number) {
+    return this.employeesService.deleteFamilyMember(familyId);
   }
 }

@@ -24,6 +24,7 @@ import { PerformanceReviewsModule } from './modules/performance-reviews/performa
 import { TrainingRecordsModule } from './modules/training-records/training-records.module';
 import { AssetAssignmentsModule } from './modules/asset-assignments/asset-assignments.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
+import { WarningLettersModule } from './modules/warning-letters/warning-letters.module';
 import { validateEnv } from './config/configuration';
 import configuration from './config/configuration';
 
@@ -63,6 +64,7 @@ import configuration from './config/configuration';
     TrainingRecordsModule,
     AssetAssignmentsModule,
     AuditLogsModule,
+    WarningLettersModule,
   ],
   providers: [
     // Rate limiting global — override per-controller/handler pakai @Throttle()

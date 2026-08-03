@@ -75,6 +75,7 @@ export class EmployeesService {
       where: { id },
       include: {
         ...EMPLOYEE_INCLUDE,
+        familyMembers: { where: { isActive: true } },
         user: {
           select: { id: true, username: true, role: true, isActive: true },
         },
@@ -294,5 +295,45 @@ export class EmployeesService {
         throw new ConflictException(`Atasan #${input.managerId} tidak valid`);
       }
     }
+  }
+
+  async addFamilyMember(employeeId: number, input: any) {
+    await this.getById(employeeId);
+    return this.prisma.familyMember.create({
+      data: {
+        employeeId,
+        fullName: input.fullName,
+        relationship: input.relationship,
+        idCardNumber: input.idCardNumber || null,
+        birthDate: input.birthDate ? new Date(input.birthDate) : null,
+        gender: input.gender || null,
+        isBpjsDependent: Boolean(input.isBpjsDependent),
+      },
+    });
+  }
+
+  async updateFamilyMember(familyId: number, input: any) {
+    const family = await this.prisma.familyMember.findUnique({ where: { id: familyId } });
+    if (!family) throw new NotFoundException(`Anggota keluarga #${familyId} tidak ditemukan`);
+    return this.prisma.familyMember.update({
+      where: { id: familyId },
+      data: {
+        ...(input.fullName && { fullName: input.fullName }),
+        ...(input.relationship && { relationship: input.relationship }),
+        ...(input.idCardNumber !== undefined && { idCardNumber: input.idCardNumber }),
+        ...(input.birthDate !== undefined && { birthDate: input.birthDate ? new Date(input.birthDate) : null }),
+        ...(input.gender !== undefined && { gender: input.gender }),
+        ...(input.isBpjsDependent !== undefined && { isBpjsDependent: Boolean(input.isBpjsDependent) }),
+      },
+    });
+  }
+
+  async deleteFamilyMember(familyId: number) {
+    const family = await this.prisma.familyMember.findUnique({ where: { id: familyId } });
+    if (!family) throw new NotFoundException(`Anggota keluarga #${familyId} tidak ditemukan`);
+    return this.prisma.familyMember.update({
+      where: { id: familyId },
+      data: { isActive: false },
+    });
   }
 }

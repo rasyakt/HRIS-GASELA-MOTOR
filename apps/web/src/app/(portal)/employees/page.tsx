@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, X, User, Briefcase, FileText, Upload, Trash2, Loader2, Edit, Award, GraduationCap, Package, Shield } from 'lucide-react';
+import { Search, Plus, X, User, Briefcase, FileText, Upload, Trash2, Loader2, Edit, Award, GraduationCap, Package, Shield, HeartHandshake, Download } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,7 @@ import { ReviewsPanel } from './reviews-panel';
 import { TrainingPanel } from './training-panel';
 import { AssetPanel } from './assets-panel';
 import { AccountPanel } from './account-panel';
+import { FamilyPanel } from './family-panel';
 
 interface EmployeeRow {
   id: number;
@@ -143,13 +144,17 @@ export default function EmployeesPage() {
   }, [user, router]);
 
   const [selectedRole, setSelectedRole] = useState<string>('all');
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
+  const [selectedPosition, setSelectedPosition] = useState<string>('all');
 
   const employees = useQuery({
-    queryKey: ['employees', search, page, selectedRole],
+    queryKey: ['employees', search, page, selectedRole, selectedDepartment, selectedPosition],
     queryFn: () =>
       authApi<EmployeePage>(
         `/api/employees?page=${page}&limit=20${search ? `&search=${encodeURIComponent(search)}` : ''}${
           selectedRole !== 'all' ? `&role=${selectedRole}` : ''
+        }${selectedDepartment !== 'all' ? `&departmentId=${selectedDepartment}` : ''}${
+          selectedPosition !== 'all' ? `&positionId=${selectedPosition}` : ''
         }`,
       ),
   });
@@ -171,13 +176,11 @@ export default function EmployeesPage() {
   const departments = useQuery({
     queryKey: ['departments'],
     queryFn: () => authApi<DepartmentItem[]>('/api/departments'),
-    enabled: drawerOpen,
   });
 
   const positions = useQuery({
     queryKey: ['positions'],
     queryFn: () => authApi<PositionItem[]>('/api/positions'),
-    enabled: drawerOpen,
   });
 
   const managers = useQuery({
@@ -441,7 +444,7 @@ export default function EmployeesPage() {
           </div>
 
           <form
-            className="mb-4 flex items-center gap-2"
+            className="mb-4 flex flex-wrap items-center gap-2"
             onSubmit={(e) => {
               e.preventDefault();
               setPage(1);
@@ -456,11 +459,76 @@ export default function EmployeesPage() {
               placeholder="Cari nama / NIK / email…"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="max-w-sm"
+              className="w-full sm:w-64 text-xs"
             />
-            <Button type="submit" variant="outline">
-              <Search className="mr-1.5 size-4" />
+
+            <select
+              value={selectedDepartment}
+              onChange={(e) => {
+                setSelectedDepartment(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-950"
+            >
+              <option value="all">Semua Departemen</option>
+              {departments.data?.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedPosition}
+              onChange={(e) => {
+                setSelectedPosition(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-950"
+            >
+              <option value="all">Semua Posisi</option>
+              {positions.data?.map((pos) => (
+                <option key={pos.id} value={pos.id}>
+                  {pos.name}
+                </option>
+              ))}
+            </select>
+
+            <Button type="submit" variant="outline" size="sm" className="text-xs">
+              <Search className="mr-1.5 size-3.5" />
               Cari
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (!data?.items || data.items.length === 0) return alert('Tidak ada data untuk diekspor');
+                const headers = ['NIK', 'Nama Lengkap', 'Email', 'Telepon', 'Departemen', 'Posisi', 'Status Kerja', 'Tipe Kerja', 'Tanggal Masuk'];
+                const rows = data.items.map((emp) => [
+                  `"${emp.employeeNumber || ''}"`,
+                  `"${emp.fullName || ''}"`,
+                  `"${emp.email || ''}"`,
+                  `"${emp.phone || ''}"`,
+                  `"${emp.department?.name || ''}"`,
+                  `"${emp.position?.name || ''}"`,
+                  `"${emp.employmentStatus || ''}"`,
+                  `"${emp.employmentType || ''}"`,
+                  `"${emp.joinDate ? emp.joinDate.split('T')[0] : ''}"`,
+                ]);
+                const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement('a');
+                link.setAttribute('href', encodedUri);
+                link.setAttribute('download', `Karyawan_GaselaPulse_${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+              className="text-xs ml-auto gap-1 text-zinc-700 hover:text-zinc-950"
+            >
+              <Download className="size-3.5" /> Ekspor CSV
             </Button>
           </form>
 
@@ -640,6 +708,17 @@ export default function EmployeesPage() {
                   >
                     <Package className="size-4" />
                     Aset
+                  </button>
+                  <button
+                    onClick={() => setDrawerTab('family' as any)}
+                    className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
+                      (drawerTab as string) === 'family'
+                        ? 'border-zinc-950 text-zinc-950'
+                        : 'border-transparent text-zinc-500 hover:text-zinc-900'
+                    }`}
+                  >
+                    <HeartHandshake className="size-4 text-emerald-600" />
+                    Keluarga
                   </button>
                   {user && roleAtLeast(user.role, 'admin') && (
                     <button
@@ -1121,6 +1200,15 @@ export default function EmployeesPage() {
                 {/* Tab 6: Asset */}
                 {selectedEmployeeId && drawerTab === 'asset' && (
                   <AssetPanel employeeId={selectedEmployeeId} />
+                )}
+
+                {/* Tab: Family */}
+                {selectedEmployeeId && (drawerTab as string) === 'family' && (
+                  <FamilyPanel
+                    employeeId={selectedEmployeeId}
+                    familyMembers={employeeDetail.data?.familyMembers}
+                    onRefresh={() => employeeDetail.refetch()}
+                  />
                 )}
 
                 {/* Tab 7: Account (Admins only) */}

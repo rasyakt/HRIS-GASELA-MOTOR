@@ -157,3 +157,18 @@ export const resetUserPasswordSchema = z.object({
 export class CreateUserAccountDto extends createZodDto(createUserAccountSchema) {}
 export class UpdateUserAccountDto extends createZodDto(updateUserAccountSchema) {}
 export class ResetUserPasswordDto extends createZodDto(resetUserPasswordSchema) {}
+
+export const createFamilyMemberSchema = z.object({
+  fullName: z.string().min(2, 'Nama lengkap minimal 2 karakter'),
+  relationship: z.enum(['spouse', 'child', 'parent', 'sibling']),
+  idCardNumber: z.string().optional().nullable(),
+  birthDate: z.string().optional().nullable(),
+  gender: z.enum(['male', 'female']).optional().nullable(),
+  isBpjsDependent: z.boolean().default(false),
+});
+
+export const updateFamilyMemberSchema = createFamilyMemberSchema.partial();
+
+export class CreateFamilyMemberDto extends createZodDto(createFamilyMemberSchema) {}
+export class UpdateFamilyMemberDto extends createZodDto(updateFamilyMemberSchema) {}
+

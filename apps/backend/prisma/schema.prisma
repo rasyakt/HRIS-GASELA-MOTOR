@@ -134,6 +134,12 @@ enum PtkpStatus {
   K3
 }
 
+enum WarningLevel {
+  SP1
+  SP2
+  SP3
+}
+
 // ===================== CORE =====================
 model Department {
   id             Int          @id @default(autoincrement()) @map("department_id")
@@ -221,6 +227,8 @@ model Employee {
   announcementsCreated Announcement[]
   announcementReads    AnnouncementRead[]
   devices              DeviceToken[]        @relation("EmployeeDevices")
+  warningLetters       WarningLetter[]      @relation("WarningOwner")
+  issuedWarningLetters WarningLetter[]      @relation("WarningIssuer")
 
   @@map("employees")
 }
@@ -593,4 +601,21 @@ model AuditLog {
   timestamp   DateTime @default(now()) @map("timestamp")
 
   @@map("audit_logs")
+}
+
+model WarningLetter {
+  id              Int          @id @default(autoincrement()) @map("warning_id")
+  employeeId      Int          @map("employee_id")
+  employee        Employee     @relation("WarningOwner", fields: [employeeId], references: [id], onDelete: Cascade)
+  letterNumber    String       @unique @map("letter_number") @db.VarChar(50)
+  level           WarningLevel
+  violationReason String       @map("violation_reason") @db.Text
+  issuedDate      DateTime     @map("issued_date") @db.Date
+  effectiveUntil  DateTime     @map("effective_until") @db.Date
+  issuedById      Int?         @map("issued_by")
+  issuedBy        Employee?    @relation("WarningIssuer", fields: [issuedById], references: [id])
+  documentUrl     String?      @map("document_url") @db.VarChar(255)
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  @@map("warning_letters")
 }

@@ -45,6 +45,12 @@ export default function ProfilePage() {
     enabled: !!user?.employeeId,
   });
 
+  // Query self leave balances
+  const leaveBalancesQuery = useQuery({
+    queryKey: ['my-leave-balances'],
+    queryFn: () => authApi<any[]>('/api/leaves/balances/my'),
+  });
+
   // Change Password Mutation
   const changePasswordMut = useMutation({
     mutationFn: (body: any) => 
@@ -241,6 +247,48 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Leave Balances Card */}
+            <Card className="shadow-sm">
+              <CardHeader className="border-b border-zinc-100 pb-4">
+                <CardTitle className="flex items-center gap-2 text-base font-bold text-zinc-900">
+                  <Calendar className="size-4.5 text-emerald-600" />
+                  Saldo & Kuota Cuti Anda ({new Date().getFullYear()})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                {leaveBalancesQuery.isLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="animate-spin text-zinc-400 size-5" />
+                  </div>
+                ) : leaveBalancesQuery.data && leaveBalancesQuery.data.length > 0 ? (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {leaveBalancesQuery.data.map((bal: any) => (
+                      <div key={bal.id} className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-zinc-900">{bal.leaveType?.name ?? 'Cuti'}</span>
+                          <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">
+                            Sisa {bal.remaining} Hari
+                          </Badge>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between text-xs text-zinc-500">
+                          <span>Kuota: {bal.quota} Hari</span>
+                          <span>Terpakai: {bal.used} Hari</span>
+                        </div>
+                        <div className="mt-2 h-1.5 w-full rounded-full bg-zinc-200 overflow-hidden">
+                          <div
+                            className="h-full bg-emerald-500 rounded-full transition-all"
+                            style={{ width: `${Math.min(100, ((bal.used || 0) / (bal.quota || 1)) * 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-zinc-500 text-center py-2">Belum ada data kuota cuti tercatat untuk tahun ini.</p>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Right Column - Change Password */}

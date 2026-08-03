@@ -15,6 +15,7 @@ import {
   Users,
   X,
   User,
+  ShieldAlert,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -41,6 +42,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/overtime', label: 'Lembur', icon: Timer, minRole: 'employee' },
   { href: '/payroll', label: 'Penggajian', icon: ReceiptText, minRole: 'employee' },
   { href: '/announcements', label: 'Pengumuman', icon: Megaphone, minRole: 'employee' },
+  { href: '/discipline', label: 'Disiplin & SP', icon: ShieldAlert, minRole: 'employee' },
   { href: '/approvals', label: 'Persetujuan', icon: CheckCheck, minRole: 'manager' },
   { href: '/reports', label: 'Laporan', icon: BarChart3, minRole: 'manager' },
   { href: '/employees', label: 'Karyawan', icon: Users, minRole: 'admin' },
@@ -54,6 +56,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/overtime': 'Lembur',
   '/payroll': 'Penggajian',
   '/announcements': 'Pengumuman',
+  '/discipline': 'Disiplin & SP',
   '/approvals': 'Persetujuan',
   '/reports': 'Laporan',
   '/employees': 'Karyawan',
