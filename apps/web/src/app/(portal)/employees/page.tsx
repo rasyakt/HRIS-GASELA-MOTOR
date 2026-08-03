@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, X, User, Briefcase, FileText, Upload, Trash2, Loader2, Edit, Award, GraduationCap, Package } from 'lucide-react';
+import { Search, Plus, X, User, Briefcase, FileText, Upload, Trash2, Loader2, Edit, Award, GraduationCap, Package, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { ReviewsPanel } from './reviews-panel';
 import { TrainingPanel } from './training-panel';
 import { AssetPanel } from './assets-panel';
+import { AccountPanel } from './account-panel';
 
 interface EmployeeRow {
   id: number;
@@ -98,7 +99,7 @@ export default function EmployeesPage() {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [drawerTab, setDrawerTab] = useState<
-    'profile' | 'job' | 'documents' | 'review' | 'training' | 'asset'
+    'profile' | 'job' | 'documents' | 'review' | 'training' | 'asset' | 'account'
   >('profile');
 
   // Form States
@@ -608,6 +609,19 @@ export default function EmployeesPage() {
                     <Package className="size-4" />
                     Aset
                   </button>
+                  {user && roleAtLeast(user.role, 'admin') && (
+                    <button
+                      onClick={() => setDrawerTab('account')}
+                      className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
+                        drawerTab === 'account'
+                          ? 'border-zinc-950 text-zinc-950'
+                          : 'border-transparent text-zinc-500 hover:text-zinc-900'
+                      }`}
+                    >
+                      <Shield className="size-4" />
+                      Akun
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -1075,6 +1089,15 @@ export default function EmployeesPage() {
                 {/* Tab 6: Asset */}
                 {selectedEmployeeId && drawerTab === 'asset' && (
                   <AssetPanel employeeId={selectedEmployeeId} />
+                )}
+
+                {/* Tab 7: Account (Admins only) */}
+                {selectedEmployeeId && drawerTab === 'account' && user && roleAtLeast(user.role, 'admin') && (
+                  <AccountPanel
+                    employeeId={selectedEmployeeId}
+                    userAccount={employeeDetail.data?.user ?? null}
+                    employeeName={employeeDetail.data?.fullName ?? ''}
+                  />
                 )}
               </div>
 

@@ -20,6 +20,9 @@ import {
   CreateEmployeeDto,
   EmployeeQueryDto,
   UpdateEmployeeDto,
+  CreateUserAccountDto,
+  UpdateUserAccountDto,
+  ResetUserPasswordDto,
 } from './dto/employee.dto';
 
 @ApiTags('Karyawan')
@@ -89,5 +92,36 @@ export class EmployeesController {
       username: user.username,
     });
     return result;
+  }
+
+  @Roles('admin')
+  @Post(':id/account')
+  @ApiOperation({ summary: 'Buat akun login karyawan (hanya admin)' })
+  createAccount(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(new ZodValidationPipe()) body: CreateUserAccountDto,
+  ) {
+    return this.employeesService.createAccount(id, body);
+  }
+
+  @Roles('admin')
+  @Patch(':id/account')
+  @ApiOperation({ summary: 'Perbarui akun login karyawan (hanya admin)' })
+  updateAccount(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(new ZodValidationPipe()) body: UpdateUserAccountDto,
+  ) {
+    return this.employeesService.updateAccount(id, body);
+  }
+
+  @Roles('admin')
+  @Post(':id/account/reset-password')
+  @ApiOperation({ summary: 'Reset password akun karyawan (hanya admin)' })
+  async resetPassword(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(new ZodValidationPipe()) body: ResetUserPasswordDto,
+  ) {
+    await this.employeesService.resetPassword(id, body);
+    return { message: 'Password berhasil direset' };
   }
 }

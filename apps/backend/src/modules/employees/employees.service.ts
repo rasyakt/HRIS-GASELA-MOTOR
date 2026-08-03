@@ -11,6 +11,7 @@ import type {
 } from '@gasela/shared-types';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
 
 const EMPLOYEE_INCLUDE = {
   department: { select: { id: true, code: true, name: true } },
@@ -145,6 +146,92 @@ export class EmployeesService {
       data: { isActive: false },
     });
     return this.getById(id);
+  }
+
+  async createAccount(employeeId: number, input: any) {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: employeeId },
+      include: { user: true },
+    });
+    if (!employee) {
+      throw new NotFoundException(`Karyawan #${employeeId} tidak ditemukan`);
+    }
+    if (employee.user) {
+      throw new ConflictException('Karyawan ini sudah memiliki akun login');
+    }
+
+    const dup = await this.prisma.user.findUnique({
+      where: { username: input.username },
+    });
+    if (dup) {
+      throw new ConflictException(`Username '${input.username}' sudah dipakai`);
+    }
+
+    const passwordHash = await bcrypt.hash(input.password, 10);
+    return this.prisma.user.create({
+      data: {
+        employeeId,
+        username: input.username,
+        passwordHash,
+        role: input.role,
+      },
+      select: {
+        id: true,
+        username: true,
+        role: true,
+        isActive: true,
+      },
+    });
+  }
+
+  async updateAccount(employeeId: number, input: any) {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: employeeId },
+      include: { user: true },
+    });
+    if (!employee || !employee.user) {
+      throw new NotFoundException(`Akun karyawan #${employeeId} tidak ditemukan`);
+    }
+
+    if (input.username && input.username !== employee.user.username) {
+      const dup = await this.prisma.user.findUnique({
+        where: { username: input.username },
+      });
+      if (dup) {
+        throw new ConflictException(`Username '${input.username}' sudah dipakai`);
+      }
+    }
+
+    return this.prisma.user.update({
+      where: { employeeId },
+      data: input,
+      select: {
+        id: true,
+        username: true,
+        role: true,
+        isActive: true,
+      },
+    });
+  }
+
+  async resetPassword(employeeId: number, input: any) {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: employeeId },
+      include: { user: true },
+    });
+    if (!employee || !employee.user) {
+      throw new NotFoundException(`Akun karyawan #${employeeId} tidak ditemukan`);
+    }
+
+    const passwordHash = await bcrypt.hash(input.password, 10);
+    await this.prisma.user.update({
+      where: { employeeId },
+      data: {
+        passwordHash,
+        refreshTokenHash: null,
+      },
+      select: { id: true },
+    });
   }
 
   private async assertUnique(

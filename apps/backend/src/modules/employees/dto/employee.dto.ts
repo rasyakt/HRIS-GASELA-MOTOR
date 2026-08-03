@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { z } from 'zod';
 import type {
   CreateEmployeeInput,
   EmployeeQuery,
@@ -134,3 +135,23 @@ export class EmployeeQueryDto
   @ApiPropertyOptional({ description: 'Filter status kerja' })
   employmentStatus?: EmploymentStatus;
 }
+
+export const createUserAccountSchema = z.object({
+  username: z.string().min(3, 'Username minimal 3 karakter'),
+  password: z.string().min(6, 'Password minimal 6 karakter'),
+  role: z.enum(['admin', 'hrd', 'manager', 'employee', 'owner']),
+});
+
+export const updateUserAccountSchema = z.object({
+  username: z.string().min(3).optional(),
+  role: z.enum(['admin', 'hrd', 'manager', 'employee', 'owner']).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const resetUserPasswordSchema = z.object({
+  password: z.string().min(6, 'Password minimal 6 karakter'),
+});
+
+export class CreateUserAccountDto extends createZodDto(createUserAccountSchema) {}
+export class UpdateUserAccountDto extends createZodDto(updateUserAccountSchema) {}
+export class ResetUserPasswordDto extends createZodDto(resetUserPasswordSchema) {}
