@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api-client';
 import { ROLE_LABEL, roleAtLeast } from '@/lib/format';
 import { useAuthStore } from '@/store/auth-store';
+import { GaselaLogo } from '@/components/ui/logo';
 import type { UserRole } from '@gasela/shared-types';
 
 interface NavItem {
@@ -106,11 +107,8 @@ export default function PortalLayout({
 
   const sidebar = (
     <aside className="flex h-full w-64 flex-col border-r border-zinc-200 bg-white">
-      <div className="flex h-14 items-center gap-2 border-b border-zinc-100 px-4">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-zinc-900 text-sm font-bold text-white">
-          G
-        </div>
-        <div className="text-sm font-semibold text-zinc-900">HRIS Gasela Motor</div>
+      <div className="flex h-14 items-center border-b border-zinc-100 px-4">
+        <GaselaLogo variant="full-dark" size="sm" />
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
         {navItems.map((item) => {

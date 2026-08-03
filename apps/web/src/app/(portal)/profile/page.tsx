@@ -111,7 +111,7 @@ export default function ProfilePage() {
             </Badge>
           </div>
         </div>
-        <div className="absolute right-0 top-0 -mr-6 -mt-6 size-48 rounded-full bg-white/[0.03] blur-3xl pointer-events-none" />
+        <div className="absolute right-0 top-0 -mr-6 -mt-6 size-48 rounded-full bg-white/3 blur-3xl pointer-events-none" />
       </div>
 
       {employeeQuery.isLoading ? (
