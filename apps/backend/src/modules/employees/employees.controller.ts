@@ -37,6 +37,7 @@ export class EmployeesController {
   @Get()
   @ApiOperation({ summary: 'Daftar karyawan (pagination & filter)' })
   list(@Query(new ZodValidationPipe()) query: EmployeeQueryDto) {
+    console.log('Query received in backend list:', query);
     return this.employeesService.list(query);
   }
 

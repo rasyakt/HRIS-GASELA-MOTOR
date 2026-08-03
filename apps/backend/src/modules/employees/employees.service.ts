@@ -17,6 +17,7 @@ const EMPLOYEE_INCLUDE = {
   department: { select: { id: true, code: true, name: true } },
   position: { select: { id: true, code: true, name: true } },
   manager: { select: { id: true, employeeNumber: true, fullName: true } },
+  user: { select: { id: true, username: true, role: true, isActive: true } },
   _count: { select: { subordinates: true, familyMembers: true } },
 } satisfies Prisma.EmployeeInclude;
 
@@ -39,6 +40,15 @@ export class EmployeesService {
     if (query.departmentId) where.departmentId = query.departmentId;
     if (query.positionId) where.positionId = query.positionId;
     if (query.employmentStatus) where.employmentStatus = query.employmentStatus;
+    if (query.role) {
+      if (query.role === 'none') {
+        where.user = null;
+      } else {
+        where.user = {
+          role: query.role as any,
+        };
+      }
+    }
 
     const [items, total] = await this.prisma.$transaction([
       this.prisma.employee.findMany({

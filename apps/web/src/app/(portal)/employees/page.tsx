@@ -142,11 +142,15 @@ export default function EmployeesPage() {
     }
   }, [user, router]);
 
+  const [selectedRole, setSelectedRole] = useState<string>('all');
+
   const employees = useQuery({
-    queryKey: ['employees', search, page],
+    queryKey: ['employees', search, page, selectedRole],
     queryFn: () =>
       authApi<EmployeePage>(
-        `/api/employees?page=${page}&limit=20${search ? `&search=${encodeURIComponent(search)}` : ''}`,
+        `/api/employees?page=${page}&limit=20${search ? `&search=${encodeURIComponent(search)}` : ''}${
+          selectedRole !== 'all' ? `&role=${selectedRole}` : ''
+        }`,
       ),
   });
 
@@ -408,6 +412,34 @@ export default function EmployeesPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="flex border-b border-zinc-200 mb-4 overflow-x-auto">
+            {[
+              { value: 'all', label: 'Semua Karyawan' },
+              { value: 'employee', label: 'Role Karyawan' },
+              { value: 'manager', label: 'Role Manager' },
+              { value: 'hrd', label: 'Role HRD' },
+              { value: 'owner', label: 'Role Owner' },
+              { value: 'admin', label: 'Role Admin' },
+              { value: 'none', label: 'Belum Punya Akun' },
+            ].map((tab) => (
+              <button
+                type="button"
+                key={tab.value}
+                onClick={() => {
+                  setPage(1);
+                  setSelectedRole(tab.value);
+                }}
+                className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
+                  selectedRole === tab.value
+                    ? 'border-zinc-900 text-zinc-950 bg-zinc-50'
+                    : 'border-transparent text-zinc-500 hover:text-zinc-900'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
           <form
             className="mb-4 flex items-center gap-2"
             onSubmit={(e) => {
@@ -1045,7 +1077,7 @@ export default function EmployeesPage() {
                                     )}
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2 flex-shrink-0">
+                                <div className="flex items-center gap-2 shrink-0">
                                   <a
                                     href={doc.documentUrl}
                                     target="_blank"
@@ -1103,7 +1135,7 @@ export default function EmployeesPage() {
 
               {/* Bottom Actions footer */}
               {isEditMode && (drawerTab === 'profile' || drawerTab === 'job' || !selectedEmployeeId) && (
-                <div className="border-t border-zinc-100 bg-zinc-50/50 p-6 flex items-center justify-between gap-3 flex-shrink-0">
+                <div className="border-t border-zinc-100 bg-zinc-50/50 p-6 flex items-center justify-between gap-3 shrink-0">
                   {selectedEmployeeId ? (
                     <Button
                       type="button"

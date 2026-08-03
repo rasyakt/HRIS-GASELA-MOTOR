@@ -134,6 +134,8 @@ export class EmployeeQueryDto
   positionId?: number;
   @ApiPropertyOptional({ description: 'Filter status kerja' })
   employmentStatus?: EmploymentStatus;
+  @ApiPropertyOptional({ description: 'Filter peran akun' })
+  role?: string;
 }
 
 export const createUserAccountSchema = z.object({
