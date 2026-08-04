@@ -161,16 +161,14 @@ export default function AuditLogsPage() {
                       </td>
                       <td className="p-3 font-mono text-zinc-500">{log.ipAddress || '—'}</td>
                       <td className="p-3 text-right">
-                        {log.payload && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedLog(log)}
-                            className="size-7 p-0 text-zinc-500 hover:text-zinc-900"
-                          >
-                            <Eye className="size-4" />
-                          </Button>
-                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedLog(log)}
+                          className="size-7 p-0 text-zinc-500 hover:text-zinc-900"
+                        >
+                          <Eye className="size-4" />
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -216,31 +214,61 @@ export default function AuditLogsPage() {
           <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-                <Terminal className="size-4 text-emerald-600" /> Detail Audit Payload
+                <Terminal className="size-4 text-emerald-600" /> Detail Rekam Jejak Audit
               </h3>
               <button onClick={() => setSelectedLog(null)} className="text-zinc-400 hover:text-zinc-700 text-sm font-bold">
                 ✕
               </button>
             </div>
 
-            <div className="space-y-2 text-xs">
-              <div className="grid grid-cols-2 gap-2 bg-zinc-50 p-3 rounded-lg border border-zinc-200">
+            <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-3 bg-zinc-50 p-4 rounded-lg border border-zinc-200">
                 <div>
-                  <span className="text-zinc-400 block">User:</span>
+                  <span className="text-zinc-400 block font-semibold">User:</span>
                   <span className="font-semibold text-zinc-900">{selectedLog.username || 'System'}</span>
+                  {selectedLog.userId && (
+                    <span className="text-[10px] text-zinc-400 font-mono ml-1">(ID: {selectedLog.userId})</span>
+                  )}
                 </div>
                 <div>
-                  <span className="text-zinc-400 block">Aksi:</span>
-                  <span className="font-semibold text-zinc-900">{selectedLog.action}</span>
+                  <span className="text-zinc-400 block font-semibold">Aksi:</span>
+                  <Badge className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-mono">
+                    {selectedLog.action}
+                  </Badge>
+                </div>
+                <div className="col-span-2 border-t border-zinc-100 my-1 pt-2 grid grid-cols-2 gap-2">
+                  <div>
+                    <span className="text-zinc-400 block font-semibold">Sumber Daya (Resource):</span>
+                    <span className="font-mono text-zinc-700">
+                      {selectedLog.resource} {selectedLog.resourceId ? `#${selectedLog.resourceId}` : ''}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-400 block font-semibold">Waktu Kejadian:</span>
+                    <span className="text-zinc-700">
+                      {new Date(selectedLog.timestamp).toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                  <div className="mt-1">
+                    <span className="text-zinc-400 block font-semibold">IP Address:</span>
+                    <span className="font-mono text-zinc-700">{selectedLog.ipAddress || '—'}</span>
+                  </div>
+                  <div className="mt-1">
+                    <span className="text-zinc-400 block font-semibold">User Agent:</span>
+                    <span className="text-zinc-700 truncate block max-w-50" title={selectedLog.userAgent || ''}>
+                      {selectedLog.userAgent || '—'}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               <div>
                 <span className="text-zinc-500 font-semibold mb-1 block">Payload Data (JSON):</span>
-                <pre className="max-h-60 overflow-auto rounded-lg bg-zinc-950 p-4 font-mono text-[11px] text-emerald-400">
+                <pre className="max-h-48 overflow-auto rounded-lg bg-zinc-950 p-4 font-mono text-[11px] text-emerald-400">
                   {(() => {
+                    if (!selectedLog.payload) return 'Tidak ada data payload (NULL)';
                     try {
-                      return JSON.stringify(JSON.parse(selectedLog.payload || '{}'), null, 2);
+                      return JSON.stringify(JSON.parse(selectedLog.payload), null, 2);
                     } catch {
                       return selectedLog.payload;
                     }
