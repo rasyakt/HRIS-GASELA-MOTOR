@@ -20,6 +20,7 @@ describe('OvertimeService', () => {
         update: jest.fn(),
         delete: jest.fn(),
         count: jest.fn(),
+        aggregate: jest.fn(),
       },
       $transaction: jest.fn(),
     };
@@ -35,6 +36,7 @@ describe('OvertimeService', () => {
   describe('createRequest', () => {
     it('menghitung jam lembur dari jam mulai/selesai', async () => {
       prisma.overtimeRequest.count.mockResolvedValue(3);
+      prisma.overtimeRequest.aggregate.mockResolvedValue({ _sum: { hours: 0 } });
       prisma.overtimeRequest.create.mockImplementation(
         ({ data }: { data: Record<string, unknown> }) =>
           Promise.resolve({
@@ -62,27 +64,15 @@ describe('OvertimeService', () => {
 
     it('menolak jam selesai sebelum jam mulai', async () => {
       prisma.overtimeRequest.count.mockResolvedValue(1);
-      prisma.overtimeRequest.create.mockImplementation(
-        ({ data }: { data: Record<string, unknown> }) =>
-          Promise.resolve({
-            id: 1,
-            ...data,
-            employee: {
-              fullName: 'Budi Santoso',
-              department: { name: 'HRD' },
-            },
-            approvedBy: null,
-            approvedAt: null,
-            createdAt: new Date(),
-          }),
-      );
-      const result = await service.createRequest(2, {
-        overtimeDate: '2026-08-05',
-        startTime: '21:00:00',
-        endTime: '18:00:00',
-        purpose: 'Menyelesaikan laporan bulanan',
-      });
-      expect(result.hours).toBeLessThanOrEqual(0);
+      prisma.overtimeRequest.aggregate.mockResolvedValue({ _sum: { hours: 0 } });
+      await expect(
+        service.createRequest(2, {
+          overtimeDate: '2026-08-05',
+          startTime: '21:00:00',
+          endTime: '18:00:00',
+          purpose: 'Menyelesaikan laporan bulanan',
+        }),
+      ).rejects.toThrow(ConflictException);
     });
   });
 

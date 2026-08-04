@@ -64,7 +64,34 @@ export class OvertimeService {
     if (startMin === null || endMin === null) {
       throw new ConflictException('Format jam tidak valid');
     }
+    if (endMin <= startMin) {
+      throw new ConflictException('Jam selesai lembur harus setelah jam mulai');
+    }
     const hours = Number(((endMin - startMin) / 60).toFixed(2));
+    if (hours > 4) {
+      throw new ConflictException('Batas maksimal lembur harian adalah 4 jam (PP 35/2021)');
+    }
+
+    // Check monthly total overtime budget limit (Max 56 hours/month per employee)
+    const otDate = parseLocalDay(input.overtimeDate);
+    const startOfMonth = new Date(Date.UTC(otDate.getUTCFullYear(), otDate.getUTCMonth(), 1));
+    const endOfMonth = new Date(Date.UTC(otDate.getUTCFullYear(), otDate.getUTCMonth() + 1, 0, 23, 59, 59));
+
+    const existingOt = await this.prisma.overtimeRequest.aggregate({
+      where: {
+        employeeId,
+        status: { in: ['approved', 'pending'] },
+        overtimeDate: { gte: startOfMonth, lte: endOfMonth },
+      },
+      _sum: { hours: true },
+    });
+
+    const currentMonthlyHours = Number(existingOt._sum.hours || 0);
+    if (currentMonthlyHours + hours > 56) {
+      throw new ConflictException(
+        `Total lembur bulan ini (${currentMonthlyHours.toFixed(1)} jam) akan melebihi batas kuota 56 jam/bulan`,
+      );
+    }
 
     const count = await this.prisma.overtimeRequest.count();
     const requestNumber = `OT-${dayKey(new Date()).replace(/-/g, '')}-${String(

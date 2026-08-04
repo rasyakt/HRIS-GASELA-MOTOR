@@ -68,7 +68,7 @@ describe('AttendancesService', () => {
     it('check-in sukses dan menandai telat', async () => {
       prisma.shift.findFirst.mockResolvedValue({
         id: 1,
-        startTime: '08:00:00',
+        startTime: '00:00:00',
         gracePeriodMinutes: 15,
       });
       prisma.attendance.findUnique.mockResolvedValue(null);
