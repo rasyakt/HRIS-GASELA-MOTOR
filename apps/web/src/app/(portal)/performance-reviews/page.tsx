@@ -370,117 +370,122 @@ export default function PerformanceReviewsPage() {
         ))}
       </div>
 
-      {/* Drawer */}
+      {/* Centered Modal Popup */}
       {drawerOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0 bg-black/30" onClick={closeDrawer} />
-          <div className="relative z-10 flex h-full w-full max-w-md flex-col bg-white shadow-2xl overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4">
-              <h2 className="font-semibold text-zinc-900">
-                {editingId !== null ? 'Edit Review' : 'Tambah Review'}
-              </h2>
-              <button onClick={closeDrawer} className="rounded p-1 hover:bg-zinc-100">
-                <X className="size-4 text-zinc-500" />
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
-              <div>
-                <Label htmlFor="pr-employee">Karyawan</Label>
-                <select id="pr-employee" required value={form.employeeId}
-                  onChange={(e) => setForm((f) => ({ ...f, employeeId: e.target.value }))}
-                  className={selectCls}>
-                  <option value="">Pilih karyawan…</option>
-                  {employees.data?.map((emp) => (
-                    <option key={emp.id} value={emp.id}>{emp.fullName} ({emp.employeeNumber})</option>
-                  ))}
-                </select>
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm transition-opacity" onClick={closeDrawer} />
+          <div className="pointer-events-none fixed inset-0 flex items-center justify-center p-4">
+            <div className="pointer-events-auto w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 p-5">
+                <h3 className="text-base font-bold text-zinc-900">
+                  {editingId !== null ? 'Edit Review' : 'Tambah Review'}
+                </h3>
+                <button onClick={closeDrawer} className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors">
+                  <X className="size-5" />
+                </button>
               </div>
-              <div>
-                <Label htmlFor="pr-reviewer">Reviewer</Label>
-                <select id="pr-reviewer" required value={form.reviewerId}
-                  onChange={(e) => setForm((f) => ({ ...f, reviewerId: e.target.value }))}
-                  className={selectCls}>
-                  <option value="">Pilih reviewer…</option>
-                  {employees.data?.map((emp) => (
-                    <option key={emp.id} value={emp.id}>{emp.fullName} ({emp.employeeNumber})</option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+
+              {/* Form Content */}
+              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
                 <div>
-                  <Label htmlFor="pr-month">Periode Bulan</Label>
-                  <select id="pr-month" value={form.periodMonth}
-                    onChange={(e) => setForm((f) => ({ ...f, periodMonth: e.target.value }))}
+                  <Label htmlFor="pr-employee">Karyawan</Label>
+                  <select id="pr-employee" required value={form.employeeId}
+                    onChange={(e) => setForm((f) => ({ ...f, employeeId: e.target.value }))}
                     className={selectCls}>
-                    {MONTH_NAMES.map((m, i) => (
-                      <option key={m} value={i + 1}>{m}</option>
+                    <option value="">Pilih karyawan…</option>
+                    {employees.data?.map((emp) => (
+                      <option key={emp.id} value={emp.id}>{emp.fullName} ({emp.employeeNumber})</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <Label htmlFor="pr-year">Tahun</Label>
-                  <Input id="pr-year" type="number" min={2020} max={2100}
-                    value={form.periodYear}
-                    onChange={(e) => setForm((f) => ({ ...f, periodYear: e.target.value }))} />
+                  <Label htmlFor="pr-reviewer">Reviewer</Label>
+                  <select id="pr-reviewer" required value={form.reviewerId}
+                    onChange={(e) => setForm((f) => ({ ...f, reviewerId: e.target.value }))}
+                    className={selectCls}>
+                    <option value="">Pilih reviewer…</option>
+                    {employees.data?.map((emp) => (
+                      <option key={emp.id} value={emp.id}>{emp.fullName} ({emp.employeeNumber})</option>
+                    ))}
+                  </select>
                 </div>
-              </div>
-              <div>
-                <Label htmlFor="pr-date">Tanggal Review</Label>
-                <Input id="pr-date" type="date" required value={form.reviewDate}
-                  onChange={(e) => setForm((f) => ({ ...f, reviewDate: e.target.value }))} />
-              </div>
-              <div>
-                <Label htmlFor="pr-score">Skor Keseluruhan (0–100, opsional)</Label>
-                <Input id="pr-score" type="number" min={0} max={100} placeholder="mis: 85"
-                  value={form.overallScore}
-                  onChange={(e) => setForm((f) => ({ ...f, overallScore: e.target.value }))} />
-              </div>
-              <div>
-                <Label htmlFor="pr-status">Status</Label>
-                <select id="pr-status" value={form.status}
-                  onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-                  className={selectCls}>
-                  <option value="draft">Draft</option>
-                  <option value="submitted">Diajukan</option>
-                  <option value="acknowledged">Diakui</option>
-                </select>
-              </div>
-              <div>
-                <Label htmlFor="pr-strengths">Kekuatan / Prestasi</Label>
-                <textarea id="pr-strengths" rows={3} value={form.strengths}
-                  onChange={(e) => setForm((f) => ({ ...f, strengths: e.target.value }))}
-                  placeholder="Tulis kelebihan karyawan di periode ini…"
-                  className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-zinc-900" />
-              </div>
-              <div>
-                <Label htmlFor="pr-improve">Area Perbaikan</Label>
-                <textarea id="pr-improve" rows={3} value={form.areasForImprovement}
-                  onChange={(e) => setForm((f) => ({ ...f, areasForImprovement: e.target.value }))}
-                  placeholder="Hal-hal yang perlu diperbaiki…"
-                  className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-zinc-900" />
-              </div>
-              <div>
-                <Label htmlFor="pr-goals">Target Periode Berikutnya</Label>
-                <textarea id="pr-goals" rows={3} value={form.goalsNextPeriod}
-                  onChange={(e) => setForm((f) => ({ ...f, goalsNextPeriod: e.target.value }))}
-                  placeholder="Target & rencana untuk periode selanjutnya…"
-                  className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-zinc-900" />
-              </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="pr-month">Periode Bulan</Label>
+                    <select id="pr-month" value={form.periodMonth}
+                      onChange={(e) => setForm((f) => ({ ...f, periodMonth: e.target.value }))}
+                      className={selectCls}>
+                      {MONTH_NAMES.map((m, i) => (
+                        <option key={m} value={i + 1}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <Label htmlFor="pr-year">Tahun</Label>
+                    <Input id="pr-year" type="number" min={2020} max={2100}
+                      value={form.periodYear}
+                      onChange={(e) => setForm((f) => ({ ...f, periodYear: e.target.value }))} />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="pr-date">Tanggal Review</Label>
+                  <Input id="pr-date" type="date" required value={form.reviewDate}
+                    onChange={(e) => setForm((f) => ({ ...f, reviewDate: e.target.value }))} />
+                </div>
+                <div>
+                  <Label htmlFor="pr-score">Skor Keseluruhan (0–100, opsional)</Label>
+                  <Input id="pr-score" type="number" min={0} max={100} placeholder="mis: 85"
+                    value={form.overallScore}
+                    onChange={(e) => setForm((f) => ({ ...f, overallScore: e.target.value }))} />
+                </div>
+                <div>
+                  <Label htmlFor="pr-status">Status</Label>
+                  <select id="pr-status" value={form.status}
+                    onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+                    className={selectCls}>
+                    <option value="draft">Draft</option>
+                    <option value="submitted">Diajukan</option>
+                    <option value="acknowledged">Diakui</option>
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="pr-strengths">Kekuatan / Prestasi</Label>
+                  <textarea id="pr-strengths" rows={3} value={form.strengths}
+                    onChange={(e) => setForm((f) => ({ ...f, strengths: e.target.value }))}
+                    placeholder="Tulis kelebihan karyawan di periode ini…"
+                    className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-zinc-900" />
+                </div>
+                <div>
+                  <Label htmlFor="pr-improve">Area Perbaikan</Label>
+                  <textarea id="pr-improve" rows={3} value={form.areasForImprovement}
+                    onChange={(e) => setForm((f) => ({ ...f, areasForImprovement: e.target.value }))}
+                    placeholder="Hal-hal yang perlu diperbaiki…"
+                    className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-zinc-900" />
+                </div>
+                <div>
+                  <Label htmlFor="pr-goals">Target Periode Berikutnya</Label>
+                  <textarea id="pr-goals" rows={3} value={form.goalsNextPeriod}
+                    onChange={(e) => setForm((f) => ({ ...f, goalsNextPeriod: e.target.value }))}
+                    placeholder="Target & rencana untuk periode selanjutnya…"
+                    className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-zinc-900" />
+                </div>
 
-              {(createMut.isError || updateMut.isError) && (
-                <p className="text-sm text-red-600">
-                  {((createMut.error || updateMut.error) as Error)?.message ?? 'Terjadi kesalahan'}
-                </p>
-              )}
+                {(createMut.isError || updateMut.isError) && (
+                  <p className="text-sm text-red-600">
+                    {((createMut.error || updateMut.error) as Error)?.message ?? 'Terjadi kesalahan'}
+                  </p>
+                )}
 
-              <div className="flex gap-3 pt-2">
-                <Button type="submit" disabled={isBusy} className="flex-1 bg-zinc-900 text-white hover:bg-zinc-800">
-                  {isBusy && <Loader2 className="mr-1.5 size-4 animate-spin" />}
-                  {editingId !== null ? 'Simpan Perubahan' : 'Tambah Review'}
-                </Button>
-                <Button type="button" variant="outline" onClick={closeDrawer}>Batal</Button>
-              </div>
-            </form>
+                <div className="flex gap-3 pt-2">
+                  <Button type="submit" disabled={isBusy} className="flex-1 bg-zinc-900 text-white hover:bg-zinc-800">
+                    {isBusy && <Loader2 className="mr-1.5 size-4 animate-spin" />}
+                    {editingId !== null ? 'Simpan Perubahan' : 'Tambah Review'}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={closeDrawer}>Batal</Button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

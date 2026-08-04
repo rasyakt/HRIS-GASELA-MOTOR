@@ -523,7 +523,8 @@ export default function PayrollPage() {
                           <th className="pb-2 pr-3 font-medium">
                             <input
                               type="checkbox"
-                              className="size-4 accent-zinc-900"
+                              className="size-4 accent-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed"
+                              disabled={selectableRows.length === 0}
                               checked={
                                 selectableRows.length > 0 &&
                                 selectableRows.every((r) => selected.has(r.id))
