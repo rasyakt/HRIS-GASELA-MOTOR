@@ -23,6 +23,8 @@ const EMPLOYEE_INCLUDE = {
   _count: { select: { subordinates: true, familyMembers: true } },
 } satisfies Prisma.EmployeeInclude;
 
+import { sanitizeSearchString } from '../../common/utils/sanitize-search';
+
 @Injectable()
 export class EmployeesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -32,11 +34,12 @@ export class EmployeesService {
     const limit = query.limit ?? 20;
     const where: Prisma.EmployeeWhereInput = { isActive: true };
 
-    if (query.search) {
+    const search = sanitizeSearchString(query.search);
+    if (search) {
       where.OR = [
-        { fullName: { contains: query.search } },
-        { employeeNumber: { contains: query.search } },
-        { email: { contains: query.search } },
+        { fullName: { contains: search } },
+        { employeeNumber: { contains: search } },
+        { email: { contains: search } },
       ];
     }
     if (query.departmentId) where.departmentId = query.departmentId;
