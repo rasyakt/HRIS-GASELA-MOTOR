@@ -264,7 +264,7 @@ export default function ProfilePage() {
                 ) : leaveBalancesQuery.data && leaveBalancesQuery.data.length > 0 ? (
                   <div className="grid gap-4 sm:grid-cols-2">
                     {leaveBalancesQuery.data.map((bal: any) => (
-                      <div key={bal.id} className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4">
+                      <div key={bal.leaveTypeId} className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold text-zinc-900">{bal.leaveType?.name ?? 'Cuti'}</span>
                           <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">
