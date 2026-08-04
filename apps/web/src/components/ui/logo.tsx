@@ -39,7 +39,7 @@ export function GaselaLogo({
     <div className={`inline-flex items-center gap-3 select-none ${className}`}>
       {/* Icon Emblem */}
       <div
-        className={`relative flex ${iconSizes[size]} shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-zinc-900 via-zinc-950 to-black p-2 shadow-lg ring-1 ring-white/10`}
+        className={`relative flex ${iconSizes[size]} shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-zinc-900 via-zinc-950 to-black p-2 shadow-lg ring-1 ring-white/10`}
       >
         <svg
           viewBox="0 0 40 40"
