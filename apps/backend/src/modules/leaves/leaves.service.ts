@@ -171,6 +171,14 @@ export class LeavesService {
 
     const start = parseLocalDay(input.startDate);
     const end = parseLocalDay(input.endDate);
+    if (end < start) {
+      throw new BadRequestException('Tanggal selesai cuti tidak boleh sebelum tanggal mulai');
+    }
+    const maxFutureDate = new Date();
+    maxFutureDate.setFullYear(maxFutureDate.getFullYear() + 1);
+    if (start > maxFutureDate || end > maxFutureDate) {
+      throw new BadRequestException('Pengajuan cuti tidak boleh lebih dari 1 tahun ke depan');
+    }
     const days = workdayCount(start, end);
     if (days === 0) {
       throw new BadRequestException('Rentang tanggal tidak berisi hari kerja');

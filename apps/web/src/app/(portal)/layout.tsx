@@ -16,6 +16,7 @@ import {
   X,
   User,
   ShieldAlert,
+  ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -48,6 +49,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/approvals', label: 'Persetujuan', icon: CheckCheck, minRole: 'manager' },
   { href: '/reports', label: 'Laporan', icon: BarChart3, minRole: 'manager' },
   { href: '/employees', label: 'Karyawan', icon: Users, minRole: 'admin' },
+  { href: '/audit-logs', label: 'Audit Log', icon: ShieldCheck, minRole: 'admin' },
   { href: '/settings', label: 'Pengaturan', icon: Settings, minRole: 'admin' },
 ];
 
@@ -61,8 +63,9 @@ const PAGE_TITLES: Record<string, string> = {
   '/discipline': 'Disiplin & SP',
   '/approvals': 'Persetujuan',
   '/reports': 'Laporan',
-  '/employees': 'Karyawan',
-  '/settings': 'Pengaturan',
+  '/employees': 'Manajemen Karyawan',
+  '/audit-logs': 'Audit Log & Rekam Jejak',
+  '/settings': 'Pengaturan Sistem',
 };
 
 export default function PortalLayout({

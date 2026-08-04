@@ -74,6 +74,12 @@ export class OvertimeService {
 
     // Check monthly total overtime budget limit (Max 56 hours/month per employee)
     const otDate = parseLocalDay(input.overtimeDate);
+    const maxFutureDate = new Date();
+    maxFutureDate.setDate(maxFutureDate.getDate() + 60);
+    if (otDate > maxFutureDate) {
+      throw new ConflictException('Pengajuan lembur tidak boleh lebih dari 60 hari ke depan');
+    }
+
     const startOfMonth = new Date(Date.UTC(otDate.getUTCFullYear(), otDate.getUTCMonth(), 1));
     const endOfMonth = new Date(Date.UTC(otDate.getUTCFullYear(), otDate.getUTCMonth() + 1, 0, 23, 59, 59));
 
