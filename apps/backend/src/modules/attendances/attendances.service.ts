@@ -37,7 +37,9 @@ function toTimeString(value: unknown): string | null {
 }
 
 function localDateKey(d: Date): Date {
-  return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  // Adjust to WIB (UTC+7) offset so midnight boundary is consistent across all server timezones
+  const wib = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+  return new Date(Date.UTC(wib.getUTCFullYear(), wib.getUTCMonth(), wib.getUTCDate()));
 }
 
 @Injectable()

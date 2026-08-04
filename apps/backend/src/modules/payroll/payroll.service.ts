@@ -332,29 +332,38 @@ export class PayrollService {
         seqBase + results.length + 1,
       ).padStart(4, '0')}`;
 
-      const created = await this.prisma.payroll.create({
-        data: {
-          payrollNumber,
-          employeeId: emp.id,
-          month: input.month,
-          year: input.year,
-          basicSalary,
-          totalAllowance,
-          totalDeduction,
-          overtimePay,
-          grossSalary,
-          bpjsKesehatanEmployee: bpjs.kesehatanEmployee,
-          bpjsKesehatanCompany: bpjs.kesehatanCompany,
-          bpjsKetenagakerjaanEmployee,
-          bpjsKetenagakerjaanCompany,
-          taxPph21,
-          netSalary,
-          components: {
-            create: componentRows,
+      let created;
+      try {
+        created = await this.prisma.payroll.create({
+          data: {
+            payrollNumber,
+            employeeId: emp.id,
+            month: input.month,
+            year: input.year,
+            basicSalary,
+            totalAllowance,
+            totalDeduction,
+            overtimePay,
+            grossSalary,
+            bpjsKesehatanEmployee: bpjs.kesehatanEmployee,
+            bpjsKesehatanCompany: bpjs.kesehatanCompany,
+            bpjsKetenagakerjaanEmployee,
+            bpjsKetenagakerjaanCompany,
+            taxPph21,
+            netSalary,
+            components: {
+              create: componentRows,
+            },
           },
-        },
-        include: this.payrollInclude,
-      });
+          include: this.payrollInclude,
+        });
+      } catch (err: any) {
+        if (err.code === 'P2002') {
+          skipped++;
+          continue;
+        }
+        throw err;
+      }
 
       totalGross += grossSalary;
       totalNet += netSalary;

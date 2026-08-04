@@ -107,30 +107,33 @@ export class EmployeesController {
   @Post(':id/account')
   @ApiOperation({ summary: 'Buat akun login karyawan (hanya admin)' })
   createAccount(
+    @CurrentUser() user: AuthUser,
     @Param('id', ParseIntPipe) id: number,
     @Body(new ZodValidationPipe()) body: CreateUserAccountDto,
   ) {
-    return this.employeesService.createAccount(id, body);
+    return this.employeesService.createAccount(id, body, user);
   }
 
   @Roles('admin')
   @Patch(':id/account')
   @ApiOperation({ summary: 'Perbarui akun login karyawan (hanya admin)' })
   updateAccount(
+    @CurrentUser() user: AuthUser,
     @Param('id', ParseIntPipe) id: number,
     @Body(new ZodValidationPipe()) body: UpdateUserAccountDto,
   ) {
-    return this.employeesService.updateAccount(id, body);
+    return this.employeesService.updateAccount(id, body, user);
   }
 
   @Roles('admin')
   @Post(':id/account/reset-password')
   @ApiOperation({ summary: 'Reset password akun karyawan (hanya admin)' })
   async resetPassword(
+    @CurrentUser() user: AuthUser,
     @Param('id', ParseIntPipe) id: number,
     @Body(new ZodValidationPipe()) body: ResetUserPasswordDto,
   ) {
-    await this.employeesService.resetPassword(id, body);
+    await this.employeesService.resetPassword(id, body, user);
     return { message: 'Password berhasil direset' };
   }
 

@@ -2,12 +2,14 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import type {
   CreateEmployeeInput,
   EmployeeQuery,
   Paginated,
   UpdateEmployeeInput,
+  AuthUser,
 } from '@gasela/shared-types';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -198,7 +200,11 @@ export class EmployeesService {
     return this.getById(id);
   }
 
-  async createAccount(employeeId: number, input: any) {
+  async createAccount(employeeId: number, input: any, currentUser?: AuthUser) {
+    if (input.role === 'owner' && currentUser?.role !== 'owner') {
+      throw new ForbiddenException('Hanya Owner yang dapat menetapkan peran Owner');
+    }
+
     const employee = await this.prisma.employee.findUnique({
       where: { id: employeeId },
       include: { user: true },
@@ -234,13 +240,20 @@ export class EmployeesService {
     });
   }
 
-  async updateAccount(employeeId: number, input: any) {
+  async updateAccount(employeeId: number, input: any, currentUser?: AuthUser) {
     const employee = await this.prisma.employee.findUnique({
       where: { id: employeeId },
       include: { user: true },
     });
     if (!employee || !employee.user) {
       throw new NotFoundException(`Akun karyawan #${employeeId} tidak ditemukan`);
+    }
+
+    if (employee.user.role === 'owner' && currentUser?.role !== 'owner') {
+      throw new ForbiddenException('Hanya Owner yang dapat memodifikasi akun Owner');
+    }
+    if (input.role === 'owner' && currentUser?.role !== 'owner') {
+      throw new ForbiddenException('Hanya Owner yang dapat menetapkan peran Owner');
     }
 
     if (input.username && input.username !== employee.user.username) {
@@ -264,13 +277,17 @@ export class EmployeesService {
     });
   }
 
-  async resetPassword(employeeId: number, input: any) {
+  async resetPassword(employeeId: number, input: any, currentUser?: AuthUser) {
     const employee = await this.prisma.employee.findUnique({
       where: { id: employeeId },
       include: { user: true },
     });
     if (!employee || !employee.user) {
       throw new NotFoundException(`Akun karyawan #${employeeId} tidak ditemukan`);
+    }
+
+    if (employee.user.role === 'owner' && currentUser?.role !== 'owner') {
+      throw new ForbiddenException('Hanya Owner yang dapat mereset password akun Owner');
     }
 
     const passwordHash = await bcrypt.hash(input.password, 10);
@@ -280,7 +297,6 @@ export class EmployeesService {
       data: {
         passwordHash,
         refreshTokenHash: null,
-        refreshTokenExpiry: null,
       },
       select: { id: true },
     });

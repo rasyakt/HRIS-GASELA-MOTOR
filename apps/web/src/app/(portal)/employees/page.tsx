@@ -251,6 +251,13 @@ export default function EmployeesPage() {
     },
   });
 
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false);
+    resetForm();
+    setSelectedEmployeeId(null);
+    setIsEditMode(false);
+  };
+
   const handleOpenCreate = () => {
     resetForm();
     setSelectedEmployeeId(null);
@@ -610,7 +617,7 @@ export default function EmployeesPage() {
       {/* Centered Modal Popup */}
       {drawerOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden">
-          <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm transition-opacity" onClick={() => setDrawerOpen(false)} />
+          <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm transition-opacity" onClick={handleCloseDrawer} />
           <div className="pointer-events-none fixed inset-0 flex items-center justify-center p-4">
             <div className="pointer-events-auto w-full max-w-3xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
               {/* Header */}
@@ -630,7 +637,7 @@ export default function EmployeesPage() {
                       Ubah
                     </Button>
                   )}
-                  <button onClick={() => setDrawerOpen(false)} className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors">
+                  <button onClick={handleCloseDrawer} className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors">
                     <X className="size-5" />
                   </button>
                 </div>
@@ -1240,7 +1247,7 @@ export default function EmployeesPage() {
                   )}
 
                   <div className="flex items-center gap-3">
-                    <Button type="button" variant="outline" onClick={() => setIsEditMode(false)}>
+                    <Button type="button" variant="outline" onClick={handleCloseDrawer}>
                       Batal
                     </Button>
                     <Button

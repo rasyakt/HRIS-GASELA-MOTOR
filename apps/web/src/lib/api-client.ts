@@ -7,6 +7,7 @@ const API_URL = isServer
 
 interface ApiOptions extends RequestInit {
   token?: string | null;
+  timeoutMs?: number;
 }
 
 export class ApiError extends Error {
@@ -21,27 +22,41 @@ export class ApiError extends Error {
 }
 
 export async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
-  const { token, headers, ...rest } = options;
-  const res = await fetch(`${API_URL}${path}`, {
-    ...rest,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    },
-  });
+  const { token, headers, timeoutMs = 30000, signal, ...rest } = options;
 
-  const body = await res.json().catch(() => null);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  if (!res.ok) {
-    const message =
-      body && typeof body === 'object' && 'message' in body
-        ? String((body as { message: string | string[] }).message)
-        : `Request failed (${res.status})`;
-    throw new ApiError(res.status, Array.isArray(message) ? message.join(', ') : message);
+  try {
+    const res = await fetch(`${API_URL}${path}`, {
+      ...rest,
+      signal: signal || controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...headers,
+      },
+    });
+    clearTimeout(timeoutId);
+
+    const body = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      const message =
+        body && typeof body === 'object' && 'message' in body
+          ? String((body as { message: string | string[] }).message)
+          : `Request failed (${res.status})`;
+      throw new ApiError(res.status, Array.isArray(message) ? message.join(', ') : message);
+    }
+
+    return body as T;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      throw new ApiError(408, 'Waktu permintaan habis (Request Timeout). Silakan coba lagi.');
+    }
+    throw err;
   }
-
-  return body as T;
 }
 
 export const apiUrl = API_URL;

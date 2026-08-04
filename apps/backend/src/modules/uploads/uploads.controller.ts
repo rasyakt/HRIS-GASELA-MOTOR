@@ -19,6 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
 import type { Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UploadsService, UploadCategory } from './uploads.service';
 import type { UploadFile } from './uploads.service';
@@ -30,6 +31,7 @@ import type { CreateUploadDto } from './dto/create-upload.dto';
 export class UploadsController {
   constructor(private readonly uploadsService: UploadsService) {}
 
+  @Throttle({ global: { limit: 10, ttl: 60000 } })
   @Post()
   @ApiOperation({ summary: 'Unggah file (avatar/attendance/document)' })
   @ApiConsumes('multipart/form-data')
