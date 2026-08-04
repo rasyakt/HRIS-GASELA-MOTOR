@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCheck, Loader2, Wallet, PlusCircle, Download } from 'lucide-react';
+import { CheckCheck, Loader2, Printer, Wallet, PlusCircle, Download } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -77,6 +77,43 @@ function DetailModal({
     }
   }
 
+  function handlePrint() {
+    const printArea = document.getElementById('payslip-print-area');
+    if (!printArea) return;
+    const w = window.open('', '_blank', 'width=800,height=600');
+    if (!w) return;
+    w.document.write(`
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8" />
+        <title>Slip Gaji — ${detail.payrollNumber}</title>
+        <style>
+          body { font-family: Arial, sans-serif; font-size: 12px; color: #111; margin: 24px; }
+          h2 { font-size: 16px; font-weight: bold; margin: 0 0 4px; }
+          .sub { color: #555; font-size: 11px; margin-bottom: 16px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+          th { background: #f4f4f5; text-align: left; padding: 6px 8px; font-size: 11px; border-bottom: 1px solid #e4e4e7; }
+          td { padding: 6px 8px; border-bottom: 1px solid #f4f4f5; }
+          td:last-child, th:last-child { text-align: right; }
+          .deduction { color: #dc2626; }
+          .net-row td { background: #18181b; color: #fff; font-weight: bold; }
+          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; margin-bottom: 12px; }
+          .label { color: #71717a; }
+          .footer { margin-top: 24px; font-size: 10px; color: #a1a1aa; text-align: center; }
+          @media print { body { margin: 0; } }
+        </style>
+      </head>
+      <body>
+        ${printArea.innerHTML}
+        <div class="footer">Dicetak oleh HRIS GaselaPulse — ${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
+      </body>
+      </html>
+    `);
+    w.document.close();
+    setTimeout(() => { w.focus(); w.print(); }, 300);
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
@@ -90,7 +127,10 @@ function DetailModal({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
-          <div className="grid grid-cols-2 gap-2 text-zinc-600">
+          <div id="payslip-print-area">
+            <h2>Slip Gaji — {detail.payrollNumber}</h2>
+            <p className="text-xs text-zinc-500 mb-3">{detail.employeeName} · {detail.department ?? ''} · {fmtMonthYear(detail.month, detail.year)}</p>
+            <div className="grid grid-cols-2 gap-2 text-zinc-600">
             <div>No.</div>
             <div className="font-medium text-zinc-900">{detail.payrollNumber}</div>
             <div>Periode</div>
@@ -186,6 +226,8 @@ function DetailModal({
             </table>
           </div>
 
+          </div>{/* /payslip-print-area */}
+
           {downloadError && (
             <p className="text-sm text-red-600">{downloadError}</p>
           )}
@@ -203,7 +245,15 @@ function DetailModal({
               )}
               Unduh PDF
             </Button>
-            <Button variant="outline" className="flex-1" onClick={onClose}>
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={handlePrint}
+            >
+              <Printer data-icon="inline-start" />
+              Cetak
+            </Button>
+            <Button variant="outline" onClick={onClose}>
               Tutup
             </Button>
           </div>

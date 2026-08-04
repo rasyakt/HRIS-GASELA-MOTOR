@@ -6,6 +6,7 @@ import {
   CalendarDays,
   Download,
   FileDown,
+  FileSpreadsheet,
   Loader2,
   ReceiptText,
 } from 'lucide-react';
@@ -34,6 +35,15 @@ function ErrorBanner({ message }: { message: string }) {
   );
 }
 
+function SuccessBanner({ message }: { message: string }) {
+  return (
+    <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-700 flex items-center gap-2">
+      <FileSpreadsheet className="size-4 shrink-0" />
+      {message}
+    </div>
+  );
+}
+
 export default function ReportsPage() {
   const authApi = useAuthApi();
   const router = useRouter();
@@ -45,6 +55,7 @@ export default function ReportsPage() {
   const [attDept, setAttDept] = useState('');
   const [downloading, setDownloading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const [leaveFrom, setLeaveFrom] = useState(todayInput(-30));
   const [leaveTo, setLeaveTo] = useState(todayInput());
@@ -86,6 +97,7 @@ export default function ReportsPage() {
 
     setDownloading(kind);
     setError(null);
+    setSuccess(null);
     try {
       const res = await fetch(`/api/reports/${kind}?${params.toString()}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -110,6 +122,7 @@ export default function ReportsPage() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+      setSuccess(`File "${filename}" berhasil diunduh. Buka dengan Microsoft Excel atau Google Sheets.`);
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan saat mengunduh laporan.');
     } finally {
@@ -119,29 +132,35 @@ export default function ReportsPage() {
 
   if (!user || !canManage) return null;
 
+  const labelClasses = 'mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent';
+
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div>
-        <h2 className="text-xl font-bold tracking-tight text-zinc-900">Laporan</h2>
-        <p className="text-sm text-zinc-500">
-          Ekspor laporan kehadiran, cuti, dan penggajian dalam format CSV.
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div className="rounded-xl bg-zinc-900 p-6 text-white">
+        <div className="flex items-center gap-3 mb-1">
+          <FileSpreadsheet className="size-6 text-emerald-400" />
+          <h1 className="text-xl font-bold">Laporan & Ekspor Data</h1>
+        </div>
+        <p className="text-sm text-zinc-400">
+          Ekspor laporan kehadiran, cuti, dan penggajian dalam format CSV — kompatibel dengan Microsoft Excel & Google Sheets.
         </p>
       </div>
 
       {error && <ErrorBanner message={error} />}
+      {success && <SuccessBanner message={success} />}
 
       {/* Laporan Kehadiran */}
-      <Card className="border-zinc-200">
-        <CardHeader>
+      <Card className="border-zinc-200 shadow-sm">
+        <CardHeader className="border-b border-zinc-100 pb-4">
           <CardTitle className="flex items-center gap-2 text-base font-semibold">
             <BarChart3 className="size-4 text-zinc-500" />
             Laporan Kehadiran
-            <Badge className="bg-zinc-100 text-zinc-700 border-zinc-200 ml-1">
-              CSV
+            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 ml-1 text-[10px] font-semibold">
+              CSV / Excel
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-5">
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <Label htmlFor="att-from">Dari Tanggal</Label>
@@ -167,7 +186,7 @@ export default function ReportsPage() {
                 id="att-dept"
                 value={attDept}
                 onChange={(e) => setAttDept(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+                className={labelClasses}
               >
                 <option value="">Semua Departemen</option>
                 {departments.data?.map((d) => (
@@ -179,32 +198,33 @@ export default function ReportsPage() {
             </div>
           </div>
           <Button
-            className="mt-4 bg-zinc-900 text-white hover:bg-zinc-800"
+            className="mt-4 bg-zinc-900 text-white hover:bg-zinc-800 gap-2"
             disabled={downloading !== null || !attFrom || !attTo}
             onClick={() => downloadCsv('attendance')}
           >
             {downloading === 'attendance' ? (
-              <Loader2 className="mr-1.5 size-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <FileDown className="mr-1.5 size-4" />
+              <FileDown className="size-4" />
             )}
-            Unduh CSV Kehadiran
+            {downloading === 'attendance' ? 'Memproses...' : 'Unduh Laporan Kehadiran'}
           </Button>
+          <p className="mt-2 text-[11px] text-zinc-400">Format: CSV (UTF-8 BOM) · Separator: Titik koma (;) · Kompatibel dengan Excel</p>
         </CardContent>
       </Card>
 
       {/* Laporan Cuti */}
-      <Card className="border-zinc-200">
-        <CardHeader>
+      <Card className="border-zinc-200 shadow-sm">
+        <CardHeader className="border-b border-zinc-100 pb-4">
           <CardTitle className="flex items-center gap-2 text-base font-semibold">
             <CalendarDays className="size-4 text-zinc-500" />
             Laporan Cuti
-            <Badge className="bg-zinc-100 text-zinc-700 border-zinc-200 ml-1">
-              CSV
+            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 ml-1 text-[10px] font-semibold">
+              CSV / Excel
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-5">
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <Label htmlFor="leave-from">Dari Tanggal</Label>
@@ -230,7 +250,7 @@ export default function ReportsPage() {
                 id="leave-status"
                 value={leaveStatus}
                 onChange={(e) => setLeaveStatus(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+                className={labelClasses}
               >
                 <option value="">Semua Status</option>
                 <option value="pending">Menunggu</option>
@@ -241,33 +261,34 @@ export default function ReportsPage() {
             </div>
           </div>
           <Button
-            className="mt-4 bg-zinc-900 text-white hover:bg-zinc-800"
+            className="mt-4 bg-zinc-900 text-white hover:bg-zinc-800 gap-2"
             disabled={downloading !== null || !leaveFrom || !leaveTo}
             onClick={() => downloadCsv('leave')}
           >
             {downloading === 'leave' ? (
-              <Loader2 className="mr-1.5 size-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <FileDown className="mr-1.5 size-4" />
+              <FileDown className="size-4" />
             )}
-            Unduh CSV Cuti
+            {downloading === 'leave' ? 'Memproses...' : 'Unduh Laporan Cuti'}
           </Button>
+          <p className="mt-2 text-[11px] text-zinc-400">Format: CSV (UTF-8 BOM) · Separator: Titik koma (;) · Kompatibel dengan Excel</p>
         </CardContent>
       </Card>
 
       {/* Laporan Gaji */}
       {canPayroll && (
-        <Card className="border-zinc-200">
-          <CardHeader>
+        <Card className="border-zinc-200 shadow-sm">
+          <CardHeader className="border-b border-zinc-100 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-semibold">
               <ReceiptText className="size-4 text-zinc-500" />
               Laporan Penggajian
-              <Badge className="bg-zinc-100 text-zinc-700 border-zinc-200 ml-1">
-                CSV
+              <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 ml-1 text-[10px] font-semibold">
+                CSV / Excel
               </Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-5">
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
                 <Label htmlFor="pay-month">Bulan</Label>
@@ -275,11 +296,14 @@ export default function ReportsPage() {
                   id="pay-month"
                   value={payMonth}
                   onChange={(e) => setPayMonth(e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+                  className={labelClasses}
                 >
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                    <option key={m} value={m}>
-                      {m}
+                  {[
+                    'Januari','Februari','Maret','April','Mei','Juni',
+                    'Juli','Agustus','September','Oktober','November','Desember'
+                  ].map((name, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {name}
                     </option>
                   ))}
                 </select>
@@ -301,7 +325,7 @@ export default function ReportsPage() {
                   id="pay-status"
                   value={payStatus}
                   onChange={(e) => setPayStatus(e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+                  className={labelClasses}
                 >
                   <option value="">Semua Status</option>
                   <option value="draft">Draft</option>
@@ -311,20 +335,35 @@ export default function ReportsPage() {
               </div>
             </div>
             <Button
-              className="mt-4 bg-zinc-900 text-white hover:bg-zinc-800"
+              className="mt-4 bg-zinc-900 text-white hover:bg-zinc-800 gap-2"
               disabled={downloading !== null || !payMonth || !payYear}
               onClick={() => downloadCsv('payroll')}
             >
               {downloading === 'payroll' ? (
-                <Loader2 className="mr-1.5 size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
               ) : (
-                <Download className="mr-1.5 size-4" />
+                <Download className="size-4" />
               )}
-              Unduh CSV Penggajian
+              {downloading === 'payroll' ? 'Memproses...' : 'Unduh Laporan Penggajian'}
             </Button>
+            <p className="mt-2 text-[11px] text-zinc-400">Format: CSV (UTF-8 BOM) · Separator: Titik koma (;) · Kompatibel dengan Excel</p>
           </CardContent>
         </Card>
       )}
+
+      {/* Petunjuk Penggunaan */}
+      <Card className="border-zinc-100 bg-zinc-50 shadow-none">
+        <CardContent className="pt-5">
+          <h4 className="text-sm font-semibold text-zinc-800 mb-2">📋 Petunjuk Membuka di Microsoft Excel</h4>
+          <ol className="list-decimal list-inside space-y-1 text-xs text-zinc-600">
+            <li>Unduh file CSV menggunakan tombol di atas.</li>
+            <li>Buka Microsoft Excel → Klik <strong>Data</strong> → <strong>From Text/CSV</strong>.</li>
+            <li>Pilih file yang sudah diunduh, pastikan delimiter <strong>titik koma (;)</strong> dipilih.</li>
+            <li>Klik <strong>Load</strong> untuk membuka data ke spreadsheet.</li>
+          </ol>
+          <p className="mt-3 text-[11px] text-zinc-400">Atau: klik-kanan file → <em>Open with</em> → <em>Microsoft Excel</em> (untuk Excel versi terbaru yang mendukung UTF-8 BOM otomatis).</p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

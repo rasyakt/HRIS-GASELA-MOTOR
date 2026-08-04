@@ -10,8 +10,10 @@ import {
   Megaphone,
   Menu,
   ReceiptText,
+  Search,
   Settings,
   Timer,
+  TrendingUp,
   Users,
   X,
   User,
@@ -21,14 +23,17 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { OfflineBanner } from '@/components/offline-banner';
 import { api } from '@/lib/api-client';
+import { useAuthApi } from '@/lib/auth-api';
 import { ROLE_LABEL, roleAtLeast } from '@/lib/format';
 import { useAuthStore } from '@/store/auth-store';
 import { GaselaLogo } from '@/components/ui/logo';
+import { CommandPalette } from '@/components/command-palette';
 import type { UserRole } from '@gasela/shared-types';
 
 interface NavItem {
@@ -47,6 +52,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/announcements', label: 'Pengumuman', icon: Megaphone, minRole: 'employee' },
   { href: '/discipline', label: 'Disiplin & SP', icon: ShieldAlert, minRole: 'employee' },
   { href: '/approvals', label: 'Persetujuan', icon: CheckCheck, minRole: 'manager' },
+  { href: '/performance-reviews', label: 'Kinerja', icon: TrendingUp, minRole: 'manager' },
   { href: '/reports', label: 'Laporan', icon: BarChart3, minRole: 'manager' },
   { href: '/employees', label: 'Karyawan', icon: Users, minRole: 'admin' },
   { href: '/audit-logs', label: 'Audit Log', icon: ShieldCheck, minRole: 'admin' },
@@ -62,6 +68,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/announcements': 'Pengumuman',
   '/discipline': 'Disiplin & SP',
   '/approvals': 'Persetujuan',
+  '/performance-reviews': 'Performance Review',
   '/reports': 'Laporan',
   '/employees': 'Manajemen Karyawan',
   '/audit-logs': 'Audit Log & Rekam Jejak',
@@ -88,6 +95,16 @@ export default function PortalLayout({
     () => (user ? NAV_ITEMS.filter((i) => roleAtLeast(user.role, i.minRole)) : []),
     [user],
   );
+
+  const authApi = useAuthApi();
+  const unreadQuery = useQuery<{ unread: number }>({
+    queryKey: ['announcements-unread'],
+    queryFn: () => authApi<{ unread: number }>('/api/announcements/unread-count'),
+    enabled: !!token,
+    refetchInterval: 60_000, // refetch every 60 seconds
+    retry: false,
+  });
+  const unreadCount = unreadQuery.data?.unread ?? 0;
 
   const pageTitle = PAGE_TITLES[pathname] ?? 'HRIS Gasela Motor';
 
@@ -134,7 +151,14 @@ export default function PortalLayout({
               }`}
             >
               <item.icon className="size-4" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.href === '/announcements' && unreadCount > 0 && (
+                <span className={`inline-flex items-center justify-center min-w-4.5 h-4.5 rounded-full px-1 text-[10px] font-bold ${
+                  active ? 'bg-white text-zinc-900' : 'bg-red-500 text-white'
+                }`}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </Link>
           );
         })}
@@ -144,6 +168,7 @@ export default function PortalLayout({
 
   return (
     <div className="flex h-screen w-screen overflow-hidden">
+      <CommandPalette />
       <OfflineBanner />
       <div className="hidden lg:block h-full">{sidebar}</div>
       {mobileOpen && (
@@ -176,6 +201,15 @@ export default function PortalLayout({
             </Button>
             <h1 className="text-base font-semibold text-zinc-900">{pageTitle}</h1>
           </div>
+          {/* Ctrl+K search trigger */}
+          <button
+            onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
+            className="hidden sm:flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
+          >
+            <Search className="size-3.5" />
+            <span>Cari fitur…</span>
+            <kbd className="rounded border border-zinc-200 bg-white px-1 py-0.5 text-[10px] font-semibold">⌘K</kbd>
+          </button>
           <div className="relative">
             <button
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}

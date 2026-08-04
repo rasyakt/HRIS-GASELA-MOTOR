@@ -64,6 +64,24 @@ export class TrainingRecordsService {
     return records.map((r) => this.decorate(r));
   }
 
+  async getExpiringCertificates(withinDays = 30): Promise<(TrainingRecordItem & { daysUntilExpiry: number })[]> {
+    const now = new Date();
+    const future = new Date();
+    future.setDate(future.getDate() + withinDays);
+    const records = await this.prisma.trainingRecord.findMany({
+      where: {
+        certificateUrl: { not: null },
+        endDate: { gte: now, lte: future },
+      },
+      include: this.include,
+      orderBy: [{ endDate: 'asc' }],
+    });
+    return records.map((r) => ({
+      ...this.decorate(r),
+      daysUntilExpiry: Math.ceil((r.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+    }));
+  }
+
   async getById(id: number): Promise<TrainingRecordItem> {
     const record = await this.prisma.trainingRecord.findUnique({
       where: { id },

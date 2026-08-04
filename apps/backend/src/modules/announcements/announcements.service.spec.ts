@@ -157,7 +157,7 @@ describe('AnnouncementsService', () => {
     it('menghitung pengumuman belum dibaca', async () => {
       prisma.announcement.count.mockResolvedValue(3);
       const result = await service.unreadCount(2);
-      expect(result).toEqual({ count: 3 });
+      expect(result).toEqual({ unread: 3 });
     });
   });
 

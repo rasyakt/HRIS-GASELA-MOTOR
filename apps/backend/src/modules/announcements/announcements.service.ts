@@ -183,7 +183,7 @@ export class AnnouncementsService {
 
   async list(query: AnnouncementQuery): Promise<AnnouncementListDto> {
     const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
+    const limit = Math.min(query.limit ?? 10, 100);
     const where: Record<string, unknown> = {};
     if (query.status === 'published') where.isPublished = true;
     if (query.status === 'draft') where.isPublished = false;
@@ -213,7 +213,7 @@ export class AnnouncementsService {
 
   async myList(employeeId: number, query: AnnouncementQuery) {
     const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
+    const limit = Math.min(query.limit ?? 10, 100);
     const today = new Date();
     const employee = await this.prisma.employee.findUnique({
       where: { id: employeeId },
@@ -321,6 +321,6 @@ export class AnnouncementsService {
         reads: { none: { employeeId } },
       },
     });
-    return { count };
+    return { unread: count };
   }
 }

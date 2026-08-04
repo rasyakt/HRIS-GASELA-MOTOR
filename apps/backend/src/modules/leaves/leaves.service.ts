@@ -266,7 +266,7 @@ export class LeavesService {
     extraWhere: Record<string, unknown> = {},
   ) {
     const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    const limit = Math.min(query.limit ?? 20, 100);
     const where = {
       ...extraWhere,
       ...(query.status ? { status: query.status } : {}),

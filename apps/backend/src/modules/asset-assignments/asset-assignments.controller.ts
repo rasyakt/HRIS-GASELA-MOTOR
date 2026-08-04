@@ -34,6 +34,13 @@ export class AssetAssignmentsController {
     return this.assetAssignmentsService.list(query);
   }
 
+  @Get('active')
+  @ApiOperation({ summary: 'Daftar aset yang sedang dipinjam (status: assigned)' })
+  @Roles('admin', 'hrd', 'owner', 'manager')
+  async listActive() {
+    return this.assetAssignmentsService.listActive();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Detail penugasan aset' })
   @Roles('admin', 'hrd', 'owner', 'manager')
@@ -56,6 +63,16 @@ export class AssetAssignmentsController {
     @Body(new ZodValidationPipe()) dto: UpdateAssetAssignmentDto,
   ) {
     return this.assetAssignmentsService.update(id, dto);
+  }
+
+  @Patch(':id/return')
+  @ApiOperation({ summary: 'Kembalikan aset (tandai status returned dengan tanggal hari ini)' })
+  @Roles('admin', 'hrd', 'owner')
+  async returnAsset(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { conditionNotes?: string },
+  ) {
+    return this.assetAssignmentsService.returnAsset(id, body.conditionNotes);
   }
 
   @Delete(':id')

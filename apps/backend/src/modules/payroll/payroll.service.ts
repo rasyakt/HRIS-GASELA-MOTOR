@@ -304,9 +304,14 @@ export class PayrollService {
       const bpjsCompanyTaxable = bpjs.kesehatanCompany + bpjs.jkkCompany + bpjs.jkmCompany;
       const pph21Gross = grossSalary + bpjsCompanyTaxable;
 
+      // PTKP validation: pastikan status PTKP valid sebelum hitung TER
+      const effectivePtkp = (emp.ptkpStatus && PTKP_TO_TER_CATEGORY[emp.ptkpStatus as keyof typeof PTKP_TO_TER_CATEGORY])
+        ? emp.ptkpStatus as keyof typeof PTKP_TO_TER_CATEGORY
+        : 'TK0'; // default TK0 jika belum diset
+
       const bracket = await this.prisma.terRate.findFirst({
         where: {
-          category: PTKP_TO_TER_CATEGORY[emp.ptkpStatus],
+          category: PTKP_TO_TER_CATEGORY[effectivePtkp],
           incomeFrom: { lt: pph21Gross },
           OR: [{ incomeTo: null }, { incomeTo: { gte: pph21Gross } }],
         },
@@ -391,7 +396,7 @@ export class PayrollService {
 
   async list(query: PayrollQuery): Promise<Paginated<PayrollDto>> {
     const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    const limit = Math.min(query.limit ?? 20, 100);
     const where = {
       ...(query.month ? { month: query.month } : {}),
       ...(query.year ? { year: query.year } : {}),

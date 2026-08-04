@@ -223,7 +223,7 @@ export class AttendancesService {
 
   async myAttendance(employeeId: number, query: AttendanceQuery) {
     const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    const limit = Math.min(query.limit ?? 20, 100);
     const where = {
       employeeId,
       ...(query.from || query.to
@@ -252,7 +252,7 @@ export class AttendancesService {
 
   async list(query: AttendanceQuery) {
     const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    const limit = Math.min(query.limit ?? 20, 100);
     const where = {
       ...(query.employeeId ? { employeeId: query.employeeId } : {}),
       ...(query.from || query.to

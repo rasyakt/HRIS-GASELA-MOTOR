@@ -11,48 +11,18 @@ import type {
   OvertimeRequestDto,
 } from '@gasela/shared-types';
 import { PrismaService } from '../../prisma/prisma.service';
-
-const TIME_RE = /^(\d{2}):(\d{2})(?::(\d{2}))?$/;
-
-function timeToMinutes(value: string): number | null {
-  const m = TIME_RE.exec(value);
-  if (!m) return null;
-  return Number(m[1]) * 60 + Number(m[2]);
-}
-
-function minutesToDate(min: number): Date {
-  const now = new Date();
-  return new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    Math.floor(min / 60),
-    min % 60,
-    0,
-  );
-}
-
-function timeToString(value: unknown): string | null {
-  if (value instanceof Date) {
-    const hh = String(value.getHours()).padStart(2, '0');
-    const mm = String(value.getMinutes()).padStart(2, '0');
-    const ss = String(value.getSeconds()).padStart(2, '0');
-    return `${hh}:${mm}:${ss}`;
-  }
-  if (typeof value === 'string')
-    return value.length === 5 ? `${value}:00` : value;
-  return null;
-}
-
-/** 'YYYY-MM-DD' → UTC-midnight dari tanggal lokal (konsisten dgn attendance) */
-function parseLocalDay(s: string): Date {
-  const [y, m, d] = s.split('-').map(Number);
-  return new Date(Date.UTC(y, m - 1, d));
-}
-
-function dayKey(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
+import {
+  calcOvertimeHours,
+  dayKey,
+  isBeyondFutureLimit,
+  MAX_DAILY_OVERTIME_HOURS,
+  MAX_MONTHLY_OVERTIME_HOURS,
+  minutesToDate,
+  monthRange,
+  parseLocalDay,
+  timeToMinutes,
+  timeToString,
+} from './overtime-calc.utils';
 
 @Injectable()
 export class OvertimeService {
@@ -67,21 +37,19 @@ export class OvertimeService {
     if (endMin <= startMin) {
       throw new ConflictException('Jam selesai lembur harus setelah jam mulai');
     }
-    const hours = Number(((endMin - startMin) / 60).toFixed(2));
-    if (hours > 4) {
-      throw new ConflictException('Batas maksimal lembur harian adalah 4 jam (PP 35/2021)');
+    const hours = calcOvertimeHours(startMin, endMin);
+    if (hours > MAX_DAILY_OVERTIME_HOURS) {
+      throw new ConflictException(
+        `Batas maksimal lembur harian adalah ${MAX_DAILY_OVERTIME_HOURS} jam (PP 35/2021)`,
+      );
     }
 
-    // Check monthly total overtime budget limit (Max 56 hours/month per employee)
     const otDate = parseLocalDay(input.overtimeDate);
-    const maxFutureDate = new Date();
-    maxFutureDate.setDate(maxFutureDate.getDate() + 60);
-    if (otDate > maxFutureDate) {
+    if (isBeyondFutureLimit(otDate, 60)) {
       throw new ConflictException('Pengajuan lembur tidak boleh lebih dari 60 hari ke depan');
     }
 
-    const startOfMonth = new Date(Date.UTC(otDate.getUTCFullYear(), otDate.getUTCMonth(), 1));
-    const endOfMonth = new Date(Date.UTC(otDate.getUTCFullYear(), otDate.getUTCMonth() + 1, 0, 23, 59, 59));
+    const { startOfMonth, endOfMonth } = monthRange(otDate);
 
     const existingOt = await this.prisma.overtimeRequest.aggregate({
       where: {
@@ -93,9 +61,9 @@ export class OvertimeService {
     });
 
     const currentMonthlyHours = Number(existingOt._sum.hours || 0);
-    if (currentMonthlyHours + hours > 56) {
+    if (currentMonthlyHours + hours > MAX_MONTHLY_OVERTIME_HOURS) {
       throw new ConflictException(
-        `Total lembur bulan ini (${currentMonthlyHours.toFixed(1)} jam) akan melebihi batas kuota 56 jam/bulan`,
+        `Total lembur bulan ini (${currentMonthlyHours.toFixed(1)} jam) akan melebihi batas kuota ${MAX_MONTHLY_OVERTIME_HOURS} jam/bulan`,
       );
     }
 
@@ -129,7 +97,7 @@ export class OvertimeService {
     extraWhere: Record<string, unknown> = {},
   ) {
     const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    const limit = Math.min(query.limit ?? 20, 100);
     const where = {
       ...extraWhere,
       ...(query.status ? { status: query.status } : {}),

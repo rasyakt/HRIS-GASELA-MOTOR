@@ -12,7 +12,7 @@ export class WarningLettersService {
 
   async list(query: WarningLetterQueryDto) {
     const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    const limit = Math.min(query.limit ?? 20, 100);
     const where: any = {};
 
     if (query.employeeId) where.employeeId = query.employeeId;

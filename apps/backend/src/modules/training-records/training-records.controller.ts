@@ -34,6 +34,13 @@ export class TrainingRecordsController {
     return this.trainingRecordsService.list(query);
   }
 
+  @Get('expiring')
+  @ApiOperation({ summary: 'Pelatihan/sertifikat yang mendekati kadaluwarsa (default 30 hari ke depan)' })
+  @Roles('admin', 'hrd', 'owner')
+  async expiring(@Query('days') days?: string) {
+    return this.trainingRecordsService.getExpiringCertificates(days ? Number(days) : 30);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Detail pelatihan' })
   @Roles('admin', 'hrd', 'owner', 'manager')

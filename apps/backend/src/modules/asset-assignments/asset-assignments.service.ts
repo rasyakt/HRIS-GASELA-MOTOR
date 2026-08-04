@@ -63,6 +63,33 @@ export class AssetAssignmentsService {
     return assignments.map((a) => this.decorate(a));
   }
 
+  async listActive(): Promise<AssetAssignmentItem[]> {
+    const assignments = await this.prisma.assetAssignment.findMany({
+      where: { status: 'assigned' },
+      include: this.include,
+      orderBy: [{ assignmentDate: 'desc' }],
+    });
+    return assignments.map((a) => this.decorate(a));
+  }
+
+  async returnAsset(id: number, conditionNotes?: string): Promise<AssetAssignmentItem> {
+    const existing = await this.prisma.assetAssignment.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('Penugasan aset tidak ditemukan');
+    if (existing.status === 'returned') {
+      throw new ConflictException('Aset ini sudah dikembalikan sebelumnya');
+    }
+    const assignment = await this.prisma.assetAssignment.update({
+      where: { id },
+      data: {
+        status: 'returned',
+        returnDate: new Date(),
+        conditionNotes: conditionNotes ?? existing.conditionNotes,
+      },
+      include: this.include,
+    });
+    return this.decorate(assignment);
+  }
+
   async getById(id: number): Promise<AssetAssignmentItem> {
     const assignment = await this.prisma.assetAssignment.findUnique({
       where: { id },

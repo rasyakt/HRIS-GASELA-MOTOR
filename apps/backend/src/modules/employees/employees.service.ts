@@ -31,7 +31,7 @@ export class EmployeesService {
 
   async list(query: EmployeeQuery): Promise<Paginated<unknown>> {
     const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    const limit = Math.min(query.limit ?? 20, 100);
     const where: Prisma.EmployeeWhereInput = { isActive: true };
 
     const search = sanitizeSearchString(query.search);
