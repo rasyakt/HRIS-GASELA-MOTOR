@@ -695,59 +695,96 @@ export default function PayrollPage() {
             {payroll.isLoading ? (
               <p className="text-sm text-zinc-400">Memuat…</p>
             ) : data && data.items.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-zinc-200 text-left text-xs text-zinc-500">
-                      <th className="pb-2 pr-3 font-medium">No.</th>
-                      <th className="pb-2 pr-3 font-medium">Periode</th>
-                      <th className="pb-2 pr-3 text-right font-medium">
-                        Gaji Bruto
-                      </th>
-                      <th className="pb-2 pr-3 text-right font-medium">
-                        Gaji Bersih
-                      </th>
-                      <th className="pb-2 pr-3 font-medium">Status</th>
-                      <th className="pb-2 font-medium">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.items.map((r) => (
-                      <tr
-                        key={r.id}
-                        className="border-b border-zinc-100 last:border-0"
-                      >
-                        <td className="py-2 pr-3 font-medium text-zinc-900">
-                          {r.payrollNumber}
-                        </td>
-                        <td className="py-2 pr-3 text-zinc-600">
-                          {fmtMonthYear(r.month, r.year)}
-                        </td>
-                        <td className="py-2 pr-3 text-right text-zinc-600">
-                          {fmtRupiah(r.grossSalary)}
-                        </td>
-                        <td className="py-2 pr-3 text-right font-medium text-zinc-900">
-                          {fmtRupiah(r.netSalary)}
-                        </td>
-                        <td className="py-2 pr-3">
-                          <Badge className={badgeClass(r.status)}>
-                            {statusLabel(r.status)}
-                          </Badge>
-                        </td>
-                        <td className="py-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setDetailId(r.id)}
-                          >
-                            Lihat Slip
-                          </Button>
-                        </td>
+              <>
+                {/* Mobile View (Cards) */}
+                <div className="grid grid-cols-1 gap-3 lg:hidden">
+                  {data.items.map((r) => (
+                    <div key={r.id} className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-zinc-900 text-sm">{fmtMonthYear(r.month, r.year)}</span>
+                        <Badge className={badgeClass(r.status)}>{statusLabel(r.status)}</Badge>
+                      </div>
+                      <p className="text-xs text-zinc-500 font-mono mb-1">{r.payrollNumber}</p>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <p className="text-zinc-500 mb-0.5">Gaji Bruto</p>
+                          <p className="font-medium text-zinc-600">{fmtRupiah(r.grossSalary)}</p>
+                        </div>
+                        <div>
+                          <p className="text-zinc-500 mb-0.5">Gaji Bersih</p>
+                          <p className="font-bold text-zinc-900">{fmtRupiah(r.netSalary)}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 text-right border-t border-zinc-200 pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => setDetailId(r.id)}
+                        >
+                          Lihat Slip
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop View (Table) */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-zinc-200 text-left text-xs text-zinc-500">
+                        <th className="pb-2 pr-3 font-medium">No.</th>
+                        <th className="pb-2 pr-3 font-medium">Periode</th>
+                        <th className="pb-2 pr-3 text-right font-medium">
+                          Gaji Bruto
+                        </th>
+                        <th className="pb-2 pr-3 text-right font-medium">
+                          Gaji Bersih
+                        </th>
+                        <th className="pb-2 pr-3 font-medium">Status</th>
+                        <th className="pb-2 font-medium">Aksi</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {data.items.map((r) => (
+                        <tr
+                          key={r.id}
+                          className="border-b border-zinc-100 last:border-0"
+                        >
+                          <td className="py-2 pr-3 font-medium text-zinc-900">
+                            {r.payrollNumber}
+                          </td>
+                          <td className="py-2 pr-3 text-zinc-600">
+                            {fmtMonthYear(r.month, r.year)}
+                          </td>
+                          <td className="py-2 pr-3 text-right text-zinc-600">
+                            {fmtRupiah(r.grossSalary)}
+                          </td>
+                          <td className="py-2 pr-3 text-right font-medium text-zinc-900">
+                            {fmtRupiah(r.netSalary)}
+                          </td>
+                          <td className="py-2 pr-3">
+                            <Badge className={badgeClass(r.status)}>
+                              {statusLabel(r.status)}
+                            </Badge>
+                          </td>
+                          <td className="py-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setDetailId(r.id)}
+                            >
+                              Lihat
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ) : (
               <p className="text-sm text-zinc-500">
                 Belum ada slip gaji. Hubungi HRD setelah periode gaji diproses.

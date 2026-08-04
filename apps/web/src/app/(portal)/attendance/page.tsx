@@ -217,36 +217,69 @@ export default function AttendancePage() {
           {history.isLoading ? (
             <p className="text-sm text-zinc-400">Memuat…</p>
           ) : history.data && history.data.items.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-zinc-200 text-left text-xs text-zinc-500">
-                    <th className="pb-2 pr-3 font-medium">Tanggal</th>
-                    <th className="pb-2 pr-3 font-medium">Status</th>
-                    <th className="pb-2 pr-3 font-medium">Masuk</th>
-                    <th className="pb-2 pr-3 font-medium">Keluar</th>
-                    <th className="pb-2 pr-3 font-medium">Terlambat</th>
-                    <th className="pb-2 font-medium">Jam Kerja</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.data.items.map((r) => (
-                    <tr key={r.id} className="border-b border-zinc-100 last:border-0">
-                      <td className="py-2 pr-3 text-zinc-900">{fmtDate(r.attendanceDate)}</td>
-                      <td className="py-2 pr-3">
-                        <Badge className={badgeClass(r.status)}>{r.status}</Badge>
-                      </td>
-                      <td className="py-2 pr-3 text-zinc-600">{fmtTime(r.checkInTime)}</td>
-                      <td className="py-2 pr-3 text-zinc-600">{fmtTime(r.checkOutTime)}</td>
-                      <td className="py-2 pr-3 text-zinc-600">
-                        {r.lateMinutes && r.lateMinutes > 0 ? `${r.lateMinutes} mnt` : '—'}
-                      </td>
-                      <td className="py-2 text-zinc-600">{fmtHours(r.workHours)}</td>
+            <>
+              {/* Mobile View (Cards) */}
+              <div className="grid grid-cols-1 gap-3 lg:hidden">
+                {history.data.items.map((r) => (
+                  <div key={r.id} className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-zinc-900 text-sm">{fmtDate(r.attendanceDate)}</span>
+                      <Badge className={badgeClass(r.status)}>{r.status}</Badge>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                      <div>
+                        <p className="text-zinc-500 mb-0.5">Masuk</p>
+                        <p className="font-medium text-zinc-900">{fmtTime(r.checkInTime)}</p>
+                      </div>
+                      <div>
+                        <p className="text-zinc-500 mb-0.5">Keluar</p>
+                        <p className="font-medium text-zinc-900">{fmtTime(r.checkOutTime)}</p>
+                      </div>
+                      <div>
+                        <p className="text-zinc-500 mb-0.5">Terlambat</p>
+                        <p className="font-medium text-zinc-900">{r.lateMinutes && r.lateMinutes > 0 ? `${r.lateMinutes} mnt` : '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-zinc-500 mb-0.5">Jam Kerja</p>
+                        <p className="font-medium text-zinc-900">{fmtHours(r.workHours)}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop View (Table) */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-zinc-200 text-left text-xs text-zinc-500">
+                      <th className="pb-2 pr-3 font-medium">Tanggal</th>
+                      <th className="pb-2 pr-3 font-medium">Status</th>
+                      <th className="pb-2 pr-3 font-medium">Masuk</th>
+                      <th className="pb-2 pr-3 font-medium">Keluar</th>
+                      <th className="pb-2 pr-3 font-medium">Terlambat</th>
+                      <th className="pb-2 font-medium">Jam Kerja</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {history.data.items.map((r) => (
+                      <tr key={r.id} className="border-b border-zinc-100 last:border-0">
+                        <td className="py-2 pr-3 text-zinc-900">{fmtDate(r.attendanceDate)}</td>
+                        <td className="py-2 pr-3">
+                          <Badge className={badgeClass(r.status)}>{r.status}</Badge>
+                        </td>
+                        <td className="py-2 pr-3 text-zinc-600">{fmtTime(r.checkInTime)}</td>
+                        <td className="py-2 pr-3 text-zinc-600">{fmtTime(r.checkOutTime)}</td>
+                        <td className="py-2 pr-3 text-zinc-600">
+                          {r.lateMinutes && r.lateMinutes > 0 ? `${r.lateMinutes} mnt` : '—'}
+                        </td>
+                        <td className="py-2 text-zinc-600">{fmtHours(r.workHours)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : (
             <p className="text-sm text-zinc-500">Belum ada riwayat kehadiran.</p>
           )}

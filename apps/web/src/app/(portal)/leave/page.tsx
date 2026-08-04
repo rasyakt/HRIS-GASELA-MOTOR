@@ -255,51 +255,93 @@ export default function LeavePage() {
             {myRequests.isLoading ? (
               <p className="text-sm text-zinc-400">Memuat…</p>
             ) : myRequests.data && myRequests.data.items.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-zinc-200 text-left text-xs text-zinc-500">
-                      <th className="pb-2 pr-3 font-medium">No. Pengajuan</th>
-                      <th className="pb-2 pr-3 font-medium">Jenis</th>
-                      <th className="pb-2 pr-3 font-medium">Tanggal</th>
-                      <th className="pb-2 pr-3 font-medium">Hari</th>
-                      <th className="pb-2 pr-3 font-medium">Status</th>
-                      <th className="pb-2 pr-3 font-medium">Diajukan</th>
-                      <th className="pb-2 font-medium"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {myRequests.data.items.map((r) => (
-                      <tr key={r.id} className="border-b border-zinc-100 last:border-0">
-                        <td className="py-2 pr-3 font-medium text-zinc-900">
-                          {r.requestNumber}
-                        </td>
-                        <td className="py-2 pr-3 text-zinc-600">{r.leaveTypeName}</td>
-                        <td className="py-2 pr-3 text-zinc-600">
-                          {fmtDate(r.startDate)} – {fmtDate(r.endDate)}
-                        </td>
-                        <td className="py-2 pr-3 text-zinc-600">{r.totalDays}</td>
-                        <td className="py-2 pr-3">
-                          <Badge className={badgeClass(r.status)}>{r.status}</Badge>
-                        </td>
-                        <td className="py-2 pr-3 text-zinc-500">{fmtDateTime(r.createdAt)}</td>
-                        <td className="py-2 text-right">
-                          {r.status === 'pending' && (
-                            <Button
-                              variant="outline"
-                              size="xs"
-                              onClick={() => cancel.mutate(r.id)}
-                              disabled={cancel.isPending}
-                            >
-                              Batalkan
-                            </Button>
-                          )}
-                        </td>
+              <>
+                {/* Mobile View (Cards) */}
+                <div className="grid grid-cols-1 gap-3 lg:hidden">
+                  {myRequests.data.items.map((r) => (
+                    <div key={r.id} className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-zinc-900 text-sm">{r.requestNumber}</span>
+                        <Badge className={badgeClass(r.status)}>{r.status}</Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <p className="text-zinc-500 mb-0.5">Jenis</p>
+                          <p className="font-medium text-zinc-900">{r.leaveTypeName}</p>
+                        </div>
+                        <div>
+                          <p className="text-zinc-500 mb-0.5">Hari</p>
+                          <p className="font-medium text-zinc-900">{r.totalDays}</p>
+                        </div>
+                        <div className="col-span-2">
+                          <p className="text-zinc-500 mb-0.5">Tanggal</p>
+                          <p className="font-medium text-zinc-900">{fmtDate(r.startDate)} – {fmtDate(r.endDate)}</p>
+                        </div>
+                      </div>
+                      {r.status === 'pending' && (
+                        <div className="mt-2 text-right border-t border-zinc-200 pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                            onClick={() => cancel.mutate(r.id)}
+                            disabled={cancel.isPending}
+                          >
+                            Batalkan Pengajuan
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop View (Table) */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-zinc-200 text-left text-xs text-zinc-500">
+                        <th className="pb-2 pr-3 font-medium">No. Pengajuan</th>
+                        <th className="pb-2 pr-3 font-medium">Jenis</th>
+                        <th className="pb-2 pr-3 font-medium">Tanggal</th>
+                        <th className="pb-2 pr-3 font-medium">Hari</th>
+                        <th className="pb-2 pr-3 font-medium">Status</th>
+                        <th className="pb-2 pr-3 font-medium">Diajukan</th>
+                        <th className="pb-2 font-medium"></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {myRequests.data.items.map((r) => (
+                        <tr key={r.id} className="border-b border-zinc-100 last:border-0">
+                          <td className="py-2 pr-3 font-medium text-zinc-900">
+                            {r.requestNumber}
+                          </td>
+                          <td className="py-2 pr-3 text-zinc-600">{r.leaveTypeName}</td>
+                          <td className="py-2 pr-3 text-zinc-600">
+                            {fmtDate(r.startDate)} – {fmtDate(r.endDate)}
+                          </td>
+                          <td className="py-2 pr-3 text-zinc-600">{r.totalDays}</td>
+                          <td className="py-2 pr-3">
+                            <Badge className={badgeClass(r.status)}>{r.status}</Badge>
+                          </td>
+                          <td className="py-2 pr-3 text-zinc-500">{fmtDateTime(r.createdAt)}</td>
+                          <td className="py-2 text-right">
+                            {r.status === 'pending' && (
+                              <Button
+                                variant="outline"
+                                size="xs"
+                                onClick={() => cancel.mutate(r.id)}
+                                disabled={cancel.isPending}
+                              >
+                                Batalkan
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ) : (
               <p className="text-sm text-zinc-500">Belum ada pengajuan cuti.</p>
             )}
