@@ -330,24 +330,28 @@ async function main() {
     });
   }
 
+  // Helper untuk membuat employee secara aman (mencegah duplikat employeeNumber)
+  const getOrCreateEmployee = async (employeeNumber: string, data: any) => {
+    const existing = await prisma.employee.findUnique({ where: { employeeNumber } });
+    if (existing) return existing;
+    return prisma.employee.create({ data: { employeeNumber, ...data } });
+  };
+
   // --- Admin pertama ---
   const adminExists = await prisma.user.findUnique({ where: { username: 'admin' } });
   if (!adminExists) {
-    const adminEmployee = await prisma.employee.create({
-      data: {
-        employeeNumber: 'EMP-0001',
-        fullName: 'Admin HRIS',
-        email: 'admin@gaselamotor.com',
-        phone: '081234567890',
-        joinDate: new Date('2020-01-01'),
-        employmentStatus: 'active',
-        employmentType: 'permanent',
-        ptkpStatus: 'K2',
-        basicSalary: 7500000,
-        departmentId: deptHrd.id,
-        positionId: (await prisma.position.findUnique({ where: { code: 'HRD' } }))!.id,
-        profilePhotoUrl: null,
-      },
+    const adminEmployee = await getOrCreateEmployee('EMP-0001', {
+      fullName: 'Admin HRIS',
+      email: 'admin@gaselamotor.com',
+      phone: '081234567890',
+      joinDate: new Date('2020-01-01'),
+      employmentStatus: 'active',
+      employmentType: 'permanent',
+      ptkpStatus: 'K2',
+      basicSalary: 7500000,
+      departmentId: deptHrd.id,
+      positionId: (await prisma.position.findUnique({ where: { code: 'HRD' } }))!.id,
+      profilePhotoUrl: null,
     });
     const passwordHash = await bcrypt.hash('Admin123!', 10);
     await prisma.user.create({
@@ -358,31 +362,28 @@ async function main() {
         role: 'admin',
       },
     });
-    console.log('  Admin dibuat: admin / Admin123! (GANTI password setelah login pertama)');
+    console.log('  Admin dibuat: admin / Admin123!');
   } else {
     console.log('  Admin sudah ada, dilewati');
   }
 
-  // --- User karyawan contoh (untuk pengujian RBAC & pengembangan) ---
+  // --- User karyawan contoh ---
   const employeeUserExists = await prisma.user.findUnique({
     where: { username: 'employee' },
   });
   if (!employeeUserExists) {
-    const empEmployee = await prisma.employee.create({
-      data: {
-        employeeNumber: 'EMP-0002',
-        fullName: 'Budi Santoso',
-        email: 'budi@gaselamotor.com',
-        phone: '081298765432',
-        birthDate: new Date('1995-06-15'),
-        joinDate: new Date('2022-03-01'),
-        employmentStatus: 'active',
-        employmentType: 'permanent',
-        ptkpStatus: 'TK0',
-        basicSalary: 4500000,
-        departmentId: deptSales.id,
-        positionId: (await prisma.position.findUnique({ where: { code: 'ADMS' } }))!.id,
-      },
+    const empEmployee = await getOrCreateEmployee('EMP-0002', {
+      fullName: 'Budi Santoso (Employee)',
+      email: 'budi@gaselamotor.com',
+      phone: '081298765432',
+      birthDate: new Date('1995-06-15'),
+      joinDate: new Date('2022-03-01'),
+      employmentStatus: 'active',
+      employmentType: 'permanent',
+      ptkpStatus: 'TK0',
+      basicSalary: 4500000,
+      departmentId: deptSales.id,
+      positionId: (await prisma.position.findUnique({ where: { code: 'ADMS' } }))!.id,
     });
     const passwordHash = await bcrypt.hash('Employee123!', 10);
     await prisma.user.create({
@@ -393,11 +394,105 @@ async function main() {
         role: 'employee',
       },
     });
-    console.log(
-      '  User karyawan dibuat: employee / Employee123! (role employee, utk uji RBAC)',
-    );
+    console.log('  User karyawan dibuat: employee / Employee123!');
   } else {
     console.log('  User karyawan sudah ada, dilewati');
+  }
+
+  // --- User Owner ---
+  const ownerUserExists = await prisma.user.findUnique({
+    where: { username: 'owner' },
+  });
+  if (!ownerUserExists) {
+    const ownerEmployee = await getOrCreateEmployee('EMP-0003', {
+      fullName: 'Owner Gasela',
+      email: 'owner@gaselamotor.com',
+      phone: '081222222222',
+      birthDate: new Date('1980-01-01'),
+      joinDate: new Date('2018-01-01'),
+      employmentStatus: 'active',
+      employmentType: 'permanent',
+      ptkpStatus: 'K3',
+      basicSalary: 15000000,
+      departmentId: deptHrd.id,
+      positionId: (await prisma.position.findUnique({ where: { code: 'DIR' } }))!.id,
+    });
+    const passwordHash = await bcrypt.hash('Owner123!', 10);
+    await prisma.user.create({
+      data: {
+        employeeId: ownerEmployee.id,
+        username: 'owner',
+        passwordHash,
+        role: 'owner',
+      },
+    });
+    console.log('  User Owner dibuat: owner / Owner123!');
+  } else {
+    console.log('  User Owner sudah ada, dilewati');
+  }
+
+  // --- User HRD Specialist ---
+  const hrdUserExists = await prisma.user.findUnique({
+    where: { username: 'hrd' },
+  });
+  if (!hrdUserExists) {
+    const hrdEmployee = await getOrCreateEmployee('EMP-0004', {
+      fullName: 'HRD Specialist',
+      email: 'hrd@gaselamotor.com',
+      phone: '081233333333',
+      birthDate: new Date('1990-05-10'),
+      joinDate: new Date('2021-06-01'),
+      employmentStatus: 'active',
+      employmentType: 'permanent',
+      ptkpStatus: 'K1',
+      basicSalary: 6500000,
+      departmentId: deptHrd.id,
+      positionId: (await prisma.position.findUnique({ where: { code: 'HRD' } }))!.id,
+    });
+    const passwordHash = await bcrypt.hash('Hrd123!', 10);
+    await prisma.user.create({
+      data: {
+        employeeId: hrdEmployee.id,
+        username: 'hrd',
+        passwordHash,
+        role: 'hrd',
+      },
+    });
+    console.log('  User HRD dibuat: hrd / Hrd123!');
+  } else {
+    console.log('  User HRD sudah ada, dilewati');
+  }
+
+  // --- User Manager ---
+  const managerUserExists = await prisma.user.findUnique({
+    where: { username: 'manager' },
+  });
+  if (!managerUserExists) {
+    const managerEmployee = await getOrCreateEmployee('EMP-0005', {
+      fullName: 'Manager Workshop',
+      email: 'manager@gaselamotor.com',
+      phone: '081244444444',
+      birthDate: new Date('1988-12-25'),
+      joinDate: new Date('2020-03-15'),
+      employmentStatus: 'active',
+      employmentType: 'permanent',
+      ptkpStatus: 'K2',
+      basicSalary: 8500000,
+      departmentId: deptWorkshop.id,
+      positionId: (await prisma.position.findUnique({ where: { code: 'SPVG' } }))!.id,
+    });
+    const passwordHash = await bcrypt.hash('Manager123!', 10);
+    await prisma.user.create({
+      data: {
+        employeeId: managerEmployee.id,
+        username: 'manager',
+        passwordHash,
+        role: 'manager',
+      },
+    });
+    console.log('  User Manager dibuat: manager / Manager123!');
+  } else {
+    console.log('  User Manager sudah ada, dilewati');
   }
 
   // --- Backfill ptkpStatus untuk employee lama ---
