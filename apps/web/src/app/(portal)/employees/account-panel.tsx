@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Key, Loader2, Shield, User, UserCheck, UserX } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, PasswordInput } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
 
@@ -171,9 +171,8 @@ export function AccountPanel({
           </div>
           <div>
             <Label htmlFor="acc-password">Password Awal</Label>
-            <Input
+            <PasswordInput
               id="acc-password"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Minimal 6 karakter"
@@ -270,9 +269,8 @@ export function AccountPanel({
             <div>
               <Label htmlFor="reset-pass">Password Baru</Label>
               <div className="flex gap-3 mt-1">
-                <Input
+                <PasswordInput
                   id="reset-pass"
-                  type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Minimal 6 karakter"

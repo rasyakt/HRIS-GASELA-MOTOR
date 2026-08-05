@@ -16,4 +16,7 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
+// 3. Enable symlink resolution (essential for pnpm)
+config.resolver.unstable_enableSymlinks = true;
+
 module.exports = config;

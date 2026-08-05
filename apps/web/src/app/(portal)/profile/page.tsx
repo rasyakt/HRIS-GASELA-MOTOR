@@ -21,7 +21,7 @@ import {
 import { useAuthStore } from '@/store/auth-store';
 import { useAuthApi } from '@/lib/auth-api';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, PasswordInput } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -318,9 +318,8 @@ export default function ProfilePage() {
 
                   <div>
                     <Label htmlFor="old-pass">Password Lama</Label>
-                    <Input
+                    <PasswordInput
                       id="old-pass"
-                      type="password"
                       value={oldPassword}
                       onChange={(e) => setOldPassword(e.target.value)}
                       placeholder="Masukkan password saat ini"
@@ -330,9 +329,8 @@ export default function ProfilePage() {
 
                   <div>
                     <Label htmlFor="new-pass">Password Baru</Label>
-                    <Input
+                    <PasswordInput
                       id="new-pass"
-                      type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Minimal 8 karakter"
@@ -342,9 +340,8 @@ export default function ProfilePage() {
 
                   <div>
                     <Label htmlFor="confirm-pass">Konfirmasi Password Baru</Label>
-                    <Input
+                    <PasswordInput
                       id="confirm-pass"
-                      type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Ulangi password baru"

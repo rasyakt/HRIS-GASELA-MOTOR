@@ -15,6 +15,7 @@ import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthApi } from '../services/auth-api';
 import type { HolidayDto } from '@gasela/shared-types';
+import { Ionicons } from '@expo/vector-icons';
 
 LocaleConfig.locales['id'] = {
   monthNames: ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],
@@ -115,20 +116,33 @@ export function TextField({
   multiline?: boolean;
   autoCapitalize?: 'none' | 'sentences' | 'words';
 }) {
+  const [isSecure, setIsSecure] = useState(secureTextEntry);
+
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor="#a1a1aa"
-        keyboardType={keyboardType}
-        secureTextEntry={secureTextEntry}
-        multiline={multiline}
-        autoCapitalize={autoCapitalize}
-        style={[styles.input, multiline && styles.inputMultiline]}
-      />
+      <View style={styles.inputContainer}>
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor="#a1a1aa"
+          keyboardType={keyboardType}
+          secureTextEntry={isSecure}
+          multiline={multiline}
+          autoCapitalize={autoCapitalize}
+          style={[styles.inputField, multiline && styles.inputMultiline]}
+        />
+        {secureTextEntry && (
+          <Pressable onPress={() => setIsSecure(!isSecure)} style={styles.eyeButton}>
+            <Ionicons
+              name={isSecure ? 'eye-off-outline' : 'eye-outline'}
+              size={20}
+              color="#71717a"
+            />
+          </Pressable>
+        )}
+      </View>
     </View>
   );
 }
@@ -332,6 +346,29 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#18181b',
     backgroundColor: '#fff',
+  },
+  inputContainer: {
+    minHeight: 44,
+    borderWidth: 1,
+    borderColor: '#e4e4e7',
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingRight: 10,
+  },
+  inputField: {
+    flex: 1,
+    minHeight: 44,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: '#18181b',
+  },
+  eyeButton: {
+    padding: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   inputMultiline: { minHeight: 90, textAlignVertical: 'top' },
   empty: { color: '#71717a', fontSize: 14, textAlign: 'center', paddingVertical: 24 },

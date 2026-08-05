@@ -139,6 +139,36 @@ export class LeavesService {
 
   async myBalances(employeeId: number, query: BalanceQuery) {
     const year = query.year ?? new Date().getFullYear();
+
+    // Lazy initialization: Ensure a LeaveBalance row exists for all active quota-based leave types
+    const activeQuotaTypes = await this.prisma.leaveType.findMany({
+      where: { isActive: true, annualQuota: { gt: 0 } },
+    });
+
+    for (const type of activeQuotaTypes) {
+      const exists = await this.prisma.leaveBalance.findUnique({
+        where: {
+          employeeId_leaveTypeId_year: {
+            employeeId,
+            leaveTypeId: type.id,
+            year,
+          },
+        },
+      });
+      if (!exists) {
+        await this.prisma.leaveBalance.create({
+          data: {
+            employeeId,
+            leaveTypeId: type.id,
+            year,
+            quota: type.annualQuota,
+            used: 0,
+            remaining: type.annualQuota,
+          },
+        });
+      }
+    }
+
     const rows = await this.prisma.leaveBalance.findMany({
       where: { employeeId, year },
       include: { leaveType: true },
@@ -244,7 +274,7 @@ export class LeavesService {
       );
     }
 
-    const balance = await this.prisma.leaveBalance.findUnique({
+    let balance = await this.prisma.leaveBalance.findUnique({
       where: {
         employeeId_leaveTypeId_year: {
           employeeId,
@@ -255,9 +285,17 @@ export class LeavesService {
     });
     if (type.annualQuota > 0) {
       if (!balance) {
-        throw new BadRequestException(
-          'Saldo cuti tahun berjalan belum tersedia',
-        );
+        // Lazy initialize in case they haven't fetched balances yet
+        balance = await this.prisma.leaveBalance.create({
+          data: {
+            employeeId,
+            leaveTypeId: type.id,
+            year: start.getUTCFullYear(),
+            quota: type.annualQuota,
+            used: 0,
+            remaining: type.annualQuota,
+          },
+        });
       }
       if (balance.remaining < days) {
         throw new ConflictException(
@@ -342,26 +380,37 @@ export class LeavesService {
     if (input.status === 'approved') {
       // Use transaction with locking to prevent race condition
       await this.prisma.$transaction(async (tx) => {
-        // Lock the balance row for update
-        const balance = await tx.leaveBalance.findUnique({
-          where: {
-            employeeId_leaveTypeId_year: {
-              employeeId: request.employeeId,
-              leaveTypeId: request.leaveTypeId,
-              year: request.startDate.getUTCFullYear(),
+        if (request.leaveType.annualQuota > 0) {
+          // Lock the balance row for update
+          const balance = await tx.leaveBalance.findUnique({
+            where: {
+              employeeId_leaveTypeId_year: {
+                employeeId: request.employeeId,
+                leaveTypeId: request.leaveTypeId,
+                year: request.startDate.getUTCFullYear(),
+              },
             },
-          },
-        });
-        
-        if (!balance) {
-          throw new ConflictException('Saldo cuti karyawan tidak ditemukan');
-        }
-        
-        // Check remaining balance again within transaction
-        if (balance.remaining < request.totalDays) {
-          throw new ConflictException(
-            `Saldo tidak cukup (tersisa ${balance.remaining} hari)`,
-          );
+          });
+          
+          if (!balance) {
+            throw new ConflictException('Saldo cuti karyawan tidak ditemukan');
+          }
+          
+          // Check remaining balance again within transaction
+          if (balance.remaining < request.totalDays) {
+            throw new ConflictException(
+              `Saldo tidak cukup (tersisa ${balance.remaining} hari)`,
+            );
+          }
+
+          // Update balance and approve request atomically
+          await tx.leaveBalance.update({
+            where: { id: balance.id },
+            data: {
+              used: { increment: request.totalDays },
+              remaining: { decrement: request.totalDays },
+            },
+          });
         }
 
         // Check for overlapping approved leaves
@@ -380,15 +429,6 @@ export class LeavesService {
             'Sudah ada cuti yang disetujui pada rentang tanggal yang sama',
           );
         }
-
-        // Update balance and approve request atomically
-        await tx.leaveBalance.update({
-          where: { id: balance.id },
-          data: {
-            used: { increment: request.totalDays },
-            remaining: { decrement: request.totalDays },
-          },
-        });
         
         await tx.leaveRequest.update({
           where: { id },
