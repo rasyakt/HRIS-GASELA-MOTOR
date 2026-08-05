@@ -48,6 +48,37 @@ function workdayCount(from: Date, to: Date): number {
 export class LeavesService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async calculateWorkdaysWithHolidays(from: Date, to: Date): Promise<number> {
+    const holidays = await this.prisma.holiday.findMany();
+    let count = 0;
+    
+    for (
+      const cur = new Date(from);
+      cur <= to;
+      cur.setUTCDate(cur.getUTCDate() + 1)
+    ) {
+      const dow = cur.getUTCDay();
+      // Skip weekends
+      if (dow === 0 || dow === 6) continue; 
+
+      const m = cur.getUTCMonth() + 1;
+      const d = cur.getUTCDate();
+      const curDateStr = cur.toISOString().slice(0, 10);
+
+      const isHoliday = holidays.some((h) => {
+        if (h.isRecurringYearly) {
+          return h.date.getUTCMonth() + 1 === m && h.date.getUTCDate() === d;
+        }
+        return h.date.toISOString().slice(0, 10) === curDateStr;
+      });
+
+      if (!isHoliday) {
+        count++;
+      }
+    }
+    return count;
+  }
+
   // ===================== LEAVE TYPE =====================
 
   listTypes(includeInactive = false) {
@@ -179,9 +210,9 @@ export class LeavesService {
     if (start > maxFutureDate || end > maxFutureDate) {
       throw new BadRequestException('Pengajuan cuti tidak boleh lebih dari 1 tahun ke depan');
     }
-    const days = workdayCount(start, end);
+    const days = await this.calculateWorkdaysWithHolidays(start, end);
     if (days === 0) {
-      throw new BadRequestException('Rentang tanggal tidak berisi hari kerja');
+      throw new BadRequestException('Rentang tanggal tidak berisi hari kerja atau bertepatan dengan libur sepenuhnya');
     }
     if (type.minNoticeDays != null) {
       const diff = Math.round(

@@ -6,10 +6,24 @@ import {
   Text,
   TextInput,
   View,
+  Modal,
+  Platform,
 } from 'react-native';
 import { statusColor, statusLabel } from '../lib/format';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Platform } from 'react-native';
+import { Calendar, LocaleConfig } from 'react-native-calendars';
+import { useQuery } from '@tanstack/react-query';
+import { useAuthApi } from '../services/auth-api';
+import type { HolidayDto } from '@gasela/shared-types';
+
+LocaleConfig.locales['id'] = {
+  monthNames: ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],
+  monthNamesShort: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'],
+  dayNames: ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'],
+  dayNamesShort: ['Min','Sen','Sel','Rab','Kam','Jum','Sab'],
+  today: 'Hari ini'
+};
+LocaleConfig.defaultLocale = 'id';
 
 type ButtonVariant = 'primary' | 'outline' | 'destructive' | 'ghost';
 
@@ -131,12 +145,38 @@ export function DateField({
   mode?: 'date' | 'time';
 }) {
   const [show, setShow] = useState(false);
+  const authApi = useAuthApi();
+
+  const { data: holidays } = useQuery({
+    queryKey: ['holidays'],
+    queryFn: () => authApi<HolidayDto[]>('/api/settings/holidays'),
+    enabled: mode === 'date',
+  });
+
+  const markedDates: Record<string, any> = {};
+  
+  if (mode === 'date') {
+    const currentYear = new Date().getFullYear();
+    holidays?.forEach(h => {
+      const d = new Date(h.date);
+      if (h.isRecurringYearly) {
+        for(let yr = currentYear - 1; yr <= currentYear + 1; yr++) {
+          const dateStr = `${yr}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+          markedDates[dateStr] = { marked: true, dotColor: '#dc2626' };
+        }
+      } else {
+        const dateStr = d.toISOString().split('T')[0];
+        markedDates[dateStr] = { marked: true, dotColor: '#dc2626' };
+      }
+    });
+
+    if (value) {
+      markedDates[value] = { ...markedDates[value], selected: true, selectedColor: '#18181b' };
+    }
+  }
 
   let dateObj = new Date();
-  if (mode === 'date' && value) {
-    const [y, m, d] = value.split('-');
-    if (y && m && d) dateObj = new Date(Number(y), Number(m) - 1, Number(d));
-  } else if (mode === 'time' && value) {
+  if (mode === 'time' && value) {
     const [h, m] = value.split(':');
     if (h && m) {
       dateObj = new Date();
@@ -144,22 +184,18 @@ export function DateField({
     }
   }
 
-  const handleValueChange = (event: any, selectedDate?: Date) => {
-    setShow(Platform.OS === 'ios'); // Keep picker open on iOS (inline), close on Android
+  const handleTimeChange = (event: any, selectedDate?: Date) => {
+    setShow(Platform.OS === 'ios');
     if (selectedDate) {
-      if (mode === 'date') {
-        const d = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000);
-        onChange(d.toISOString().split('T')[0]);
-      } else {
-        const hh = selectedDate.getHours().toString().padStart(2, '0');
-        const mm = selectedDate.getMinutes().toString().padStart(2, '0');
-        onChange(`${hh}:${mm}`);
-      }
+      const hh = selectedDate.getHours().toString().padStart(2, '0');
+      const mm = selectedDate.getMinutes().toString().padStart(2, '0');
+      onChange(`${hh}:${mm}`);
     }
   };
 
-  const handleDismiss = () => {
-    setShow(Platform.OS === 'ios');
+  const handleDateSelect = (day: any) => {
+    onChange(day.dateString);
+    setShow(false);
   };
 
   return (
@@ -170,13 +206,35 @@ export function DateField({
           {value || (mode === 'date' ? 'Pilih Tanggal' : 'Pilih Waktu')}
         </Text>
       </Pressable>
-      {show && (
+      
+      {mode === 'date' && (
+        <Modal visible={show} transparent animationType="fade" onRequestClose={() => setShow(false)}>
+          <View style={styles.modalBackdrop}>
+            <View style={styles.calendarModal}>
+              <Text style={styles.modalTitle}>Pilih Tanggal</Text>
+              <Calendar
+                current={value || undefined}
+                onDayPress={handleDateSelect}
+                markedDates={markedDates}
+                theme={{
+                  selectedDayBackgroundColor: '#18181b',
+                  todayTextColor: '#dc2626',
+                  arrowColor: '#18181b',
+                }}
+              />
+              <Button title="Tutup" variant="ghost" onPress={() => setShow(false)} style={{ marginTop: 12 }} />
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {mode === 'time' && show && (
         <DateTimePicker
           value={dateObj}
-          mode={mode}
+          mode="time"
           display="default"
-          onValueChange={handleValueChange}
-          onDismiss={handleDismiss}
+          onValueChange={handleTimeChange}
+          onDismiss={() => setShow(Platform.OS === 'ios')}
         />
       )}
     </View>
@@ -295,4 +353,18 @@ const styles = StyleSheet.create({
   rowLabel: { fontSize: 14, color: '#71717a' },
   rowValue: { fontSize: 14, color: '#18181b', fontWeight: '500', flexShrink: 1, textAlign: 'right' },
   rowValueBig: { fontSize: 18, fontWeight: '700' },
+  calendarModal: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    width: '90%',
+    alignSelf: 'center',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalTitle: { fontSize: 17, fontWeight: '700', color: '#18181b', marginBottom: 14 },
 });
