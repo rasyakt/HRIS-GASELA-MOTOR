@@ -19,6 +19,9 @@ import {
   User,
   ShieldAlert,
   ShieldCheck,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -43,20 +46,45 @@ interface NavItem {
   minRole: UserRole;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minRole: 'employee' },
-  { href: '/attendance', label: 'Kehadiran', icon: Clock, minRole: 'employee' },
-  { href: '/leave', label: 'Cuti', icon: CalendarDays, minRole: 'employee' },
-  { href: '/overtime', label: 'Lembur', icon: Timer, minRole: 'employee' },
-  { href: '/payroll', label: 'Penggajian', icon: ReceiptText, minRole: 'employee' },
-  { href: '/announcements', label: 'Pengumuman', icon: Megaphone, minRole: 'employee' },
-  { href: '/discipline', label: 'Disiplin & SP', icon: ShieldAlert, minRole: 'employee' },
-  { href: '/approvals', label: 'Persetujuan', icon: CheckCheck, minRole: 'manager' },
-  { href: '/performance-reviews', label: 'Kinerja', icon: TrendingUp, minRole: 'manager' },
-  { href: '/reports', label: 'Laporan', icon: BarChart3, minRole: 'manager' },
-  { href: '/employees', label: 'Karyawan', icon: Users, minRole: 'admin' },
-  { href: '/audit-logs', label: 'Audit Log', icon: ShieldCheck, minRole: 'admin' },
-  { href: '/settings', label: 'Pengaturan', icon: Settings, minRole: 'admin' },
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: 'Overview',
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minRole: 'employee' },
+    ],
+  },
+  {
+    label: 'Karyawan Mandiri',
+    items: [
+      { href: '/attendance', label: 'Kehadiran', icon: Clock, minRole: 'employee' },
+      { href: '/leave', label: 'Cuti', icon: CalendarDays, minRole: 'employee' },
+      { href: '/overtime', label: 'Lembur', icon: Timer, minRole: 'employee' },
+      { href: '/payroll', label: 'Penggajian', icon: ReceiptText, minRole: 'employee' },
+      { href: '/announcements', label: 'Pengumuman', icon: Megaphone, minRole: 'employee' },
+      { href: '/discipline', label: 'Disiplin & SP', icon: ShieldAlert, minRole: 'employee' },
+    ],
+  },
+  {
+    label: 'Manajemen & Review',
+    items: [
+      { href: '/approvals', label: 'Persetujuan', icon: CheckCheck, minRole: 'manager' },
+      { href: '/performance-reviews', label: 'Kinerja', icon: TrendingUp, minRole: 'manager' },
+      { href: '/reports', label: 'Laporan', icon: BarChart3, minRole: 'manager' },
+    ],
+  },
+  {
+    label: 'Sistem Admin',
+    items: [
+      { href: '/employees', label: 'Karyawan', icon: Users, minRole: 'admin' },
+      { href: '/audit-logs', label: 'Audit Log', icon: ShieldCheck, minRole: 'admin' },
+      { href: '/settings', label: 'Pengaturan', icon: Settings, minRole: 'admin' },
+    ],
+  },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
@@ -86,15 +114,48 @@ export default function PortalLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const val = localStorage.getItem('sidebar_collapsed');
+    if (val === 'true') setIsCollapsed(true);
+
+    const groupsVal = localStorage.getItem('collapsed_groups');
+    if (groupsVal) {
+      try {
+        setCollapsedGroups(JSON.parse(groupsVal));
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, []);
+
+  const toggleCollapse = () => {
+    const nextVal = !isCollapsed;
+    setIsCollapsed(nextVal);
+    localStorage.setItem('sidebar_collapsed', String(nextVal));
+  };
+
+  const toggleGroup = (label: string) => {
+    setCollapsedGroups((prev) => {
+      const next = { ...prev, [label]: !prev[label] };
+      localStorage.setItem('collapsed_groups', JSON.stringify(next));
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!token) router.replace('/login');
   }, [token, router]);
 
-  const navItems = useMemo(
-    () => (user ? NAV_ITEMS.filter((i) => roleAtLeast(user.role, i.minRole)) : []),
-    [user],
-  );
+  const visibleGroups = useMemo(() => {
+    if (!user) return [];
+    return NAV_GROUPS.map((group) => ({
+      ...group,
+      items: group.items.filter((item) => roleAtLeast(user.role, item.minRole)),
+    })).filter((group) => group.items.length > 0);
+  }, [user]);
 
   const authApi = useAuthApi();
   const unreadQuery = useQuery<{ unread: number }>({
@@ -130,54 +191,94 @@ export default function PortalLayout({
     );
   }
 
-  const sidebar = (
-    <aside className="flex h-full w-64 flex-col border-r border-zinc-200 bg-white">
-      <div className="flex h-14 items-center border-b border-zinc-100 px-4">
-        <GaselaLogo variant="full-dark" size="sm" />
-      </div>
-      <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-        {navItems.map((item) => {
-          const active =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                active
-                  ? 'bg-zinc-900 text-white'
-                  : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
-              }`}
+  const sidebar = (isMobile = false) => {
+    const collapsed = !isMobile && isCollapsed;
+    return (
+      <aside className={`flex h-full flex-col border-r border-zinc-200 bg-white transition-all duration-300 ${
+        collapsed ? 'w-16' : 'w-64'
+      }`}>
+        <div className="flex h-14 items-center border-b border-zinc-100 px-4 justify-between">
+          <GaselaLogo variant="full-dark" size="sm" showText={!collapsed} />
+          {!isMobile && (
+            <button
+              onClick={toggleCollapse}
+              className="rounded-lg p-1.5 hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition-colors focus:outline-none"
             >
-              <item.icon className="size-4" />
-              <span className="flex-1">{item.label}</span>
-              {item.href === '/announcements' && unreadCount > 0 && (
-                <span className={`inline-flex items-center justify-center min-w-4.5 h-4.5 rounded-full px-1 text-[10px] font-bold ${
-                  active ? 'bg-white text-zinc-900' : 'bg-red-500 text-white'
-                }`}>
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
-    </aside>
-  );
+              {collapsed ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
+            </button>
+          )}
+        </div>
+        <nav className="flex-1 space-y-4 overflow-y-auto p-3">
+          {visibleGroups.map((group) => {
+            const isGroupCollapsed = collapsedGroups[group.label] === true;
+            return (
+              <div key={group.label} className="space-y-1.5">
+                {!collapsed ? (
+                  <button
+                    onClick={() => toggleGroup(group.label)}
+                    className="flex w-full items-center justify-between px-3 py-1 text-[10px] font-bold tracking-wider text-zinc-400 uppercase select-none hover:text-zinc-900 transition-colors focus:outline-none"
+                  >
+                    <span>{group.label}</span>
+                    {isGroupCollapsed ? (
+                      <ChevronRight className="size-3" />
+                    ) : (
+                      <ChevronDown className="size-3" />
+                    )}
+                  </button>
+                ) : (
+                  <div className="h-px bg-zinc-100 my-2 mx-1" />
+                )}
+                {(!collapsed && isGroupCollapsed) ? null : (
+                  <div className="space-y-0.5">
+                    {group.items.map((item) => {
+                      const active =
+                        pathname === item.href || pathname.startsWith(`${item.href}/`);
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          title={collapsed ? item.label : undefined}
+                          onClick={() => setMobileOpen(false)}
+                          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                            active
+                              ? 'bg-zinc-900 text-white font-semibold'
+                              : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
+                          } ${collapsed ? 'justify-center px-2' : ''}`}
+                        >
+                          <item.icon className="size-4 shrink-0" />
+                          {!collapsed && <span className="flex-1 transition-opacity duration-300">{item.label}</span>}
+                          {!collapsed && item.href === '/announcements' && unreadCount > 0 && (
+                            <span className={`inline-flex items-center justify-center min-w-4.5 h-4.5 rounded-full px-1 text-[10px] font-bold ${
+                              active ? 'bg-white text-zinc-900' : 'bg-red-500 text-white'
+                            }`}>
+                              {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
+      </aside>
+    );
+  };
 
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       <CommandPalette />
       <OfflineBanner />
-      <div className="hidden lg:block h-full">{sidebar}</div>
+      <div className="hidden lg:block h-full">{sidebar(false)}</div>
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
             className="absolute inset-0 bg-black/40"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute inset-y-0 left-0">{sidebar}</div>
+          <div className="absolute inset-y-0 left-0">{sidebar(true)}</div>
           <Button
             variant="ghost"
             size="icon"
