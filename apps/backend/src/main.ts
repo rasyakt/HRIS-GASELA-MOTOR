@@ -45,8 +45,8 @@ async function bootstrap() {
   });
 
   const port = config.get<number>('PORT') ?? 3001;
-  await app.listen(port);
-  logger.log(`API berjalan di http://localhost:${port}/api`);
+  await app.listen(port, '0.0.0.0');
+  logger.log(`API berjalan di http://0.0.0.0:${port}/api`);
   logger.log(`Swagger: http://localhost:${port}/api/docs`);
 }
 

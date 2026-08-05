@@ -33,6 +33,19 @@ export function OvertimeScreen() {
   const [purpose, setPurpose] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
+  const resetForm = () => {
+    setOvertimeDate(todayInput());
+    setStartTime('17:00');
+    setEndTime('20:00');
+    setPurpose('');
+    setFormError(null);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    resetForm();
+  };
+
   const myRequests = useQuery({
     queryKey: ['overtime-my'],
     queryFn: () =>
@@ -56,12 +69,7 @@ export function OvertimeScreen() {
       authApi('/api/overtime/requests', { method: 'POST', body: JSON.stringify(input) }),
     onSuccess: () => {
       invalidate();
-      setModalOpen(false);
-      setPurpose('');
-      setOvertimeDate(todayInput());
-      setStartTime('17:00');
-      setEndTime('20:00');
-      setFormError(null);
+      handleCloseModal();
     },
     onError: (err) =>
       setFormError(err instanceof Error ? err.message : 'Gagal mengajukan lembur.'),
@@ -159,7 +167,7 @@ export function OvertimeScreen() {
         visible={modalOpen}
         animationType="slide"
         transparent
-        onRequestClose={() => setModalOpen(false)}
+        onRequestClose={handleCloseModal}
       >
         <View style={styles.modalBackdrop}>
           <View style={styles.modal}>
@@ -203,7 +211,7 @@ export function OvertimeScreen() {
                 loading={create.isPending}
               />
               <View style={styles.modalCancel}>
-                <Button title="Batal" variant="outline" onPress={() => setModalOpen(false)} />
+                <Button title="Batal" variant="outline" onPress={handleCloseModal} />
               </View>
             </ScrollView>
           </View>

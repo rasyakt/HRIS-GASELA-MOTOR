@@ -63,6 +63,6 @@ export const markAnnouncementReadSchema = z.object({
 export type MarkAnnouncementReadInput = z.infer<typeof markAnnouncementReadSchema>;
 
 export const unreadCountDtoSchema = z.object({
-  count: z.number(),
+  unread: z.number(),
 });
 export type UnreadCountDto = z.infer<typeof unreadCountDtoSchema>;

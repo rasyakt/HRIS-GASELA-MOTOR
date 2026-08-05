@@ -29,7 +29,6 @@ export function AttendanceScreen() {
   const authApi = useAuthApi();
   const queryClient = useQueryClient();
   const [actionError, setActionError] = useState<string | null>(null);
-  const [geoFallback, setGeoFallback] = useState(false);
   const [actionLoading, setActionLoading] = useState<'in' | 'out' | null>(null);
 
   const dashboard = useQuery({
@@ -56,7 +55,6 @@ export function AttendanceScreen() {
     setActionLoading(kind);
     try {
       const pos = await getPosition();
-      setGeoFallback(pos.fallback);
       await authApi(`/api/attendances/check-${kind}`, {
         method: 'POST',
         body: JSON.stringify({ latitude: pos.latitude, longitude: pos.longitude }),
@@ -135,11 +133,6 @@ export function AttendanceScreen() {
               loading={actionLoading === 'in'}
             />
           </View>
-        )}
-        {geoFallback && (
-          <Text style={styles.note}>
-            Lokasi perangkat tidak terdeteksi; memakai koordinat kantor.
-          </Text>
         )}
         {actionError && <ErrorBanner message={actionError} />}
       </Card>

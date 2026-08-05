@@ -44,7 +44,7 @@ function AnnouncementTabIcon({
     queryFn: () => authApi<UnreadCountDto>('/api/announcements/unread-count'),
     refetchInterval: 60_000, // poll tiap 1 menit
   });
-  const count = data?.count ?? 0;
+  const count = data?.unread ?? 0;
 
   return (
     <View style={tabStyles.icon}>

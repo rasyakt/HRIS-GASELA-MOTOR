@@ -1,4 +1,5 @@
 import { tokenStore } from './storage';
+import { useOnlineStore } from '../store/online-store';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:3001';
 
@@ -20,26 +21,46 @@ export class ApiError extends Error {
 export async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
   const { token, headers, ...rest } = options;
   const authToken = token === undefined ? tokenStore.getAccessToken() : token;
-  const res = await fetch(`${API_URL}${path}`, {
-    ...rest,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-      ...headers,
-    },
-  });
 
-  const body = await res.json().catch(() => null);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30_000);
 
-  if (!res.ok) {
-    const message =
-      body && typeof body === 'object' && 'message' in body
-        ? String((body as { message: string | string[] }).message)
-        : `Request failed (${res.status})`;
-    throw new ApiError(res.status, Array.isArray(message) ? message.join(', ') : message);
+  try {
+    const res = await fetch(`${API_URL}${path}`, {
+      ...rest,
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        ...headers,
+      },
+    });
+
+    clearTimeout(timeoutId);
+    useOnlineStore.getState().setOnline(true);
+
+    const body = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      const message =
+        body && typeof body === 'object' && 'message' in body
+          ? String((body as { message: string | string[] }).message)
+          : `Request failed (${res.status})`;
+      throw new ApiError(res.status, Array.isArray(message) ? message.join(', ') : message);
+    }
+
+    return body as T;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      throw new Error('Koneksi terputus (Request Timeout 30s). Silakan coba lagi.');
+    }
+    if (err instanceof TypeError || err.message?.includes('Network request failed')) {
+      useOnlineStore.getState().setOnline(false);
+      throw new Error('Gagal terhubung ke server. Periksa koneksi internet Anda.');
+    }
+    throw err;
   }
-
-  return body as T;
 }
 
 export const apiUrl = API_URL;

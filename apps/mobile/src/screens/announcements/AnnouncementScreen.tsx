@@ -76,7 +76,7 @@ export function AnnouncementScreen() {
   }
 
   const items = list.data?.items ?? [];
-  const unreadCount = unread.data?.count ?? 0;
+  const unreadCount = unread.data?.unread ?? 0;
 
   return (
     <View style={styles.flex}>

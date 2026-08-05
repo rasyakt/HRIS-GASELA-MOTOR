@@ -34,6 +34,19 @@ export function LeaveListScreen() {
   const [reason, setReason] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
+  const resetForm = () => {
+    setLeaveTypeId(null);
+    setStartDate(todayInput());
+    setEndDate(todayInput());
+    setReason('');
+    setFormError(null);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    resetForm();
+  };
+
   const balances = useQuery({
     queryKey: ['leave-balances'],
     queryFn: () => authApi<LeaveBalanceDto[]>('/api/leaves/balances/my'),
@@ -69,10 +82,7 @@ export function LeaveListScreen() {
       authApi('/api/leaves/requests', { method: 'POST', body: JSON.stringify(input) }),
     onSuccess: () => {
       invalidate();
-      setModalOpen(false);
-      setReason('');
-      setLeaveTypeId(null);
-      setFormError(null);
+      handleCloseModal();
     },
     onError: (err) =>
       setFormError(err instanceof Error ? err.message : 'Gagal mengajukan cuti.'),
@@ -190,7 +200,7 @@ export function LeaveListScreen() {
         visible={modalOpen}
         animationType="slide"
         transparent
-        onRequestClose={() => setModalOpen(false)}
+        onRequestClose={handleCloseModal}
       >
         <View style={styles.modalBackdrop}>
           <View style={styles.modal}>
@@ -251,7 +261,7 @@ export function LeaveListScreen() {
                 loading={create.isPending}
               />
               <View style={styles.modalCancel}>
-                <Button title="Batal" variant="outline" onPress={() => setModalOpen(false)} />
+                <Button title="Batal" variant="outline" onPress={handleCloseModal} />
               </View>
             </ScrollView>
           </View>

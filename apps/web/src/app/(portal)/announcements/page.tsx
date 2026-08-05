@@ -379,7 +379,7 @@ export default function AnnouncementsPage() {
 
   const unread = useQuery({
     queryKey: ['announcements-unread'],
-    queryFn: () => authApi<{ count: number }>('/api/announcements/unread-count'),
+    queryFn: () => authApi<{ unread: number }>('/api/announcements/unread-count'),
   });
 
   const publish = useMutation({
@@ -425,7 +425,7 @@ export default function AnnouncementsPage() {
           <p className="text-sm text-zinc-500">
             {isAdmin
               ? 'Kelola pengumuman untuk seluruh karyawan.'
-              : `Ada ${unread.data?.count ?? 0} pengumuman baru belum dibaca.`}
+              : `Ada ${unread.data?.unread ?? 0} pengumuman baru belum dibaca.`}
           </p>
         </div>
         {isAdmin && (
@@ -457,9 +457,9 @@ export default function AnnouncementsPage() {
           <CardTitle className="flex flex-wrap items-center justify-between gap-3">
             <span>
               {isAdmin ? 'Semua Pengumuman' : 'Pengumuman untuk Saya'}
-              {!isAdmin && unread.data && unread.data.count > 0 && (
+              {!isAdmin && unread.data && unread.data.unread > 0 && (
                 <Badge className="ml-2 bg-emerald-100 text-emerald-700">
-                  {unread.data.count} baru
+                  {unread.data.unread} baru
                 </Badge>
               )}
             </span>
