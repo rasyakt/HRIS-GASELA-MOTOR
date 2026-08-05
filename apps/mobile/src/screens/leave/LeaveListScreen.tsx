@@ -18,7 +18,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Button, Card, CardTitle, ErrorBanner, StatusBadge, TextField } from '../../components/ui';
+import { Button, Card, CardTitle, ErrorBanner, StatusBadge, TextField, DateField } from '../../components/ui';
 import { fmtDate, fmtDateTime, todayInput } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
 
@@ -236,17 +236,17 @@ export function LeaveListScreen() {
                   })}
                 </View>
               )}
-              <TextField
+              <DateField
                 label="Tanggal Mulai (YYYY-MM-DD)"
                 value={startDate}
-                onChangeText={setStartDate}
-                placeholder="mis. 2026-08-10"
+                onChange={setStartDate}
+                mode="date"
               />
-              <TextField
+              <DateField
                 label="Tanggal Selesai (YYYY-MM-DD)"
                 value={endDate}
-                onChangeText={setEndDate}
-                placeholder="mis. 2026-08-12"
+                onChange={setEndDate}
+                mode="date"
               />
               <TextField
                 label="Alasan"

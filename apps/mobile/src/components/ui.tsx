@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -8,6 +8,8 @@ import {
   View,
 } from 'react-native';
 import { statusColor, statusLabel } from '../lib/format';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Platform } from 'react-native';
 
 type ButtonVariant = 'primary' | 'outline' | 'destructive' | 'ghost';
 
@@ -117,6 +119,70 @@ export function TextField({
   );
 }
 
+export function DateField({
+  label,
+  value,
+  onChange,
+  mode = 'date',
+}: {
+  label: string;
+  value: string; // YYYY-MM-DD or HH:MM
+  onChange: (v: string) => void;
+  mode?: 'date' | 'time';
+}) {
+  const [show, setShow] = useState(false);
+
+  let dateObj = new Date();
+  if (mode === 'date' && value) {
+    const [y, m, d] = value.split('-');
+    if (y && m && d) dateObj = new Date(Number(y), Number(m) - 1, Number(d));
+  } else if (mode === 'time' && value) {
+    const [h, m] = value.split(':');
+    if (h && m) {
+      dateObj = new Date();
+      dateObj.setHours(Number(h), Number(m));
+    }
+  }
+
+  const handleValueChange = (event: any, selectedDate?: Date) => {
+    setShow(Platform.OS === 'ios'); // Keep picker open on iOS (inline), close on Android
+    if (selectedDate) {
+      if (mode === 'date') {
+        const d = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000);
+        onChange(d.toISOString().split('T')[0]);
+      } else {
+        const hh = selectedDate.getHours().toString().padStart(2, '0');
+        const mm = selectedDate.getMinutes().toString().padStart(2, '0');
+        onChange(`${hh}:${mm}`);
+      }
+    }
+  };
+
+  const handleDismiss = () => {
+    setShow(Platform.OS === 'ios');
+  };
+
+  return (
+    <View style={styles.field}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <Pressable onPress={() => setShow(true)} style={styles.input}>
+        <Text style={{ color: value ? '#18181b' : '#a1a1aa', paddingTop: Platform.OS === 'ios' ? 0 : 3 }}>
+          {value || (mode === 'date' ? 'Pilih Tanggal' : 'Pilih Waktu')}
+        </Text>
+      </Pressable>
+      {show && (
+        <DateTimePicker
+          value={dateObj}
+          mode={mode}
+          display="default"
+          onValueChange={handleValueChange}
+          onDismiss={handleDismiss}
+        />
+      )}
+    </View>
+  );
+}
+
 export function EmptyState({ message }: { message: string }) {
   return <Text style={styles.empty}>{message}</Text>;
 }
@@ -156,8 +222,8 @@ export function Row({
 
 const styles = StyleSheet.create({
   button: {
-    height: 44,
-    borderRadius: 10,
+    height: 48,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
@@ -177,10 +243,13 @@ const styles = StyleSheet.create({
   buttonTextDestructive: { color: '#dc2626' },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#e4e4e7',
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
   },
   cardTitle: { fontSize: 15, fontWeight: '600', color: '#18181b', marginBottom: 12 },
   badge: {

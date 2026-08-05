@@ -16,7 +16,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Button, Card, CardTitle, ErrorBanner, StatusBadge, TextField } from '../../components/ui';
+import { Button, Card, CardTitle, ErrorBanner, StatusBadge, TextField, DateField } from '../../components/ui';
 import { fmtDate, fmtDateTime, fmtHours, fmtTime, todayInput } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
 
@@ -174,27 +174,27 @@ export function OvertimeScreen() {
             <Text style={styles.modalTitle}>Ajukan Lembur</Text>
             <ScrollView keyboardShouldPersistTaps="handled">
               {formError && <ErrorBanner message={formError} />}
-              <TextField
+              <DateField
                 label="Tanggal Lembur (YYYY-MM-DD)"
                 value={overtimeDate}
-                onChangeText={setOvertimeDate}
-                placeholder="mis. 2026-08-05"
+                onChange={setOvertimeDate}
+                mode="date"
               />
               <View style={styles.timeRow}>
                 <View style={styles.timeCol}>
-                  <TextField
+                  <DateField
                     label="Mulai (HH:MM)"
                     value={startTime}
-                    onChangeText={setStartTime}
-                    placeholder="17:00"
+                    onChange={setStartTime}
+                    mode="time"
                   />
                 </View>
                 <View style={styles.timeCol}>
-                  <TextField
+                  <DateField
                     label="Selesai (HH:MM)"
                     value={endTime}
-                    onChangeText={setEndTime}
-                    placeholder="20:00"
+                    onChange={setEndTime}
+                    mode="time"
                   />
                 </View>
               </View>

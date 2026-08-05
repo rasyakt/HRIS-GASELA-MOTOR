@@ -2,31 +2,24 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useQuery } from '@tanstack/react-query';
 import type { UnreadCountDto } from '@gasela/shared-types';
 import { Text, View, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
-import { LeaveListScreen } from '../screens/leave/LeaveListScreen';
-import { AttendanceScreen } from '../screens/attendance/AttendanceScreen';
-import { OvertimeScreen } from '../screens/overtime/OvertimeScreen';
-import { PayslipScreen } from '../screens/payroll/PayslipScreen';
 import { AnnouncementScreen } from '../screens/announcements/AnnouncementScreen';
 import { useAuthApi } from '../services/auth-api';
 
 export type TabParamList = {
   Home: undefined;
-  Attendance: undefined;
-  Leave: undefined;
-  Overtime: undefined;
-  Payslip: undefined;
   Announcements: undefined;
   Profile: undefined;
 };
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
-function TabIcon({ emoji, label }: { emoji: string; label: string }) {
+function TabIcon({ name, color }: { name: any; color: string }) {
   return (
     <View style={tabStyles.icon}>
-      <Text style={tabStyles.emoji}>{emoji}</Text>
+      <Ionicons name={name} size={24} color={color} />
     </View>
   );
 }
@@ -48,7 +41,7 @@ function AnnouncementTabIcon({
 
   return (
     <View style={tabStyles.icon}>
-      <Text style={tabStyles.emoji}>📢</Text>
+      <Ionicons name={focused ? "notifications" : "notifications-outline"} size={24} color={color} />
       {count > 0 && (
         <View style={tabStyles.badge}>
           <Text style={tabStyles.badgeText}>{count > 9 ? '9+' : count}</Text>
@@ -59,12 +52,11 @@ function AnnouncementTabIcon({
 }
 
 const tabStyles = StyleSheet.create({
-  icon: { alignItems: 'center', justifyContent: 'center', width: 28, height: 28 },
-  emoji: { fontSize: 20 },
+  icon: { alignItems: 'center', justifyContent: 'center', width: 32, height: 32, marginTop: 4 },
   badge: {
     position: 'absolute',
-    top: -4,
-    right: -8,
+    top: -2,
+    right: -4,
     backgroundColor: '#dc2626',
     borderRadius: 999,
     minWidth: 16,
@@ -72,23 +64,32 @@ const tabStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 3,
+    borderWidth: 1.5,
+    borderColor: '#fff',
   },
-  badgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+  badgeText: { color: '#fff', fontSize: 9, fontWeight: 'bold' },
 });
 
 export function TabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
-        headerShown: true,
-        tabBarActiveTintColor: '#18181b',
-        tabBarInactiveTintColor: '#a1a1aa',
+        headerShown: false,
+        tabBarActiveTintColor: '#0f172a',
+        tabBarInactiveTintColor: '#94a3b8',
         tabBarStyle: {
-          borderTopWidth: 1,
-          borderTopColor: '#e4e4e7',
-          backgroundColor: '#fff',
+          borderTopWidth: 0,
+          backgroundColor: '#ffffff',
+          elevation: 10,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.05,
+          shadowRadius: 10,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
         },
-        tabBarLabelStyle: { fontSize: 11 },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 4 },
       }}
     >
       <Tab.Screen
@@ -96,39 +97,9 @@ export function TabNavigator() {
         component={HomeScreen}
         options={{
           title: 'Beranda',
-          tabBarIcon: ({ focused, color }) => <TabIcon emoji="🏠" label="Beranda" />,
-        }}
-      />
-      <Tab.Screen
-        name="Attendance"
-        component={AttendanceScreen}
-        options={{
-          title: 'Kehadiran',
-          tabBarIcon: ({ focused, color }) => <TabIcon emoji="📍" label="Kehadiran" />,
-        }}
-      />
-      <Tab.Screen
-        name="Leave"
-        component={LeaveListScreen}
-        options={{
-          title: 'Cuti',
-          tabBarIcon: ({ focused, color }) => <TabIcon emoji="🏖" label="Cuti" />,
-        }}
-      />
-      <Tab.Screen
-        name="Overtime"
-        component={OvertimeScreen}
-        options={{
-          title: 'Lembur',
-          tabBarIcon: ({ focused, color }) => <TabIcon emoji="⏰" label="Lembur" />,
-        }}
-      />
-      <Tab.Screen
-        name="Payslip"
-        component={PayslipScreen}
-        options={{
-          title: 'Slip Gaji',
-          tabBarIcon: ({ focused, color }) => <TabIcon emoji="💰" label="Slip Gaji" />,
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name={focused ? 'home' : 'home-outline'} color={color} />
+          ),
         }}
       />
       <Tab.Screen
@@ -144,7 +115,9 @@ export function TabNavigator() {
         component={ProfileScreen}
         options={{
           title: 'Profil',
-          tabBarIcon: ({ focused, color }) => <TabIcon emoji="👤" label="Profil" />,
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name={focused ? 'person' : 'person-outline'} color={color} />
+          ),
         }}
       />
     </Tab.Navigator>
