@@ -43,12 +43,13 @@ export class ReportsService {
     const from = new Date(`${params.from}T00:00:00Z`);
     const to = new Date(`${params.to}T00:00:00Z`);
     to.setUTCDate(to.getUTCDate() + 1);
+    const departmentId = params.departmentId ? Number(params.departmentId) : undefined;
 
     const records = await this.prisma.attendance.findMany({
       where: {
         attendanceDate: { gte: from, lt: to },
-        employee: params.departmentId
-          ? { departmentId: params.departmentId }
+        employee: departmentId
+          ? { departmentId }
           : undefined,
       },
       include: {
@@ -151,10 +152,13 @@ export class ReportsService {
   async payrollReport(
     params: PayrollReportQuery,
   ): Promise<{ filename: string; content: string }> {
+    const month = Number(params.month);
+    const year = Number(params.year);
+
     const records = await this.prisma.payroll.findMany({
       where: {
-        month: params.month,
-        year: params.year,
+        month,
+        year,
         status: params.status
           ? (params.status as Prisma.PayrollWhereInput['status'])
           : undefined,
@@ -166,7 +170,7 @@ export class ReportsService {
     });
 
     return this.toCsv({
-      filename: `payroll_${params.year}-${String(params.month).padStart(2, '0')}.csv`,
+      filename: `payroll_${year}-${String(month).padStart(2, '0')}.csv`,
       headers: [
         'No. Payroll',
         'NIK',
@@ -237,12 +241,13 @@ export class ReportsService {
     const from = new Date(`${params.from}T00:00:00Z`);
     const to = new Date(`${params.to}T00:00:00Z`);
     to.setUTCDate(to.getUTCDate() + 1);
+    const departmentId = params.departmentId ? Number(params.departmentId) : undefined;
 
     return this.prisma.attendance.findMany({
       where: {
         attendanceDate: { gte: from, lt: to },
-        employee: params.departmentId
-          ? { departmentId: params.departmentId }
+        employee: departmentId
+          ? { departmentId }
           : undefined,
       },
       include: {
@@ -275,10 +280,13 @@ export class ReportsService {
   }
 
   async payrollPreview(params: PayrollReportQuery) {
-    return this.prisma.payroll.findMany({
+    const month = Number(params.month);
+    const year = Number(params.year);
+
+    const rows = await this.prisma.payroll.findMany({
       where: {
-        month: params.month,
-        year: params.year,
+        month,
+        year,
         status: params.status
           ? (params.status as Prisma.PayrollWhereInput['status'])
           : undefined,
@@ -288,5 +296,36 @@ export class ReportsService {
       },
       orderBy: [{ employeeId: 'asc' }],
     });
+
+    // Explicitly convert Prisma Decimal fields to plain numbers to avoid JSON serialization issues
+    return rows.map((r) => ({
+      id: r.id,
+      payrollNumber: r.payrollNumber,
+      employeeId: r.employeeId,
+      employeeNumber: r.employee.employeeNumber,
+      employeeName: r.employee.fullName,
+      department: (r.employee as any).department?.name ?? null,
+      month: r.month,
+      year: r.year,
+      basicSalary: Number(r.basicSalary),
+      totalAllowance: Number(r.totalAllowance),
+      totalDeduction: Number(r.totalDeduction),
+      overtimePay: Number(r.overtimePay),
+      grossSalary: Number(r.grossSalary),
+      bpjsKesehatanEmployee: Number(r.bpjsKesehatanEmployee),
+      bpjsKetenagakerjaanEmployee: Number(r.bpjsKetenagakerjaanEmployee),
+      taxPph21: Number(r.taxPph21),
+      // Hitung total seluruh potongan (BPJS employee + PPh21 + deduction lainnya)
+      totalAllDeductions: Number(r.bpjsKesehatanEmployee) + Number(r.bpjsKetenagakerjaanEmployee) + Number(r.taxPph21) + Number(r.totalDeduction),
+      netSalary: Number(r.netSalary),
+      status: r.status,
+      employee: {
+        fullName: r.employee.fullName,
+        employeeNumber: r.employee.employeeNumber,
+        department: (r.employee as any).department
+          ? { name: (r.employee as any).department.name }
+          : null,
+      },
+    }));
   }
 }

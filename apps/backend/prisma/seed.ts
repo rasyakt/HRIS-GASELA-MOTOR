@@ -285,7 +285,7 @@ async function main() {
     { code: 'TJM', name: 'Tunjangan Makan', type: 'allowance' as const, calculationType: 'fixed' as const, defaultAmount: 500000, isTaxable: true },
     { code: 'TJT', name: 'Tunjangan Transport', type: 'allowance' as const, calculationType: 'fixed' as const, defaultAmount: 400000, isTaxable: true },
     { code: 'THR', name: 'THR', type: 'allowance' as const, calculationType: 'percentage' as const, isTaxable: true },
-    { code: 'POT', name: 'Potongan Lain', type: 'deduction' as const, calculationType: 'fixed' as const, isTaxable: false },
+    { code: 'POT', name: 'Potongan Lain', type: 'deduction' as const, calculationType: 'fixed' as const, defaultAmount: 0, isTaxable: false },
   ];
   for (const sc of salaryComponents) {
     await prisma.salaryComponent.upsert({

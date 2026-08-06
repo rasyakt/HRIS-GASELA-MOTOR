@@ -61,7 +61,7 @@ export default function LoginPage() {
           style={{ backgroundImage: `url('/gasela_motor.png')` }}
         />
         {/* Dark Overlay gradient for high contrast & premium readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/75 to-zinc-950/50 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-950/75 to-zinc-950/50 pointer-events-none" />
 
         {/* Decorative grid lines */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[48px_48px] pointer-events-none" />

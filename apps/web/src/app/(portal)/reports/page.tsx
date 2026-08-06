@@ -236,7 +236,7 @@ export default function ReportsPage() {
   const [attTo, setAttTo] = useState(todayInput());
   const [attDept, setAttDept] = useState('');
   const [leaveFrom, setLeaveFrom] = useState(todayInput(-30));
-  const [leaveTo, setLeaveTo] = useState(todayInput());
+  const [leaveTo, setLeaveTo] = useState(todayInput(30));
   const [leaveStatus, setLeaveStatus] = useState('');
   const now = new Date();
   const [payMonth, setPayMonth] = useState(String(now.getMonth() + 1));
@@ -247,7 +247,7 @@ export default function ReportsPage() {
   const [csvMsg, setCsvMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const canManage = !!user && roleAtLeast(user.role, 'manager');
-  const canPayroll = !!user && roleAtLeast(user.role, 'admin');
+  const canPayroll = !!user && roleAtLeast(user.role, 'hrd');
   const visibleTabs = TABS.filter((t) => t.key !== 'payroll' || canPayroll);
 
   useEffect(() => {
@@ -318,6 +318,177 @@ export default function ReportsPage() {
     }
   }
 
+  function exportPdf(kind: TabKey) {
+    const titleMap: Record<TabKey, string> = {
+      attendance: 'LAPORAN REKAPITULASI KEHADIRAN KARYAWAN',
+      leave: 'LAPORAN REKAPITULASI CUTI KARYAWAN',
+      payroll: 'LAPORAN REKAPITULASI PENGGAJIAN KARYAWAN',
+    };
+
+    const periodStr =
+      kind === 'attendance'
+        ? `${fmtDate(attFrom)} s/d ${fmtDate(attTo)}`
+        : kind === 'leave'
+        ? `${fmtDate(leaveFrom)} s/d ${fmtDate(leaveTo)}`
+        : `Bulan ${payMonth} Tahun ${payYear}`;
+
+    let rowsHtml = '';
+    if (kind === 'attendance') {
+      rowsHtml = `
+        <table>
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>NIK</th>
+              <th>Nama Karyawan</th>
+              <th>Departemen</th>
+              <th>Shift</th>
+              <th>Masuk / Keluar</th>
+              <th>Status</th>
+              <th>Terlambat</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${attRecs.map((r: any) => `
+              <tr>
+                <td>${fmtDate(r.attendanceDate)}</td>
+                <td>${r.employee?.employeeNumber ?? '-'}</td>
+                <td><strong>${r.employee?.fullName ?? '-'}</strong></td>
+                <td>${r.employee?.department?.name ?? '-'}</td>
+                <td>${r.shift?.name ?? '-'}</td>
+                <td>${r.checkInTime ? fmtTime(r.checkInTime) : '-'} / ${r.checkOutTime ? fmtTime(r.checkOutTime) : '-'}</td>
+                <td>${statusLabel(r.status)}</td>
+                <td>${r.lateMinutes ? `${r.lateMinutes} mnt` : '-'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } else if (kind === 'leave') {
+      rowsHtml = `
+        <table>
+          <thead>
+            <tr>
+              <th>NIK</th>
+              <th>Nama Karyawan</th>
+              <th>Jenis Cuti</th>
+              <th>Tanggal Mulai</th>
+              <th>Tanggal Selesai</th>
+              <th>Total Hari</th>
+              <th>Status</th>
+              <th>Alasan</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${leaveRecs.map((r: any) => `
+              <tr>
+                <td>${r.employee?.employeeNumber ?? '-'}</td>
+                <td><strong>${r.employee?.fullName ?? '-'}</strong></td>
+                <td>${r.leaveType?.name ?? '-'}</td>
+                <td>${fmtDate(r.startDate)}</td>
+                <td>${fmtDate(r.endDate)}</td>
+                <td>${r.totalDays} Hari</td>
+                <td>${r.status}</td>
+                <td>${r.reason ?? '-'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } else {
+      rowsHtml = `
+        <table>
+          <thead>
+            <tr>
+              <th>No. Slip</th>
+              <th>NIK</th>
+              <th>Nama Karyawan</th>
+              <th>Departemen</th>
+              <th>Gaji Pokok</th>
+              <th>Total Potongan</th>
+              <th>Gaji Bersih (THP)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${payRecs.map((r: any) => `
+              <tr>
+                <td>${r.payrollNumber}</td>
+                <td>${r.employeeNumber ?? '-'}</td>
+                <td><strong>${r.employeeName ?? '-'}</strong></td>
+                <td>${r.department ?? '-'}</td>
+                <td>${fmtRupiah(r.basicSalary)}</td>
+                <td style="color:#dc2626">- ${fmtRupiah(r.totalAllDeductions ?? 0)}</td>
+                <td><strong>${fmtRupiah(r.netSalary)}</strong></td>
+                <td>${r.status}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    const printWindow = window.open('', '_blank', 'width=1000,height=800');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+        <title>Laporan - ${titleMap[kind]}</title>
+        <style>
+          body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 28px; color: #0f172a; font-size: 11px; }
+          .header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 20px; }
+          .company { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+          .title { font-size: 13px; font-weight: 700; color: #334155; text-transform: uppercase; margin-top: 2px; }
+          .sub { color: #64748b; font-size: 11px; margin-top: 4px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 10px; }
+          th { background: #f8fafc; color: #475569; text-align: left; padding: 8px 10px; font-weight: 700; border-bottom: 1px solid #cbd5e1; text-transform: uppercase; }
+          td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
+          .footer { margin-top: 50px; display: flex; justify-content: space-between; font-size: 10px; color: #64748b; }
+          .sign { text-align: center; margin-top: 60px; min-width: 180px; }
+          @media print {
+            body { padding: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <div class="company">PT GASELA MOTOR</div>
+            <div class="title">${titleMap[kind]}</div>
+            <div class="sub">Periode: <strong>${periodStr}</strong></div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 10px; color: #64748b;">Dicetak pada: ${new Date().toLocaleString('id-ID')}</div>
+            <div style="font-size: 10px; color: #94a3b8; margin-top: 2px;">Sistem HRIS GaselaPulse</div>
+          </div>
+        </div>
+
+        ${rowsHtml}
+
+        <div class="footer">
+          <div>GaselaPulse HRIS System — Laporan Resmi</div>
+          <div class="sign">
+            <p>Disetujui Oleh,</p>
+            <br/><br/><br/>
+            <p>__________________________</p>
+            <p><strong>Manager HRD / Finance</strong></p>
+          </div>
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  }
+
   if (!user || !canManage) return null;
 
   // ── Attendance metrics ──
@@ -354,7 +525,7 @@ export default function ReportsPage() {
   // ── Payroll metrics ──
   const payRecs = payQ.data ?? [];
   const payTotal = payRecs.reduce((s, r) => s + Number(r.netSalary || 0), 0);
-  const payDeductions = payRecs.reduce((s, r) => s + Number(r.totalDeduction || 0), 0);
+  const payDeductions = payRecs.reduce((s, r) => s + Number(r.totalAllDeductions || 0), 0);
   const payAvg = payRecs.length > 0 ? payTotal / payRecs.length : 0;
   const payPaidCnt = payRecs.filter((r) => r.status === 'paid').length;
   const deptPay: Record<string, number> = {};
@@ -453,15 +624,28 @@ export default function ReportsPage() {
             )}
           </div>
 
-          <Button
-            className="shrink-0 bg-zinc-900 text-white hover:bg-zinc-700 gap-2 px-5 py-2.5 h-auto"
-            disabled={downloading !== null}
-            onClick={() => downloadCsv(activeTab)}
-          >
-            {downloading === activeTab ? <Loader2 className="size-4 animate-spin" /> : <FileDown className="size-4" />}
-            <span className="hidden sm:inline">{downloading === activeTab ? 'Memproses…' : 'Ekspor CSV'}</span>
-            <span className="sm:hidden">{downloading === activeTab ? '…' : 'CSV'}</span>
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              className="border-red-200 bg-red-50/60 text-red-700 hover:bg-red-100 hover:text-red-800 font-semibold text-xs gap-1.5 px-4 py-2.5 h-auto shadow-2xs"
+              onClick={() => exportPdf(activeTab)}
+            >
+              <FileDown className="size-3.5 text-red-600 shrink-0" />
+              <span>Export PDF</span>
+            </Button>
+            <Button
+              className="bg-zinc-900 text-white hover:bg-zinc-700 text-xs font-semibold gap-1.5 px-4 py-2.5 h-auto shadow-2xs"
+              disabled={downloading !== null}
+              onClick={() => downloadCsv(activeTab)}
+            >
+              {downloading === activeTab ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <FileSpreadsheet className="size-3.5" />
+              )}
+              <span>Ekspor CSV / Excel</span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -476,7 +660,7 @@ export default function ReportsPage() {
       {/* ═══════════════════════════════════════════════
           ATTENDANCE REVIEW DASHBOARD
           ═══════════════════════════════════════════════ */}
-      {activeTab === 'attendance' && hasData && (
+      {activeTab === 'attendance' && !attQ.isLoading && (
         <div className="space-y-6">
 
           {/* Stats Row */}
@@ -639,7 +823,7 @@ export default function ReportsPage() {
       {/* ═══════════════════════════════════════════════
           LEAVE REVIEW DASHBOARD
           ═══════════════════════════════════════════════ */}
-      {activeTab === 'leave' && hasData && (
+      {activeTab === 'leave' && !leaveQ.isLoading && (
         <div className="space-y-6">
 
           {/* Stats Row */}
@@ -761,7 +945,7 @@ export default function ReportsPage() {
       {/* ═══════════════════════════════════════════════
           PAYROLL REVIEW DASHBOARD
           ═══════════════════════════════════════════════ */}
-      {activeTab === 'payroll' && hasData && (
+      {activeTab === 'payroll' && !payQ.isLoading && (
         <div className="space-y-6">
 
           {/* Stats Row */}
@@ -835,7 +1019,7 @@ export default function ReportsPage() {
               <SectionHeader title="Detail Data Penggajian" subtitle={`${payRecs.length} record ditemukan`} />
             </div>
             {payRecs.length === 0 ? (
-              <EmptyState message="Tidak ada data penggajian yang sesuai filter." />
+              <EmptyState message="Belum ada data penggajian yang di-generate untuk bulan/tahun ini. Silakan generate gaji terlebih dahulu di menu Penggajian (Payroll)." />
             ) : (
               <div className="overflow-x-auto max-h-[360px] overflow-y-auto">
                 <table className="w-full text-sm">
@@ -854,13 +1038,13 @@ export default function ReportsPage() {
                     {payRecs.map((r: any, i: number) => (
                       <tr key={i} className="hover:bg-zinc-50 transition-colors">
                         <td className="px-5 py-3.5">
-                          <div className="font-semibold text-zinc-900 text-sm">{r.employee?.fullName}</div>
+                          <div className="font-semibold text-zinc-900 text-sm">{r.employeeName ?? r.employee?.fullName}</div>
                           <div className="text-[11px] text-zinc-400 mt-0.5">{r.payrollNumber}</div>
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-500 hidden md:table-cell">{r.employee?.department?.name ?? '—'}</td>
+                        <td className="px-5 py-3.5 text-sm text-zinc-500 hidden md:table-cell">{r.department ?? r.employee?.department?.name ?? '—'}</td>
                         <td className="px-5 py-3.5 text-sm text-zinc-700">{fmtRupiah(r.basicSalary)}</td>
                         <td className="px-5 py-3.5 text-sm text-zinc-500 hidden lg:table-cell">{fmtRupiah(r.totalAllowance)}</td>
-                        <td className="px-5 py-3.5 text-sm text-red-500 hidden lg:table-cell">−{fmtRupiah(r.totalDeduction)}</td>
+                        <td className="px-5 py-3.5 text-sm text-red-500 hidden lg:table-cell">−{fmtRupiah(r.totalAllDeductions ?? 0)}</td>
                         <td className="px-5 py-3.5 text-sm font-extrabold text-zinc-900">{fmtRupiah(r.netSalary)}</td>
                         <td className="px-5 py-3.5">
                           <span className={badgeClass(r.status)}>{statusLabel(r.status)}</span>
