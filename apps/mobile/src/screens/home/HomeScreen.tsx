@@ -12,7 +12,7 @@ import {
   Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Button, Card, CardTitle, ErrorBanner, Row, StatusBadge } from '../../components/ui';
+import { Button, Card, CardTitle, ErrorBanner, GaselaLogo, Row, StatusBadge } from '../../components/ui';
 import { fmtDate, fmtHours, fmtTime, ROLE_LABEL } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
 import { getPosition } from '../../services/location';
@@ -72,30 +72,33 @@ export function HomeScreen() {
   const today = data?.today.attendance ?? null;
 
   return (
-    <ScrollView
-      style={styles.flex}
-      contentContainerStyle={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#0f172a" />
-      }
-    >
-      <View style={styles.header}>
-        <View style={styles.headerText}>
-          <Text style={styles.greeting}>Halo, {user?.fullName ?? 'Karyawan'}</Text>
-          <Text style={styles.date}>
-            {new Date().toLocaleDateString('id-ID', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            })}
-            {user ? ` · ${ROLE_LABEL[user.role]}` : ''}
-          </Text>
-        </View>
-        <View style={styles.avatar}>
-          <Ionicons name="person" size={24} color="#ffffff" />
-        </View>
+    <View style={styles.flex}>
+      {/* Fixed Brand Header */}
+      <View style={styles.fixedBrandHeader}>
+        <GaselaLogo size="sm" showText={true} />
       </View>
+
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#0f172a" />
+        }
+      >
+        <View style={styles.header}>
+          <View style={styles.headerText}>
+            <Text style={styles.greeting}>Halo, {user?.fullName ?? 'Karyawan'}</Text>
+            <Text style={styles.date}>
+              {new Date().toLocaleDateString('id-ID', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
+              {user ? ` · ${ROLE_LABEL[user.role]}` : ''}
+            </Text>
+          </View>
+        </View>
 
       {isError && <ErrorBanner message="Gagal memuat data. Tarik untuk muat ulang." />}
 
@@ -162,13 +165,23 @@ export function HomeScreen() {
         )}
       </Card>
     </ScrollView>
+  </View>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: '#f8fafc' },
-  container: { padding: 20, paddingBottom: 40 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, marginTop: 8 },
+  fixedBrandHeader: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    zIndex: 10,
+  },
+  container: { padding: 20, paddingTop: 16, paddingBottom: 40 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
   headerText: { flex: 1 },
   greeting: { fontSize: 22, fontWeight: 'bold', color: '#0f172a' },
   date: { fontSize: 13, color: '#64748b', marginTop: 4 },

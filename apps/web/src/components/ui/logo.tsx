@@ -16,20 +16,20 @@ export function GaselaLogo({
   showText = true,
 }: LogoProps) {
   const iconSizes = {
-    sm: 'size-7',
-    md: 'size-9',
-    lg: 'size-12',
+    sm: 'size-9',
+    md: 'size-11',
+    lg: 'size-16',
   };
 
   const textSizes = {
-    sm: 'text-sm',
-    md: 'text-base',
-    lg: 'text-xl',
+    sm: 'text-base',
+    md: 'text-lg',
+    lg: 'text-2xl',
   };
 
   const subtextSizes = {
-    sm: 'text-[9px]',
-    md: 'text-[11px]',
+    sm: 'text-[10px]',
+    md: 'text-[12px]',
     lg: 'text-xs',
   };
 
@@ -39,7 +39,7 @@ export function GaselaLogo({
     <div className={`inline-flex items-center gap-3 select-none ${className}`}>
       {/* Icon Emblem */}
       <div
-        className={`relative flex ${iconSizes[size]} shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-zinc-900 via-zinc-950 to-black p-2 shadow-lg ring-1 ring-white/10`}
+        className={`relative flex ${iconSizes[size]} shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-zinc-900 via-zinc-950 to-black p-1.5 shadow-xl ring-1 ring-white/15`}
       >
         <svg
           viewBox="0 0 40 40"
@@ -51,7 +51,7 @@ export function GaselaLogo({
           <path
             d="M26 12C23.5 9.5 19.5 9 15.5 10.5C11.5 12 9 16 9 20.5C9 25 11.5 29 15.5 30.5C19.5 32 24 31 27 28C29 26 30 23.5 30 21H20"
             stroke="url(#g_gradient)"
-            strokeWidth="3.5"
+            strokeWidth="4.2"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -59,10 +59,10 @@ export function GaselaLogo({
           <path
             d="M10 20H15L18 14L22 26L25 20H30"
             stroke="#10B981"
-            strokeWidth="2"
+            strokeWidth="2.8"
             strokeLinecap="round"
             strokeLinejoin="round"
-            opacity="0.85"
+            opacity="0.9"
           />
           <defs>
             <linearGradient

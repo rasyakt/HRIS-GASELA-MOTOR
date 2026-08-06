@@ -1,3 +1,4 @@
+export { GaselaLogo } from './logo';
 import { useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,

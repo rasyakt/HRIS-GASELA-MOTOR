@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Button, ErrorBanner, TextField } from '../../components/ui';
+import { Button, ErrorBanner, GaselaLogo, TextField } from '../../components/ui';
 import { ApiError } from '../../services/api-client';
 import { api } from '../../services/api-client';
 import { useAuthStore } from '../../store/auth-store';
@@ -53,10 +53,9 @@ export function LoginScreen() {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.logo}>
-          <Text style={styles.logoText}>G</Text>
+        <View style={styles.logoWrapper}>
+          <GaselaLogo size="lg" showText={true} />
         </View>
-        <Text style={styles.title}>HRIS Gasela Motor</Text>
         <Text style={styles.subtitle}>Masuk menggunakan akun karyawan Anda.</Text>
 
         <View style={styles.form}>
@@ -89,17 +88,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
-  logo: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
-    backgroundColor: '#18181b',
+  logoWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
     alignSelf: 'center',
   },
-  logoText: { color: '#fff', fontSize: 26, fontWeight: '700' },
   title: { fontSize: 24, fontWeight: '700', color: '#18181b', textAlign: 'center' },
   subtitle: {
     marginTop: 6,
