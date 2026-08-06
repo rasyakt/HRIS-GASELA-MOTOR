@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { DashboardSummary, Paginated } from '@gasela/shared-types';
-import { Loader2, LogIn, LogOut, MapPin } from 'lucide-react';
+import { Loader2, LogIn, LogOut, MapPin, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,10 @@ interface AttendanceRow {
   workHours: number | string | null;
   lateMinutes?: number | null;
   shift?: { id: number; name: string } | null;
+  checkInLat?: number | null;
+  checkInLng?: number | null;
+  checkOutLat?: number | null;
+  checkOutLng?: number | null;
 }
 
 function getPosition(): Promise<{ latitude: number; longitude: number }> {
@@ -257,23 +261,41 @@ export default function AttendancePage() {
                       <th className="pb-2 pr-3 font-medium">Status</th>
                       <th className="pb-2 pr-3 font-medium">Masuk</th>
                       <th className="pb-2 pr-3 font-medium">Keluar</th>
+                      <th className="pb-2 pr-3 font-medium">Lokasi GPS Check-in</th>
                       <th className="pb-2 pr-3 font-medium">Terlambat</th>
                       <th className="pb-2 font-medium">Jam Kerja</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-zinc-100">
                     {history.data.items.map((r) => (
-                      <tr key={r.id} className="border-b border-zinc-100 last:border-0">
-                        <td className="py-2 pr-3 text-zinc-900">{fmtDate(r.attendanceDate)}</td>
-                        <td className="py-2 pr-3">
+                      <tr key={r.id} className="hover:bg-zinc-50 transition-colors">
+                        <td className="py-2.5 pr-3 text-zinc-900 font-medium">{fmtDate(r.attendanceDate)}</td>
+                        <td className="py-2.5 pr-3">
                           <Badge className={badgeClass(r.status)}>{r.status}</Badge>
                         </td>
-                        <td className="py-2 pr-3 text-zinc-600">{fmtTime(r.checkInTime)}</td>
-                        <td className="py-2 pr-3 text-zinc-600">{fmtTime(r.checkOutTime)}</td>
-                        <td className="py-2 pr-3 text-zinc-600">
+                        <td className="py-2.5 pr-3 text-zinc-600 font-mono">{fmtTime(r.checkInTime)}</td>
+                        <td className="py-2.5 pr-3 text-zinc-600 font-mono">{fmtTime(r.checkOutTime)}</td>
+                        <td className="py-2.5 pr-3 whitespace-nowrap">
+                          {r.checkInLat && r.checkInLng ? (
+                            <a
+                              href={`https://www.google.com/maps?q=${r.checkInLat},${r.checkInLng}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-md hover:bg-emerald-100 transition-colors"
+                              title="Buka titik koordinat presensi di Google Maps"
+                            >
+                              <MapPin className="size-3.5 text-emerald-600 shrink-0" />
+                              <span>{Number(r.checkInLat).toFixed(4)}, {Number(r.checkInLng).toFixed(4)}</span>
+                              <ExternalLink className="size-3 text-emerald-500 shrink-0 ml-0.5" />
+                            </a>
+                          ) : (
+                            <span className="text-xs text-zinc-400 font-mono">—</span>
+                          )}
+                        </td>
+                        <td className="py-2.5 pr-3 text-zinc-600">
                           {r.lateMinutes && r.lateMinutes > 0 ? `${r.lateMinutes} mnt` : '—'}
                         </td>
-                        <td className="py-2 text-zinc-600">{fmtHours(r.workHours)}</td>
+                        <td className="py-2.5 text-zinc-600 font-mono">{fmtHours(r.workHours)}</td>
                       </tr>
                     ))}
                   </tbody>

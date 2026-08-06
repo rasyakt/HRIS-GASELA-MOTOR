@@ -16,6 +16,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Filter,
+  MapPin,
+  ExternalLink,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -579,6 +581,7 @@ export default function ReportsPage() {
                       <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider hidden md:table-cell">Departemen</th>
                       <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider hidden lg:table-cell">Shift</th>
                       <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Masuk / Keluar</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Lokasi GPS (Presensi)</th>
                       <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Status</th>
                       <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider text-right">Terlambat</th>
                     </tr>
@@ -595,6 +598,23 @@ export default function ReportsPage() {
                         <td className="px-5 py-3.5 text-sm text-zinc-500 hidden lg:table-cell">{r.shift?.name ?? '—'}</td>
                         <td className="px-5 py-3.5 text-sm text-zinc-700 whitespace-nowrap font-mono">
                           {r.checkInTime ? fmtTime(r.checkInTime) : '—'}&nbsp;/&nbsp;{r.checkOutTime ? fmtTime(r.checkOutTime) : '—'}
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          {r.checkInLat && r.checkInLng ? (
+                            <a
+                              href={`https://www.google.com/maps?q=${r.checkInLat},${r.checkInLng}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-md hover:bg-emerald-100 transition-colors shadow-2xs"
+                              title="Buka lokasi persis check-in di Google Maps"
+                            >
+                              <MapPin className="size-3.5 text-emerald-600 shrink-0" />
+                              <span>{Number(r.checkInLat).toFixed(4)}, {Number(r.checkInLng).toFixed(4)}</span>
+                              <ExternalLink className="size-3 text-emerald-500 ml-0.5 shrink-0" />
+                            </a>
+                          ) : (
+                            <span className="text-xs text-zinc-400 font-mono">—</span>
+                          )}
                         </td>
                         <td className="px-5 py-3.5">
                           <span className={badgeClass(r.status)}>{statusLabel(r.status)}</span>
