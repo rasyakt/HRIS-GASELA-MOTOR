@@ -148,6 +148,13 @@ export class PayrollController {
     return result;
   }
 
+  @Delete('drafts')
+  @Roles('admin', 'hrd', 'owner')
+  @ApiOperation({ summary: 'Hapus draft slip gaji terpilih' })
+  deleteDrafts(@Body() body: { payrollIds: number[] }) {
+    return this.payrollService.deleteDrafts(body.payrollIds);
+  }
+
   @Get('my/:id/payslip')
   @ApiOperation({ summary: 'Unduh slip gaji saya dalam PDF' })
   async myPayslipPdf(

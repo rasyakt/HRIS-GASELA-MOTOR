@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCheck, Loader2, Printer, Wallet, PlusCircle, Download } from 'lucide-react';
+import { CheckCheck, Loader2, Printer, Wallet, PlusCircle, Download, Trash2, Info, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,7 @@ import type {
   PayrollBatchSummary,
   PayrollDetailDto,
   PayrollDto,
+  SalaryComponentDto,
 } from '@gasela/shared-types';
 
 interface PayrollPage {
@@ -162,7 +163,9 @@ function DetailModal({
                     {fmtRupiah(detail.basicSalary)}
                   </td>
                 </tr>
-                {detail.components.map((c) => (
+                {detail.components
+                  .filter((c) => c.salaryComponentName.toLowerCase() !== 'gaji pokok' && c.amount > 0)
+                  .map((c) => (
                   <tr key={c.salaryComponentId} className="border-b border-zinc-100">
                     <td className="px-3 py-2 text-zinc-700">
                       {c.salaryComponentName}
@@ -263,6 +266,159 @@ function DetailModal({
   );
 }
 
+function SalaryComponentsModal({ onClose }: { onClose: () => void }) {
+  const authApi = useAuthApi();
+  const qc = useQueryClient();
+
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editAmount, setEditAmount] = useState<string>('0');
+  const [editType, setEditType] = useState<'fixed' | 'percentage' | 'formula'>('percentage');
+
+  const components = useQuery({
+    queryKey: ['salary-components'],
+    queryFn: () => authApi<SalaryComponentDto[]>('/api/payroll/salary-components?includeInactive=true'),
+  });
+
+  const updateComp = useMutation({
+    mutationFn: ({ id, defaultAmount, calculationType }: { id: number; defaultAmount?: number; calculationType?: 'fixed' | 'percentage' }) =>
+      authApi(`/api/payroll/salary-components/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ defaultAmount, calculationType }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['salary-components'] });
+      setEditId(null);
+    },
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <Card className="w-full max-w-2xl bg-white shadow-xl">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-zinc-100 pb-4">
+          <div>
+            <CardTitle className="text-base font-bold text-zinc-900">Kelola Komponen Gaji &amp; THR</CardTitle>
+            <p className="text-xs text-zinc-500 mt-0.5">Atur persentase THR dan komponen pendapatan/potongan gaji otomatis.</p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onClose}>✕</Button>
+        </CardHeader>
+        <CardContent className="pt-4 space-y-4 max-h-[70vh] overflow-y-auto">
+          {components.isLoading ? (
+            <p className="text-sm text-zinc-400">Memuat komponen gaji…</p>
+          ) : (
+            <div className="space-y-3">
+              {components.data?.map((c) => {
+                const isEditing = editId === c.id;
+                const isThr = c.code === 'THR';
+                const isGajiPokok = c.code === 'GAJI';
+                return (
+                  <div key={c.id} className={`rounded-xl border p-4 transition-colors ${isThr ? 'border-amber-300 bg-amber-50/70' : 'border-zinc-200 bg-white'}`}>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-zinc-900">{c.name}</span>
+                          <span className="font-mono text-[10px] bg-zinc-100 border border-zinc-200 px-1.5 py-0.5 rounded text-zinc-600 font-semibold">{c.code}</span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${c.type === 'allowance' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                            {c.type === 'allowance' ? 'Pendapatan' : 'Potongan'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-zinc-500 mt-1">
+                          {isGajiPokok ? (
+                            <span className="text-emerald-700 font-medium flex items-center gap-1.5 mt-0.5">
+                              <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />
+                              Gaji Pokok dihitung otomatis dari profil masing-masing karyawan.
+                            </span>
+                          ) : (
+                            <>
+                              Nilai bawaan saat ini:{' '}
+                              <strong className="text-zinc-900 font-bold">
+                                {c.calculationType === 'percentage' ? `${c.defaultAmount ?? 0}% dari Gaji Pokok` : fmtRupiah(c.defaultAmount ?? 0)}
+                              </strong>
+                            </>
+                          )}
+                        </p>
+                      </div>
+
+                      {!isEditing ? (
+                        <Button
+                          size="sm"
+                          variant={isThr ? 'default' : 'outline'}
+                          className={isThr ? 'bg-amber-600 hover:bg-amber-700 text-white font-semibold flex items-center gap-1.5' : ''}
+                          onClick={() => {
+                            setEditId(c.id);
+                            setEditAmount(String(c.defaultAmount ?? 0));
+                            setEditType(c.calculationType);
+                          }}
+                        >
+                          {isThr ? (
+                            <>
+                              <Sparkles className="size-3.5" />
+                              Set THR (Aktifkan/Ubah)
+                            </>
+                          ) : (
+                            'Edit Komponen'
+                          )}
+                        </Button>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            <Input
+                              type="number"
+                              className="w-24 h-8 text-xs font-bold"
+                              value={editAmount}
+                              onChange={(e) => setEditAmount(e.target.value)}
+                            />
+                            <select
+                              value={editType}
+                              onChange={(e) => setEditType(e.target.value as any)}
+                              className="h-8 rounded border border-zinc-300 bg-white px-2 text-xs font-semibold"
+                            >
+                              <option value="percentage">% (Persentase)</option>
+                              <option value="fixed">Rp (Nominal Tetap)</option>
+                            </select>
+                          </div>
+                          <Button
+                            size="sm"
+                            disabled={updateComp.isPending}
+                            onClick={() =>
+                              updateComp.mutate({
+                                id: c.id,
+                                defaultAmount: parseFloat(editAmount) || 0,
+                                calculationType: editType === 'formula' ? 'percentage' : editType,
+                              })
+                            }
+                          >
+                            {updateComp.isPending ? <Loader2 className="size-3.5 animate-spin" /> : 'Simpan'}
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => setEditId(null)}>Batal</Button>
+                        </div>
+                      )}
+                    </div>
+
+                    {isThr && (
+                      <div className="mt-3 rounded-lg bg-amber-100/90 border border-amber-200 p-3 text-xs text-amber-900 space-y-1.5">
+                        <p className="font-bold flex items-center gap-1.5">
+                          <Info className="size-3.5 text-amber-700 shrink-0" />
+                          Cara Mengaktifkan THR (Cara 1):
+                        </p>
+                        <ul className="list-disc list-inside space-y-1 text-[11px] text-amber-800 font-medium">
+                          <li>Klik tombol <strong>Set THR</strong> di atas.</li>
+                          <li>Isi angka <strong>100</strong> dan pilih <strong>% (Persentase)</strong> agar karyawan menerima 1 bulan Gaji Pokok penuh.</li>
+                          <li>Tekan <strong>Simpan</strong>, lalu lakukan <strong>Generate Gaji</strong> pada bulan Hari Raya.</li>
+                          <li>*(Setelah bulan Hari Raya selesai, ubah kembali nilainya menjadi <strong>0%</strong> agar THR tidak terhitung di bulan biasa).*</li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 function GenerateCard({
   onDone,
 }: {
@@ -273,6 +429,7 @@ function GenerateCard({
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
+  const [showCompModal, setShowCompModal] = useState(false);
 
   const generate = useMutation({
     mutationFn: () =>
@@ -287,60 +444,67 @@ function GenerateCard({
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Generate Gaji</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="space-y-1">
-            <Label htmlFor="gen-month">Bulan</Label>
-            <select
-              id="gen-month"
-              value={month}
-              onChange={(e) => setMonth(Number(e.target.value))}
-              className="h-9 rounded-md border border-zinc-300 bg-white px-3 text-sm"
-            >
-              {MONTH_NAMES.map((m, i) => (
-                <option key={m} value={i + 1}>
-                  {m}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="gen-year">Tahun</Label>
-            <Input
-              id="gen-year"
-              type="number"
-              min={2020}
-              max={2100}
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-              className="w-28"
-            />
-          </div>
-          <Button
-            onClick={() => generate.mutate()}
-            disabled={generate.isPending}
-          >
-            {generate.isPending ? (
-              <Loader2 data-icon="inline-start" className="animate-spin" />
-            ) : (
-              <PlusCircle data-icon="inline-start" />
-            )}
-            Generate
+    <>
+      {showCompModal && <SalaryComponentsModal onClose={() => setShowCompModal(false)} />}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Generate Gaji</CardTitle>
+          <Button variant="outline" size="sm" onClick={() => setShowCompModal(true)} className="text-xs font-semibold gap-1.5">
+            <PlusCircle className="size-3.5 text-amber-600" />
+            Kelola Komponen Gaji &amp; THR
           </Button>
-        </div>
-        {generate.isError && (
-          <p className="mt-3 text-sm text-red-600">
-            {generate.error instanceof Error
-              ? generate.error.message
-              : 'Gagal generate gaji'}
-          </p>
-        )}
-      </CardContent>
-    </Card>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="gen-month">Bulan</Label>
+              <select
+                id="gen-month"
+                value={month}
+                onChange={(e) => setMonth(Number(e.target.value))}
+                className="h-9 rounded-md border border-zinc-300 bg-white px-3 text-sm"
+              >
+                {MONTH_NAMES.map((m, i) => (
+                  <option key={m} value={i + 1}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="gen-year">Tahun</Label>
+              <Input
+                id="gen-year"
+                type="number"
+                min={2020}
+                max={2100}
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value))}
+                className="w-28"
+              />
+            </div>
+            <Button
+              onClick={() => generate.mutate()}
+              disabled={generate.isPending}
+            >
+              {generate.isPending ? (
+                <Loader2 data-icon="inline-start" className="animate-spin" />
+              ) : (
+                <PlusCircle data-icon="inline-start" />
+              )}
+              Generate
+            </Button>
+          </div>
+          {generate.isError && (
+            <p className="mt-3 text-sm text-red-600">
+              {generate.error instanceof Error
+                ? generate.error.message
+                : 'Gagal generate gaji'}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 }
 
@@ -397,6 +561,18 @@ export default function PayrollPage() {
     mutationFn: () =>
       authApi('/api/payroll/mark-paid', {
         method: 'POST',
+        body: JSON.stringify({ payrollIds: [...selected] }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['payroll-list'] });
+      setSelected(new Set());
+    },
+  });
+
+  const deleteDrafts = useMutation({
+    mutationFn: () =>
+      authApi('/api/payroll/drafts', {
+        method: 'DELETE',
         body: JSON.stringify({ payrollIds: [...selected] }),
       }),
     onSuccess: () => {
@@ -667,6 +843,22 @@ export default function PayrollPage() {
                           <Wallet data-icon="inline-start" />
                         )}
                         Tandai Dibayar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => deleteDrafts.mutate()}
+                        disabled={deleteDrafts.isPending}
+                      >
+                        {deleteDrafts.isPending ? (
+                          <Loader2
+                            data-icon="inline-start"
+                            className="animate-spin text-white"
+                          />
+                        ) : (
+                          <Trash2 data-icon="inline-start" className="size-3.5" />
+                        )}
+                        Hapus Draft
                       </Button>
                     </div>
                   )}

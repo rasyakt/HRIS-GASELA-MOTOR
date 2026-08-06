@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CalendarPlus, Loader2, Save, Trash2 } from 'lucide-react';
+import { CalendarPlus, Loader2, RotateCcw, Save, ShieldCheck, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,12 +14,236 @@ import { useAuthStore } from '@/store/auth-store';
 import type { CompanySettingDto, HolidayDto } from '@gasela/shared-types';
 
 const SETTING_HINTS: Record<string, string> = {
-  'company.name': 'Nama perusahaan (muncul di header payslip)',
-  'office.location': 'JSON koordinat kantor: {"lat":-6.9,"lng":107.6}',
-  'office.radius_meters': 'Radius geofence check-in/out dalam meter',
-  'bpjs.rates': 'JSON rate & cap BPJS: {"kesehatanRateEmployee":0.01,...}',
-  'overtime.rate_multiplier_weekday': 'Pengali upah lembur hari kerja (mis. 1.5)',
+  'company.name': 'Nama resmi perusahaan (ditampilkan pada header slip gaji)',
+  'office.location': 'Koordinat lokasi kantor pusat (Format JSON: {"lat":-6.9,"lng":107.6})',
+  'office.radius_meters': 'Radius geofence presensi check-in/out karyawan (dalam meter)',
+  'overtime.rate_multiplier_weekday': 'Pengali upah lembur pada hari kerja (misal: 1.5)',
 };
+
+const DEFAULT_BPJS_CONFIG = {
+  kesehatanRateEmployee: 0.01,
+  kesehatanRateCompany: 0.04,
+  kesehatanCapSalary: 12000000,
+  jhtRateEmployee: 0.02,
+  jhtRateCompany: 0.037,
+  jpRateEmployee: 0.01,
+  jpRateCompany: 0.02,
+  jpCapSalary: 10547400,
+  jkkRateCompany: 0.0024,
+  jkmRateCompany: 0.003,
+};
+
+function BpjsSettingForm({
+  setting,
+  onSave,
+  saving,
+}: {
+  setting: CompanySettingDto;
+  onSave: (value: string) => void;
+  saving: boolean;
+}) {
+  const parseRates = (str: string): typeof DEFAULT_BPJS_CONFIG => {
+    try {
+      return { ...DEFAULT_BPJS_CONFIG, ...JSON.parse(str) };
+    } catch {
+      return DEFAULT_BPJS_CONFIG;
+    }
+  };
+
+  const [rates, setRates] = useState<typeof DEFAULT_BPJS_CONFIG>(() => parseRates(setting.value));
+
+  const updateRate = (field: keyof typeof DEFAULT_BPJS_CONFIG, numVal: number) => {
+    setRates((prev: typeof DEFAULT_BPJS_CONFIG) => ({ ...prev, [field]: numVal }));
+  };
+
+  const handleSave = () => {
+    onSave(JSON.stringify(rates));
+  };
+
+  const handleResetGov = () => {
+    setRates(DEFAULT_BPJS_CONFIG);
+  };
+
+  const isDirty = JSON.stringify(rates) !== JSON.stringify(parseRates(setting.value));
+
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-white p-5 space-y-5 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-4">
+        <div>
+          <h4 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+            <ShieldCheck className="size-4 text-emerald-600" />
+            Pengaturan Tarif &amp; Batas Upah BPJS
+          </h4>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Atur persentase potongan iuran BPJS karyawan dan kontribusi perusahaan tanpa perlu mengedit kode JSON.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={handleResetGov} className="text-xs">
+            <RotateCcw className="size-3.5 mr-1" />
+            Standar Pemerintah 2024
+          </Button>
+          <Button size="sm" onClick={handleSave} disabled={!isDirty || saving}>
+            {saving ? <Loader2 className="size-3.5 animate-spin mr-1" /> : <Save className="size-3.5 mr-1" />}
+            Simpan Perubahan
+          </Button>
+        </div>
+      </div>
+
+      {/* BPJS Kesehatan Section */}
+      <div className="space-y-3">
+        <span className="text-xs font-bold text-zinc-800 uppercase tracking-wider">1. BPJS Kesehatan</span>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div>
+            <Label className="text-xs font-semibold text-zinc-600">Iuran Pekerja (%)</Label>
+            <div className="relative mt-1">
+              <Input
+                type="number" step="0.1" min="0" max="100"
+                value={(rates.kesehatanRateEmployee * 100).toFixed(1)}
+                onChange={(e) => updateRate('kesehatanRateEmployee', (parseFloat(e.target.value) || 0) / 100)}
+                className="pr-7 text-xs font-semibold"
+              />
+              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+            </div>
+            <p className="text-[10px] text-zinc-400 mt-1">Standar resmi: 1%</p>
+          </div>
+
+          <div>
+            <Label className="text-xs font-semibold text-zinc-600">Iuran Perusahaan (%)</Label>
+            <div className="relative mt-1">
+              <Input
+                type="number" step="0.1" min="0" max="100"
+                value={(rates.kesehatanRateCompany * 100).toFixed(1)}
+                onChange={(e) => updateRate('kesehatanRateCompany', (parseFloat(e.target.value) || 0) / 100)}
+                className="pr-7 text-xs font-semibold"
+              />
+              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+            </div>
+            <p className="text-[10px] text-zinc-400 mt-1">Standar resmi: 4%</p>
+          </div>
+
+          <div>
+            <Label className="text-xs font-semibold text-zinc-600">Maksimal Upah Kena BPJS Kes (Rp)</Label>
+            <Input
+              type="number" step="100000" min="0"
+              value={rates.kesehatanCapSalary}
+              onChange={(e) => updateRate('kesehatanCapSalary', parseInt(e.target.value, 10) || 0)}
+              className="mt-1 text-xs font-semibold"
+            />
+            <p className="text-[10px] text-zinc-400 mt-1">Batas max: Rp {rates.kesehatanCapSalary.toLocaleString('id-ID')}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* BPJS Ketenagakerjaan Section */}
+      <div className="border-t border-zinc-100 pt-4 space-y-3">
+        <span className="text-xs font-bold text-zinc-800 uppercase tracking-wider">2. BPJS Ketenagakerjaan (JHT &amp; JP)</span>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div>
+            <Label className="text-xs font-semibold text-zinc-600">JHT Pekerja (%)</Label>
+            <div className="relative mt-1">
+              <Input
+                type="number" step="0.1" min="0" max="100"
+                value={(rates.jhtRateEmployee * 100).toFixed(1)}
+                onChange={(e) => updateRate('jhtRateEmployee', (parseFloat(e.target.value) || 0) / 100)}
+                className="pr-7 text-xs font-semibold"
+              />
+              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+            </div>
+            <p className="text-[10px] text-zinc-400 mt-1">Tabungan Hari Tua: 2%</p>
+          </div>
+
+          <div>
+            <Label className="text-xs font-semibold text-zinc-600">JHT Perusahaan (%)</Label>
+            <div className="relative mt-1">
+              <Input
+                type="number" step="0.1" min="0" max="100"
+                value={(rates.jhtRateCompany * 100).toFixed(1)}
+                onChange={(e) => updateRate('jhtRateCompany', (parseFloat(e.target.value) || 0) / 100)}
+                className="pr-7 text-xs font-semibold"
+              />
+              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+            </div>
+            <p className="text-[10px] text-zinc-400 mt-1">Ditanggung Perusahaan: 3.7%</p>
+          </div>
+
+          <div>
+            <Label className="text-xs font-semibold text-zinc-600">Jaminan Pensiun (JP) Pekerja (%)</Label>
+            <div className="relative mt-1">
+              <Input
+                type="number" step="0.1" min="0" max="100"
+                value={(rates.jpRateEmployee * 100).toFixed(1)}
+                onChange={(e) => updateRate('jpRateEmployee', (parseFloat(e.target.value) || 0) / 100)}
+                className="pr-7 text-xs font-semibold"
+              />
+              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+            </div>
+            <p className="text-[10px] text-zinc-400 mt-1">Jaminan Pensiun: 1%</p>
+          </div>
+
+          <div>
+            <Label className="text-xs font-semibold text-zinc-600">Jaminan Pensiun (JP) Perusahaan (%)</Label>
+            <div className="relative mt-1">
+              <Input
+                type="number" step="0.1" min="0" max="100"
+                value={(rates.jpRateCompany * 100).toFixed(1)}
+                onChange={(e) => updateRate('jpRateCompany', (parseFloat(e.target.value) || 0) / 100)}
+                className="pr-7 text-xs font-semibold"
+              />
+              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+            </div>
+            <p className="text-[10px] text-zinc-400 mt-1">Ditanggung Perusahaan: 2%</p>
+          </div>
+
+          <div>
+            <Label className="text-xs font-semibold text-zinc-600">Maksimal Upah Kena JP (Rp)</Label>
+            <Input
+              type="number" step="100000" min="0"
+              value={rates.jpCapSalary}
+              onChange={(e) => updateRate('jpCapSalary', parseInt(e.target.value, 10) || 0)}
+              className="mt-1 text-xs font-semibold"
+            />
+            <p className="text-[10px] text-zinc-400 mt-1">Cap JP: Rp {rates.jpCapSalary.toLocaleString('id-ID')}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* JKK & JKM Section */}
+      <div className="border-t border-zinc-100 pt-4 space-y-3">
+        <span className="text-xs font-bold text-zinc-800 uppercase tracking-wider">3. JKK &amp; JKM Perusahaan</span>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <Label className="text-xs font-semibold text-zinc-600">JKK (Kecelakaan Kerja) (%)</Label>
+            <div className="relative mt-1">
+              <Input
+                type="number" step="0.01" min="0" max="100"
+                value={(rates.jkkRateCompany * 100).toFixed(2)}
+                onChange={(e) => updateRate('jkkRateCompany', (parseFloat(e.target.value) || 0) / 100)}
+                className="pr-7 text-xs font-semibold"
+              />
+              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+            </div>
+            <p className="text-[10px] text-zinc-400 mt-1">Risiko standar: 0.24%</p>
+          </div>
+
+          <div>
+            <Label className="text-xs font-semibold text-zinc-600">JKM (Jaminan Kematian) (%)</Label>
+            <div className="relative mt-1">
+              <Input
+                type="number" step="0.01" min="0" max="100"
+                value={(rates.jkmRateCompany * 100).toFixed(2)}
+                onChange={(e) => updateRate('jkmRateCompany', (parseFloat(e.target.value) || 0) / 100)}
+                className="pr-7 text-xs font-semibold"
+              />
+              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+            </div>
+            <p className="text-[10px] text-zinc-400 mt-1">Standar resmi: 0.3%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function SettingRow({
   setting,
@@ -32,8 +256,13 @@ function SettingRow({
 }) {
   const [value, setValue] = useState(setting.value);
   const dirty = value !== setting.value;
+
+  if (setting.key === 'bpjs.rates') {
+    return <BpjsSettingForm setting={setting} onSave={onSave} saving={saving} />;
+  }
+
   return (
-    <div className="rounded-lg border border-zinc-200 p-4">
+    <div className="rounded-lg border border-zinc-200 bg-white p-4">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
           <div className="font-mono text-sm font-medium text-zinc-900">
@@ -49,9 +278,9 @@ function SettingRow({
           disabled={!dirty || saving}
         >
           {saving ? (
-            <Loader2 data-icon="inline-start" className="animate-spin" />
+            <Loader2 className="size-3.5 animate-spin mr-1" />
           ) : (
-            <Save data-icon="inline-start" />
+            <Save className="size-3.5 mr-1" />
           )}
           Simpan
         </Button>
@@ -59,8 +288,8 @@ function SettingRow({
       <textarea
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        rows={setting.key === 'bpjs.rates' ? 5 : 2}
-        className="mt-3 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 font-mono text-xs"
+        rows={2}
+        className="mt-3 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800"
       />
     </div>
   );
@@ -219,9 +448,9 @@ export default function SettingsPage() {
                 disabled={!holDate || !holName.trim() || addHoliday.isPending}
               >
                 {addHoliday.isPending ? (
-                  <Loader2 data-icon="inline-start" className="animate-spin" />
+                  <Loader2 className="size-3.5 animate-spin mr-1" />
                 ) : (
-                  <CalendarPlus data-icon="inline-start" />
+                  <CalendarPlus className="size-3.5 mr-1" />
                 )}
                 Tambah
               </Button>
@@ -262,11 +491,11 @@ export default function SettingsPage() {
                       <th className="px-3 py-2" />
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-zinc-100">
                     {holidays.data.map((h) => (
                       <tr
                         key={h.id}
-                        className="border-b border-zinc-100 last:border-0"
+                        className="hover:bg-zinc-50 transition-colors"
                       >
                         <td className="px-3 py-2 font-medium text-zinc-900">
                           {fmtDate(h.date)}

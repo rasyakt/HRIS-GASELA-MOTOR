@@ -548,6 +548,17 @@ export class PayrollService {
     };
   }
 
+  async deleteDrafts(ids: number[]) {
+    if (!ids || ids.length === 0) return { count: 0 };
+    const deleted = await this.prisma.payroll.deleteMany({
+      where: {
+        id: { in: ids },
+        status: 'draft',
+      },
+    });
+    return { count: deleted.count };
+  }
+
   private toPayrollDto(r: {
     id: number;
     payrollNumber: string;

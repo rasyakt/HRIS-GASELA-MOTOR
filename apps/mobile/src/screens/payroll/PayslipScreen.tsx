@@ -13,6 +13,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Button, Card, CardTitle, ErrorBanner, Row } from '../../components/ui';
 import { fmtDate } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
@@ -180,99 +181,162 @@ export function PayslipScreen() {
               <ErrorBanner message="Gagal memuat detail slip gaji." />
             )}
 
-            {detail.data && (
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles.detailPeriod}>
-                  <PeriodBadge month={detail.data.month} year={detail.data.year} />
-                  <StatusChip status={detail.data.status} />
-                </View>
+            {detail.data && (() => {
+              const gross = Number(detail.data.grossSalary) || 0;
+              const net = Number(detail.data.netSalary) || 0;
+              const bpjsKesEmp = Number(detail.data.bpjsKesehatanEmployee) || 0;
+              const bpjsTkEmp = Number(detail.data.bpjsKetenagakerjaanEmployee) || 0;
+              const pph21 = Number(detail.data.taxPph21) || 0;
+              const bpjsKesComp = Number(detail.data.bpjsKesehatanCompany) || 0;
+              const bpjsTkComp = Number(detail.data.bpjsKetenagakerjaanCompany) || 0;
+              const totalCompanyBenefit = bpjsKesComp + bpjsTkComp;
 
-                <Text style={styles.detailNet}>{fmtRupiah(detail.data.netSalary)}</Text>
-                <Text style={styles.detailNetLabel}>Gaji Bersih (Take Home Pay)</Text>
+              const otherDeductions = detail.data.components
+                .filter((c) => c.type === 'deduction')
+                .reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+              const totalDeductions = (Number(detail.data.totalDeduction) || Number((detail.data as any).totalDeductions) || 0) || (bpjsKesEmp + bpjsTkEmp + pph21 + otherDeductions);
 
-                <View style={styles.separator} />
+              const netPct = gross > 0 ? ((net / gross) * 100).toFixed(1) : '100';
+              const dedPct = gross > 0 ? ((totalDeductions / gross) * 100).toFixed(1) : '0';
+              const bpjsKesPct = gross > 0 ? ((bpjsKesEmp / gross) * 100).toFixed(1) : '1.0';
+              const bpjsTkPct = gross > 0 ? ((bpjsTkEmp / gross) * 100).toFixed(1) : '3.0';
+              const pph21Pct = gross > 0 ? ((pph21 / gross) * 100).toFixed(2) : '0.00';
+              const companyPct = gross > 0 ? ((totalCompanyBenefit / gross) * 100).toFixed(1) : '0';
 
-                <Text style={styles.sectionLabel}>📥 Pendapatan</Text>
-                <Row label="Gaji Pokok" value={fmtRupiah(detail.data.basicSalary)} />
-                {detail.data.components
-                  .filter((c) => c.type === 'allowance')
-                  .map((c) => (
-                    <Row key={c.salaryComponentId} label={c.salaryComponentName} value={fmtRupiah(c.amount)} />
-                  ))}
-                {detail.data.overtimePay > 0 && (
-                  <Row label="Upah Lembur" value={fmtRupiah(detail.data.overtimePay)} />
-                )}
-                <Row label="Total Bruto" value={fmtRupiah(detail.data.grossSalary)} big />
+              return (
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  <View style={styles.detailPeriod}>
+                    <PeriodBadge month={detail.data.month} year={detail.data.year} />
+                    <StatusChip status={detail.data.status} />
+                  </View>
 
-                <View style={styles.separator} />
+                  <Text style={styles.detailNet}>{fmtRupiah(detail.data.netSalary)}</Text>
+                  <Text style={styles.detailNetLabel}>Gaji Bersih (Take Home Pay · {netPct}%)</Text>
 
-                <Text style={styles.sectionLabel}>📤 Potongan</Text>
-                {detail.data.components
-                  .filter((c) => c.type === 'deduction')
-                  .map((c) => (
-                    <Row key={c.salaryComponentId} label={c.salaryComponentName} value={`- ${fmtRupiah(c.amount)}`} />
-                  ))}
-                <Row
-                  label="BPJS Kesehatan"
-                  value={`- ${fmtRupiah(detail.data.bpjsKesehatanEmployee)}`}
-                />
-                <Row
-                  label="BPJS Ketenagakerjaan"
-                  value={`- ${fmtRupiah(detail.data.bpjsKetenagakerjaanEmployee)}`}
-                />
-                {detail.data.taxPph21 > 0 && (
-                  <Row label="PPh21" value={`- ${fmtRupiah(detail.data.taxPph21)}`} />
-                )}
+                  <View style={styles.separator} />
 
-                <View style={styles.separator} />
-
-                <Text style={styles.sectionLabel}>🏢 Kontribusi Perusahaan</Text>
-                <Row
-                  label="BPJS Kesehatan"
-                  value={fmtRupiah(detail.data.bpjsKesehatanCompany)}
-                />
-                <Row
-                  label="BPJS Ketenagakerjaan"
-                  value={fmtRupiah(detail.data.bpjsKetenagakerjaanCompany)}
-                />
-
-                {detail.data.approvedByName && (
-                  <>
-                    <View style={styles.separator} />
-                    <Row label="Disetujui oleh" value={detail.data.approvedByName} />
-                    {detail.data.approvedAt && (
-                      <Row label="Tanggal persetujuan" value={fmtDate(detail.data.approvedAt)} />
-                    )}
-                  </>
-                )}
-
-                <View style={styles.downloadBtn}>
-                  <Button
-                    title={
-                      downloadingId === selectedId
-                        ? 'Membuka PDF…'
-                        : '⬇ Unduh PDF'
-                    }
-                    onPress={() => selectedId && handleDownloadPdf(selectedId)}
-                    loading={downloadingId === selectedId}
-                    disabled={detail.data.status === 'draft'}
-                  />
-                  {detail.data.status === 'draft' && (
-                    <Text style={styles.draftNote}>
-                      PDF tersedia setelah slip gaji disetujui.
-                    </Text>
+                  <View style={styles.sectionHeaderRow}>
+                    <Ionicons name="arrow-down-circle" size={16} color="#059669" />
+                    <Text style={styles.sectionLabel}>Pendapatan</Text>
+                  </View>
+                  <Row label="Gaji Pokok" value={fmtRupiah(detail.data.basicSalary)} />
+                  {detail.data.components
+                    .filter((c) => c.type === 'allowance' && c.salaryComponentName.toLowerCase() !== 'gaji pokok' && c.amount > 0)
+                    .map((c) => (
+                      <Row key={c.salaryComponentId} label={c.salaryComponentName} value={fmtRupiah(c.amount)} />
+                    ))}
+                  {detail.data.overtimePay > 0 && (
+                    <Row label="Upah Lembur" value={fmtRupiah(detail.data.overtimePay)} />
                   )}
-                </View>
+                  <Row label="Total Bruto" value={fmtRupiah(detail.data.grossSalary)} big />
 
-                <View style={styles.closeRow}>
-                  <Button
-                    title="Tutup"
-                    variant="outline"
-                    onPress={() => setSelectedId(null)}
+                  <View style={styles.separator} />
+
+                  <View style={styles.sectionHeaderRow}>
+                    <Ionicons name="arrow-up-circle" size={16} color="#dc2626" />
+                    <Text style={styles.sectionLabel}>Potongan ({dedPct}% dari Bruto)</Text>
+                  </View>
+                  {detail.data.components
+                    .filter((c) => c.type === 'deduction' && c.amount > 0)
+                    .map((c) => (
+                      <Row key={c.salaryComponentId} label={c.salaryComponentName} value={`- ${fmtRupiah(c.amount)}`} />
+                    ))}
+                  <Row
+                    label={`BPJS Kesehatan (${bpjsKesPct}%)`}
+                    value={`- ${fmtRupiah(detail.data.bpjsKesehatanEmployee)}`}
                   />
-                </View>
-              </ScrollView>
-            )}
+                  <Text style={styles.rowSubtext}>• 1% iuran pemeliharaan kesehatan keluarga</Text>
+
+                  <Row
+                    label={`BPJS Ketenagakerjaan (${bpjsTkPct}%)`}
+                    value={`- ${fmtRupiah(detail.data.bpjsKetenagakerjaanEmployee)}`}
+                  />
+                  <Text style={styles.rowSubtext}>• 2% Tabungan JHT + 1% Jaminan Pensiun</Text>
+
+                  {detail.data.taxPph21 > 0 && (
+                    <>
+                      <Row label={`PPh21 Pajak (${pph21Pct}%)`} value={`- ${fmtRupiah(detail.data.taxPph21)}`} />
+                      <Text style={styles.rowSubtext}>• Setoran Pajak Resmi ke Kas Negara (TER)</Text>
+                    </>
+                  )}
+
+                  <View style={styles.transparencyCard}>
+                    <View style={styles.transparencyTitleRow}>
+                      <Ionicons name="stats-chart" size={16} color="#0f172a" />
+                      <Text style={styles.transparencyTitle}>Transparansi Alokasi Gaji</Text>
+                    </View>
+                    <View style={styles.transparencyRow}>
+                      <Text style={styles.transparencyLabel}>Gaji Diterima (THP)</Text>
+                      <Text style={styles.transparencyValGreen}>{netPct}% ({fmtRupiah(net)})</Text>
+                    </View>
+                    <View style={styles.transparencyRow}>
+                      <Text style={styles.transparencyLabel}>Total Terpotong</Text>
+                      <Text style={styles.transparencyValRed}>{dedPct}% (-{fmtRupiah(totalDeductions)})</Text>
+                    </View>
+                    <View style={styles.progressTrack}>
+                      <View style={[styles.progressFill, { width: `${Math.min(100, Math.max(0, Number(netPct)))}%` }]} />
+                    </View>
+                    <Text style={styles.benefitText}>
+                      <Ionicons name="gift-outline" size={13} color="#059669" />{' '}
+                      <Text style={{ fontWeight: '700' }}>Manfaat Ekstra dari Perusahaan:</Text> Perusahaan membayarkan{' '}
+                      <Text style={{ fontWeight: '700', color: '#059669' }}>{fmtRupiah(totalCompanyBenefit)} (+{companyPct}%)</Text>{' '}
+                      untuk iuran BPJS Kesehatan &amp; Ketenagakerjaan Anda secara gratis di luar gaji kotor Anda.
+                    </Text>
+                  </View>
+
+                  <View style={styles.separator} />
+
+                  <View style={styles.sectionHeaderRow}>
+                    <Ionicons name="business" size={16} color="#64748b" />
+                    <Text style={styles.sectionLabel}>Kontribusi Perusahaan</Text>
+                  </View>
+                  <Row
+                    label="BPJS Kesehatan"
+                    value={fmtRupiah(detail.data.bpjsKesehatanCompany)}
+                  />
+                  <Row
+                    label="BPJS Ketenagakerjaan"
+                    value={fmtRupiah(detail.data.bpjsKetenagakerjaanCompany)}
+                  />
+
+                  {detail.data.approvedByName && (
+                    <>
+                      <View style={styles.separator} />
+                      <Row label="Disetujui oleh" value={detail.data.approvedByName} />
+                      {detail.data.approvedAt && (
+                        <Row label="Tanggal persetujuan" value={fmtDate(detail.data.approvedAt)} />
+                      )}
+                    </>
+                  )}
+
+                  <View style={styles.downloadBtn}>
+                    <Button
+                      title={
+                        downloadingId === selectedId
+                          ? 'Membuka PDF…'
+                          : '⬇ Unduh PDF'
+                      }
+                      onPress={() => selectedId && handleDownloadPdf(selectedId)}
+                      loading={downloadingId === selectedId}
+                      disabled={detail.data.status === 'draft'}
+                    />
+                    {detail.data.status === 'draft' && (
+                      <Text style={styles.draftNote}>
+                        PDF tersedia setelah slip gaji disetujui.
+                      </Text>
+                    )}
+                  </View>
+
+                  <View style={styles.closeRow}>
+                    <Button
+                      title="Tutup"
+                      variant="outline"
+                      onPress={() => setSelectedId(null)}
+                    />
+                  </View>
+                </ScrollView>
+              );
+            })()}
           </View>
         </View>
       </Modal>
@@ -353,8 +417,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#f4f4f5',
     marginVertical: 12,
   },
-  sectionLabel: { fontSize: 13, fontWeight: '600', color: '#71717a', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
+  sectionLabel: { fontSize: 13, fontWeight: '600', color: '#71717a', textTransform: 'uppercase', letterSpacing: 0.5 },
+  sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
   downloadBtn: { marginTop: 20 },
   draftNote: { fontSize: 12, color: '#a1a1aa', marginTop: 6, textAlign: 'center' },
   closeRow: { marginTop: 10, marginBottom: 8 },
+
+  // Transparency Card Styles
+  rowSubtext: { fontSize: 11, color: '#9ca3af', marginTop: -4, marginBottom: 8, paddingLeft: 4 },
+  transparencyCard: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    padding: 16,
+    marginVertical: 14,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  transparencyTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 },
+  transparencyTitle: { fontSize: 14, fontWeight: '700', color: '#0f172a' },
+  transparencyRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  transparencyLabel: { fontSize: 13, color: '#475569', fontWeight: '500' },
+  transparencyValGreen: { fontSize: 13, fontWeight: '700', color: '#059669' },
+  transparencyValRed: { fontSize: 13, fontWeight: '700', color: '#dc2626' },
+  progressTrack: { height: 8, backgroundColor: '#e2e8f0', borderRadius: 999, marginVertical: 10, overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: '#059669', borderRadius: 999 },
+  benefitText: { fontSize: 12, color: '#475569', lineHeight: 18, marginTop: 6 },
 });

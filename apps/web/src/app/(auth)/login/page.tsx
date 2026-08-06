@@ -55,10 +55,18 @@ export default function LoginPage() {
 
       {/* Left Panel — Branding */}
       <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-zinc-950 p-12 lg:flex">
+        {/* Background Image Gasela Motor */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url('/gasela_motor.png')` }}
+        />
+        {/* Dark Overlay gradient for high contrast & premium readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/75 to-zinc-950/50 pointer-events-none" />
+
         {/* Decorative grid lines */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[48px_48px] pointer-events-none" />
         {/* Soft glow orbs */}
-        <div className="absolute -bottom-32 -left-32 size-96 rounded-full bg-zinc-700/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 size-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
         <div className="absolute -top-24 -right-24 size-80 rounded-full bg-zinc-600/10 blur-3xl pointer-events-none" />
 
         {/* Logo */}
