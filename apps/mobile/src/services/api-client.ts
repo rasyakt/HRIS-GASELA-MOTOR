@@ -1,7 +1,7 @@
 import { tokenStore } from './storage';
 import { useOnlineStore } from '../store/online-store';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.109.180.192:3001';
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.89.194.47:3001';
 
 interface ApiOptions extends RequestInit {
   token?: string | null;

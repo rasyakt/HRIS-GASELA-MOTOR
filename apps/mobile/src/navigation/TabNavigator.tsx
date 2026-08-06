@@ -7,6 +7,7 @@ import { HomeScreen } from '../screens/home/HomeScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { AnnouncementScreen } from '../screens/announcements/AnnouncementScreen';
 import { useAuthApi } from '../services/auth-api';
+import { CustomTabBar } from './CustomTabBar';
 
 export type TabParamList = {
   Home: undefined;
@@ -18,9 +19,7 @@ const Tab = createBottomTabNavigator<TabParamList>();
 
 function TabIcon({ name, color }: { name: any; color: string }) {
   return (
-    <View style={tabStyles.icon}>
-      <Ionicons name={name} size={24} color={color} />
-    </View>
+    <Ionicons name={name} size={24} color={color} />
   );
 }
 
@@ -30,17 +29,18 @@ function AnnouncementTabIcon({
 }: {
   focused: boolean;
   color: string;
+  size: number;
 }) {
   const authApi = useAuthApi();
   const { data } = useQuery({
     queryKey: ['announcements-unread'],
     queryFn: () => authApi<UnreadCountDto>('/api/announcements/unread-count'),
-    refetchInterval: 60_000, // poll tiap 1 menit
+    refetchInterval: 60_000,
   });
   const count = data?.unread ?? 0;
 
   return (
-    <View style={tabStyles.icon}>
+    <View>
       <Ionicons name={focused ? "notifications" : "notifications-outline"} size={24} color={color} />
       {count > 0 && (
         <View style={tabStyles.badge}>
@@ -52,11 +52,10 @@ function AnnouncementTabIcon({
 }
 
 const tabStyles = StyleSheet.create({
-  icon: { alignItems: 'center', justifyContent: 'center', width: 32, height: 32, marginTop: 4 },
   badge: {
     position: 'absolute',
-    top: -2,
-    right: -4,
+    top: -4,
+    right: -6,
     backgroundColor: '#dc2626',
     borderRadius: 999,
     minWidth: 16,
@@ -73,23 +72,9 @@ const tabStyles = StyleSheet.create({
 export function TabNavigator() {
   return (
     <Tab.Navigator
+      tabBar={props => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#0f172a',
-        tabBarInactiveTintColor: '#94a3b8',
-        tabBarStyle: {
-          borderTopWidth: 0,
-          backgroundColor: '#ffffff',
-          elevation: 10,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.05,
-          shadowRadius: 10,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 4 },
       }}
     >
       <Tab.Screen
