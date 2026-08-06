@@ -22,9 +22,12 @@ import { Button, Card, CardTitle, ErrorBanner, StatusBadge, TextField, DateField
 import { fmtDate, fmtDateTime, todayInput } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
 
+import { useTheme } from '../../theme/ThemeProvider';
+
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function LeaveListScreen() {
+  const { tokens } = useTheme();
   const authApi = useAuthApi();
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
@@ -128,7 +131,7 @@ export function LeaveListScreen() {
 
   return (
     <ScrollView
-      style={styles.flex}
+      style={[styles.flex, { backgroundColor: tokens.colors.background }]}
       contentContainerStyle={styles.container}
       refreshControl={
         <RefreshControl
@@ -137,14 +140,14 @@ export function LeaveListScreen() {
             myRequests.refetch();
             balances.refetch();
           }}
-          tintColor="#18181b"
+          tintColor={tokens.colors.primary}
         />
       }
     >
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.header}>Cuti</Text>
-          <Text style={styles.subheader}>Saldo & pengajuan cuti Anda.</Text>
+          <Text style={[styles.header, { color: tokens.colors.textPrimary }]}>Cuti</Text>
+          <Text style={[styles.subheader, { color: tokens.colors.textSecondary }]}>Saldo & pengajuan cuti Anda.</Text>
         </View>
         <Button title="Ajukan Cuti" onPress={() => setModalOpen(true)} />
       </View>
@@ -153,15 +156,15 @@ export function LeaveListScreen() {
         <CardTitle>Saldo Cuti</CardTitle>
         {balances.data && balances.data.length > 0 ? (
           balances.data.map((b) => (
-            <View key={b.leaveTypeId} style={styles.balanceRow}>
-              <Text style={styles.balanceName}>{b.leaveTypeName}</Text>
-              <Text style={styles.balanceValue}>
-                sisa <Text style={styles.balanceStrong}>{b.remaining}</Text>/{b.quota}
+            <View key={b.leaveTypeId} style={[styles.balanceRow, { borderBottomColor: tokens.colors.border }]}>
+              <Text style={[styles.balanceName, { color: tokens.colors.textPrimary }]}>{b.leaveTypeName}</Text>
+              <Text style={[styles.balanceValue, { color: tokens.colors.textSecondary }]}>
+                sisa <Text style={[styles.balanceStrong, { color: tokens.colors.textPrimary }]}>{b.remaining}</Text>/{b.quota}
               </Text>
             </View>
           ))
         ) : (
-          <Text style={styles.emptyText}>Belum ada saldo cuti.</Text>
+          <Text style={[styles.emptyText, { color: tokens.colors.textSecondary }]}>Belum ada saldo cuti.</Text>
         )}
       </Card>
 
@@ -169,14 +172,14 @@ export function LeaveListScreen() {
         <CardTitle>Riwayat Pengajuan</CardTitle>
         {myRequests.data && myRequests.data.items.length > 0 ? (
           myRequests.data.items.map((r) => (
-            <View key={r.id} style={styles.reqRow}>
+            <View key={r.id} style={[styles.reqRow, { borderBottomColor: tokens.colors.border }]}>
               <View style={styles.reqLeft}>
-                <Text style={styles.reqNumber}>{r.requestNumber}</Text>
-                <Text style={styles.reqMeta}>
+                <Text style={[styles.reqNumber, { color: tokens.colors.textPrimary }]}>{r.requestNumber}</Text>
+                <Text style={[styles.reqMeta, { color: tokens.colors.textSecondary }]}>
                   {r.leaveTypeName} · {fmtDate(r.startDate)} – {fmtDate(r.endDate)} (
                   {r.totalDays} hari)
                 </Text>
-                <Text style={styles.reqMeta}>Diajukan {fmtDateTime(r.createdAt)}</Text>
+                <Text style={[styles.reqMeta, { color: tokens.colors.textTertiary }]}>Diajukan {fmtDateTime(r.createdAt)}</Text>
               </View>
               <View style={styles.reqRight}>
                 <StatusBadge status={r.status} />
@@ -192,7 +195,7 @@ export function LeaveListScreen() {
             </View>
           ))
         ) : (
-          <Text style={styles.emptyText}>Belum ada pengajuan cuti.</Text>
+          <Text style={[styles.emptyText, { color: tokens.colors.textSecondary }]}>Belum ada pengajuan cuti.</Text>
         )}
       </Card>
 
@@ -203,13 +206,13 @@ export function LeaveListScreen() {
         onRequestClose={handleCloseModal}
       >
         <View style={styles.modalBackdrop}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Ajukan Cuti</Text>
+          <View style={[styles.modal, { backgroundColor: tokens.colors.surface }]}>
+            <Text style={[styles.modalTitle, { color: tokens.colors.textPrimary }]}>Ajukan Cuti</Text>
             <ScrollView keyboardShouldPersistTaps="handled">
               {formError && <ErrorBanner message={formError} />}
-              <Text style={styles.fieldLabel}>Jenis Cuti</Text>
+              <Text style={[styles.fieldLabel, { color: tokens.colors.textSecondary }]}>Jenis Cuti</Text>
               {activeTypes.length === 0 ? (
-                <Text style={styles.emptyText}>Tidak ada jenis cuti aktif.</Text>
+                <Text style={[styles.emptyText, { color: tokens.colors.textSecondary }]}>Tidak ada jenis cuti aktif.</Text>
               ) : (
                 <View style={styles.typeList}>
                   {activeTypes.map((t) => {
@@ -218,19 +221,28 @@ export function LeaveListScreen() {
                       <Pressable
                         key={t.id}
                         onPress={() => setLeaveTypeId(t.id)}
-                        style={[styles.typeItem, selected && styles.typeItemSelected]}
+                        style={[
+                          styles.typeItem,
+                          {
+                            backgroundColor: tokens.colors.surface,
+                            borderColor: selected ? tokens.colors.primary : tokens.colors.border,
+                          },
+                          selected && { backgroundColor: tokens.colors.neutral100 }
+                        ]}
                       >
-                        <Text
-                          style={[
-                            styles.typeItemText,
-                            selected && styles.typeItemTextSelected,
-                          ]}
-                        >
-                          {t.name}
-                        </Text>
-                        <Text style={styles.typeItemMeta}>
-                          {t.isPaid ? 'berbayar' : 'tidak berbayar'}
-                        </Text>
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={[
+                              styles.typeItemText,
+                              { color: tokens.colors.textPrimary },
+                            ]}
+                          >
+                            {t.name}
+                          </Text>
+                          <Text style={[styles.typeItemMeta, { color: tokens.colors.textSecondary }]}>
+                            {t.isPaid ? 'berbayar' : 'tidak berbayar'}
+                          </Text>
+                        </View>
                       </Pressable>
                     );
                   })}
@@ -272,7 +284,7 @@ export function LeaveListScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fafafa' },
+  flex: { flex: 1 },
   container: { padding: 16, paddingBottom: 32 },
   headerRow: {
     flexDirection: 'row',

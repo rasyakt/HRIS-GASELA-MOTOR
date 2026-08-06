@@ -1,5 +1,5 @@
 import type { LoginResponse } from '@gasela/shared-types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -7,18 +7,69 @@ import {
   StyleSheet,
   Text,
   View,
+  Pressable,
 } from 'react-native';
-import { Button, ErrorBanner, GaselaLogo, TextField } from '../../components/ui';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  withDelay,
+} from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { GaselaLogo } from '../../components/ui';
+import { Input } from '../../components/Input';
+import { Button } from '../../components/Button';
+import { Card, CardContent } from '../../components/Card';
+import { ErrorBanner } from '../../components/ErrorState';
 import { ApiError } from '../../services/api-client';
 import { api } from '../../services/api-client';
 import { useAuthStore } from '../../store/auth-store';
+import { useTheme } from '../../theme/ThemeProvider';
+import { AnimationDurations, timingConfig } from '../../animations';
 
 export function LoginScreen() {
+  const { tokens } = useTheme();
   const setSession = useAuthStore((s) => s.setSession);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Animations
+  const logoOpacity = useSharedValue(0);
+  const logoScale = useSharedValue(0.9);
+  const formTranslateY = useSharedValue(100);
+  const formOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    logoOpacity.value = withTiming(1, timingConfig(AnimationDurations.slow));
+    logoScale.value = withTiming(1, timingConfig(AnimationDurations.slow));
+    
+    formOpacity.value = withDelay(
+      150,
+      withTiming(1, timingConfig(350))
+    );
+    formTranslateY.value = withDelay(
+      150,
+      withTiming(0, timingConfig(350))
+    );
+  }, [logoOpacity, logoScale, formOpacity, formTranslateY]);
+
+  const animatedLogoStyle = useAnimatedStyle(() => {
+    return {
+      opacity: logoOpacity.value,
+      transform: [{ scale: logoScale.value }],
+    };
+  });
+
+  const animatedFormStyle = useAnimatedStyle(() => {
+    return {
+      opacity: formOpacity.value,
+      transform: [{ translateY: formTranslateY.value }],
+    };
+  });
 
   async function handleLogin() {
     if (!username || !password) {
@@ -32,7 +83,7 @@ export function LoginScreen() {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       });
-      setSession(session);
+      setSession(session, rememberMe);
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -49,40 +100,94 @@ export function LoginScreen() {
       style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <LinearGradient
+        colors={[tokens.colors.background, tokens.colors.primaryLight + '20']}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      />
+      
       <ScrollView
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.logoWrapper}>
-          <GaselaLogo size="lg" showText={true} />
-        </View>
-        <Text style={styles.subtitle}>Masuk menggunakan akun karyawan Anda.</Text>
+        <Animated.View style={[styles.logoWrapper, animatedLogoStyle]}>
+          <GaselaLogo size="lg" showText={false} />
+          <Text style={[styles.welcomeText, { color: tokens.colors.textPrimary }]}>
+            Selamat Datang!
+          </Text>
+          <Text style={[styles.subtitle, { color: tokens.colors.textSecondary }]}>
+            Masuk menggunakan akun karyawan Anda.
+          </Text>
+        </Animated.View>
 
-        <View style={styles.form}>
-          {error && <ErrorBanner message={error} />}
-          <TextField
-            label="Username"
-            value={username}
-            onChangeText={setUsername}
-            placeholder="mis. employee"
-            autoCapitalize="none"
-          />
-          <TextField
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            placeholder="••••••••"
-            secureTextEntry
-          />
-          <Button title="Masuk" onPress={handleLogin} loading={loading} />
-        </View>
+        <Animated.View style={[styles.formWrapper, animatedFormStyle]}>
+          <Card variant="elevated" elevation="lg">
+            <CardContent>
+              {error && (
+                <ErrorBanner 
+                  description={error} 
+                  onDismiss={() => setError(null)}
+                  style={{ marginBottom: 16 }}
+                />
+              )}
+              
+              <Input
+                label="Username"
+                value={username}
+                onChangeText={setUsername}
+                placeholder="mis. employee"
+                autoCapitalize="none"
+                prefixIcon="person-outline"
+                containerStyle={styles.inputSpacing}
+              />
+              
+              <Input
+                label="Password"
+                value={password}
+                onChangeText={setPassword}
+                placeholder="••••••••"
+                secureTextEntry
+                prefixIcon="lock-closed-outline"
+                containerStyle={styles.inputSpacing}
+              />
+
+              <View style={styles.rememberMeRow}>
+                <Pressable
+                  onPress={() => setRememberMe(!rememberMe)}
+                  style={styles.checkboxContainer}
+                >
+                  <Ionicons
+                    name={rememberMe ? 'checkbox' : 'square-outline'}
+                    size={20}
+                    color={rememberMe ? tokens.colors.primary : tokens.colors.textTertiary}
+                  />
+                  <Text style={[styles.rememberMeText, { color: tokens.colors.textSecondary }]}>
+                    Ingat Saya
+                  </Text>
+                </Pressable>
+              </View>
+              
+              <Button 
+                variant="gradient"
+                onPress={handleLogin} 
+                loading={loading}
+                fullWidth
+                style={styles.loginButton}
+                size="large"
+              >
+                Masuk
+              </Button>
+            </CardContent>
+          </Card>
+        </Animated.View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fafafa' },
+  flex: { flex: 1 },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -91,16 +196,44 @@ const styles = StyleSheet.create({
   logoWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 40,
     alignSelf: 'center',
   },
-  title: { fontSize: 24, fontWeight: '700', color: '#18181b', textAlign: 'center' },
-  subtitle: {
-    marginTop: 6,
-    fontSize: 14,
-    color: '#71717a',
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 28,
+    marginTop: 20,
   },
-  form: { gap: 0 },
+  subtitle: {
+    marginTop: 8,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  formWrapper: {
+    width: '100%',
+  },
+  inputSpacing: {
+    marginBottom: 16,
+  },
+  rememberMeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    marginTop: -4,
+    paddingHorizontal: 2,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rememberMeText: {
+    fontSize: 14,
+    marginLeft: 8,
+    fontWeight: '500',
+  },
+  loginButton: {
+    marginTop: 8,
+  },
 });

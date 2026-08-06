@@ -1,4 +1,5 @@
 import type { AuthUser } from '@gasela/shared-types';
+import * as SecureStore from 'expo-secure-store';
 
 class InMemoryMMKV {
   private map = new Map<string, any>();
@@ -22,15 +23,8 @@ class InMemoryMMKV {
   }
 }
 
-let storageInstance: any;
-
-try {
-  const { createMMKV } = require('react-native-mmkv');
-  storageInstance = createMMKV({ id: 'gasela-hris' });
-} catch {
-  console.log('Using in-memory storage fallback because react-native-mmkv is not supported in Expo Go.');
-  storageInstance = new InMemoryMMKV();
-}
+let storageInstance: any = new InMemoryMMKV();
+console.log('Using in-memory storage fallback because react-native-mmkv v4 requires NitroModules, which is not supported in Expo Go.');
 
 export const storage = storageInstance;
 
@@ -67,4 +61,33 @@ export const userStore = {
     return raw ? (JSON.parse(raw) as AuthUser) : null;
   },
   set: (user: AuthUser) => storage.set(USER_KEY, JSON.stringify(user)),
+};
+
+// Secure Session Storage using expo-secure-store for Expo Go compatibility
+const SECURE_SESSION_KEY = 'gasela_secure_session';
+
+export const secureStorage = {
+  saveSession: async (session: { accessToken: string; refreshToken: string; user: AuthUser; tokenExpiresAt: number }) => {
+    try {
+      await SecureStore.setItemAsync(SECURE_SESSION_KEY, JSON.stringify(session));
+    } catch (e) {
+      console.warn('Failed to save secure session:', e);
+    }
+  },
+  getSession: async () => {
+    try {
+      const raw = await SecureStore.getItemAsync(SECURE_SESSION_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      console.warn('Failed to get secure session:', e);
+      return null;
+    }
+  },
+  clearSession: async () => {
+    try {
+      await SecureStore.deleteItemAsync(SECURE_SESSION_KEY);
+    } catch (e) {
+      console.warn('Failed to delete secure session:', e);
+    }
+  },
 };

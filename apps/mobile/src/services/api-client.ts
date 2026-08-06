@@ -1,7 +1,25 @@
+import Constants from 'expo-constants';
 import { tokenStore } from './storage';
 import { useOnlineStore } from '../store/online-store';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.109.180.192:3001';
+const getDevApiUrl = () => {
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+
+  // Get Metro Bundler's host IP (e.g., "192.168.1.X:8081") and map to backend port 3001
+  const hostUri = Constants.expoConfig?.hostUri || (Constants.expoGoConfig as any)?.debuggerHost;
+  if (hostUri) {
+    const ip = hostUri.split(':')[0];
+    if (ip) {
+      return `http://${ip}:3001`;
+    }
+  }
+
+  return 'http://10.89.194.47:3001'; // Fallback to current IP if not detected
+};
+
+const API_URL = getDevApiUrl();
 
 interface ApiOptions extends RequestInit {
   token?: string | null;

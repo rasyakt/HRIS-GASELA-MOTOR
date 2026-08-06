@@ -22,7 +22,9 @@ export const warningLetterQuerySchema = z.object({
   search: z.string().optional(),
 });
 
-export class CreateWarningLetterDto extends createZodDto(createWarningLetterSchema) {
+export class CreateWarningLetterDto extends createZodDto(
+  createWarningLetterSchema,
+) {
   @ApiProperty()
   employeeId: number;
   @ApiProperty()
@@ -39,7 +41,9 @@ export class CreateWarningLetterDto extends createZodDto(createWarningLetterSche
   documentUrl?: string | null;
 }
 
-export class UpdateWarningLetterDto extends createZodDto(updateWarningLetterSchema) {
+export class UpdateWarningLetterDto extends createZodDto(
+  updateWarningLetterSchema,
+) {
   @ApiPropertyOptional()
   letterNumber?: string;
   @ApiPropertyOptional({ enum: ['SP1', 'SP2', 'SP3'] })
@@ -54,7 +58,9 @@ export class UpdateWarningLetterDto extends createZodDto(updateWarningLetterSche
   documentUrl?: string | null;
 }
 
-export class WarningLetterQueryDto extends createZodDto(warningLetterQuerySchema) {
+export class WarningLetterQueryDto extends createZodDto(
+  warningLetterQuerySchema,
+) {
   @ApiPropertyOptional({ default: 1 })
   page?: number;
   @ApiPropertyOptional({ default: 20 })

@@ -2,7 +2,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { DashboardSummary } from '@gasela/shared-types';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -11,34 +11,95 @@ import {
   View,
   Pressable,
 } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  withDelay,
+  withSpring,
+} from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { Button, Card, CardTitle, ErrorBanner, GaselaLogo, Row, StatusBadge } from '../../components/ui';
-import { fmtDate, fmtHours, fmtTime, ROLE_LABEL } from '../../lib/format';
+import { Button } from '../../components/Button';
+import { Card, CardHeader, CardContent } from '../../components/Card';
+import { Badge } from '../../components/Badge';
+import { Avatar } from '../../components/Avatar';
+import { StatCard } from '../../components/Progress';
+import { Skeleton, FullScreenLoader } from '../../components/Loading';
+import { ErrorState, ErrorBanner } from '../../components/ErrorState';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { fmtTime, ROLE_LABEL, statusLabel } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
 import { getPosition } from '../../services/location';
 import { useAuthStore } from '../../store/auth-store';
+import { useTheme } from '../../theme/ThemeProvider';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
+import { AnimationDurations, timingConfig, scalePress } from '../../animations';
+import { triggerHapticFeedback } from '../../animations/gestures';
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
-function QuickAction({ icon, label, onPress, color }: { icon: any; label: string; onPress: () => void; color: string }) {
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+function QuickAction({ icon, label, onPress, color, delay }: { icon: any; label: string; onPress: () => void; color: string; delay: number }) {
+  const { tokens } = useTheme();
+  const isPressed = useSharedValue(false);
+  const opacity = useSharedValue(0);
+  const translateY = useSharedValue(20);
+
+  useEffect(() => {
+    opacity.value = withDelay(delay, withTiming(1, timingConfig(AnimationDurations.normal)));
+    translateY.value = withDelay(delay, withSpring(0, { damping: 15, stiffness: 100 }));
+  }, [delay, opacity, translateY]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      transform: [
+        { translateY: translateY.value },
+        { scale: scalePress(isPressed.value) }
+      ],
+    };
+  });
+
+  const handlePressIn = () => { isPressed.value = true; };
+  const handlePressOut = () => { isPressed.value = false; };
+  const handlePress = () => {
+    triggerHapticFeedback('light');
+    onPress();
+  };
+
   return (
-    <Pressable style={styles.quickAction} onPress={onPress}>
-      <View style={[styles.quickActionIcon, { backgroundColor: `${color}1A` }]}>
-        <Ionicons name={icon} size={28} color={color} />
-      </View>
-      <Text style={styles.quickActionLabel}>{label}</Text>
-    </Pressable>
+    <AnimatedPressable
+      style={[styles.quickAction, { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border, ...tokens.shadows.sm }]}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onPress={handlePress}
+    >
+      <Ionicons name={icon} size={32} color={color} style={styles.quickActionIconDirect} />
+      <Text style={[styles.quickActionLabel, { color: tokens.colors.textPrimary }]}>{label}</Text>
+    </AnimatedPressable>
   );
 }
 
 export function HomeScreen() {
+  const { tokens } = useTheme();
   const authApi = useAuthApi();
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const navigation = useNavigation<NavProp>();
+  const insets = useSafeAreaInsets();
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<'in' | 'out' | null>(null);
+
+  // Animations
+  const headerOpacity = useSharedValue(0);
+  const headerTranslateY = useSharedValue(-20);
+
+  useEffect(() => {
+    headerOpacity.value = withTiming(1, timingConfig(AnimationDurations.slow));
+    headerTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+  }, [headerOpacity, headerTranslateY]);
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['dashboard-summary'],
@@ -71,150 +132,212 @@ export function HomeScreen() {
 
   const today = data?.today.attendance ?? null;
 
-  return (
-    <View style={styles.flex}>
-      {/* Fixed Brand Header */}
-      <View style={styles.fixedBrandHeader}>
-        <GaselaLogo size="sm" showText={true} />
-      </View>
+  const animatedHeaderStyle = useAnimatedStyle(() => {
+    return {
+      opacity: headerOpacity.value,
+      transform: [{ translateY: headerTranslateY.value }],
+    };
+  });
 
+  return (
+    <View style={[styles.flex, { backgroundColor: tokens.colors.background }]}>
       <ScrollView
         style={styles.flex}
         contentContainerStyle={styles.container}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#0f172a" />
+          <RefreshControl refreshing={isLoading && !data} onRefresh={refetch} tintColor={tokens.colors.primary} />
         }
       >
-        <View style={styles.header}>
-          <View style={styles.headerText}>
-            <Text style={styles.greeting}>Halo, {user?.fullName ?? 'Karyawan'}</Text>
-            <Text style={styles.date}>
-              {new Date().toLocaleDateString('id-ID', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
-              {user ? ` · ${ROLE_LABEL[user.role]}` : ''}
-            </Text>
-          </View>
-        </View>
-
-      {isError && <ErrorBanner message="Gagal memuat data. Tarik untuk muat ulang." />}
-
-      <View style={styles.heroCard}>
-        <Text style={styles.heroTitle}>Kehadiran Hari Ini</Text>
-        {today ? (
-          <View style={styles.heroContent}>
-            <View style={styles.heroRow}>
-              <StatusBadge status={today.status} />
-              {today.shiftName && <Text style={styles.heroShift}>{today.shiftName}</Text>}
-            </View>
-            <View style={styles.heroTimes}>
-              <View style={styles.heroTimeBlock}>
-                <Text style={styles.heroTimeLabel}>Check-in</Text>
-                <Text style={styles.heroTimeValue}>{fmtTime(today.checkInTime)}</Text>
+        {/* Header with Gradient Background */}
+        <Animated.View style={animatedHeaderStyle}>
+          <LinearGradient
+            colors={tokens.gradients.primary as unknown as readonly [string, string, ...string[]]}
+            style={[styles.headerBackground, { paddingTop: Math.max(insets.top, 16) + 16 }]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={styles.header}>
+              <View style={styles.headerText}>
+                <Text style={[styles.greeting, { color: tokens.colors.surface }]}>
+                  Halo, {user?.fullName?.split(' ')[0] ?? 'Karyawan'}
+                </Text>
+                <Text style={[styles.date, { color: 'rgba(255,255,255,0.8)' }]}>
+                  {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  {user ? ` · ${ROLE_LABEL[user.role]}` : ''}
+                </Text>
               </View>
-              <View style={styles.heroTimeDivider} />
-              <View style={styles.heroTimeBlock}>
-                <Text style={styles.heroTimeLabel}>Check-out</Text>
-                <Text style={styles.heroTimeValue}>{fmtTime(today.checkOutTime)}</Text>
+              <Avatar name={user?.fullName || '?'} size="md" border />
+            </View>
+          </LinearGradient>
+        </Animated.View>
+        {isError && !data ? (
+          <ErrorState description="Gagal memuat data dashboard." onRetry={refetch} />
+        ) : (
+          <>
+            <Text style={[styles.sectionTitle, { color: tokens.colors.textPrimary }]}>Kehadiran Hari Ini</Text>
+            {isLoading && !data ? (
+              <Skeleton height={200} borderRadius={16} style={{ marginBottom: 24 }} />
+            ) : (
+              <Card variant="elevated" elevation="lg" style={styles.heroCard}>
+                <CardHeader 
+                  title={today?.shiftName || 'Jadwal Reguler'} 
+                  icon="time-outline"
+                  action={
+                    today ? (
+                      <Badge 
+                        variant="subtle" 
+                        color={today.status === 'present' ? 'success' : today.status === 'late' ? 'warning' : 'neutral'}
+                      >
+                        {today.status ? statusLabel(today.status).toUpperCase() : 'BELUM ABSEN'}
+                      </Badge>
+                    ) : (
+                      <Badge variant="subtle" color="neutral">BELUM ABSEN</Badge>
+                    )
+                  }
+                />
+                <CardContent>
+                  <View style={[styles.heroTimes, { backgroundColor: tokens.colors.neutral100 }]}>
+                    <View style={styles.heroTimeBlock}>
+                      <Text style={[styles.heroTimeLabel, { color: tokens.colors.textSecondary }]}>Check-in</Text>
+                      <Text style={[styles.heroTimeValue, { color: tokens.colors.primary }]}>
+                        {today?.checkInTime ? fmtTime(today.checkInTime) : '--:--'}
+                      </Text>
+                    </View>
+                    <View style={[styles.heroTimeDivider, { backgroundColor: tokens.colors.border }]} />
+                    <View style={styles.heroTimeBlock}>
+                      <Text style={[styles.heroTimeLabel, { color: tokens.colors.textSecondary }]}>Check-out</Text>
+                      <Text style={[styles.heroTimeValue, { color: tokens.colors.primary }]}>
+                        {today?.checkOutTime ? fmtTime(today.checkOutTime) : '--:--'}
+                      </Text>
+                    </View>
+                  </View>
+                  
+                  {actionError && (
+                    <ErrorBanner description={actionError} onDismiss={() => setActionError(null)} style={{ marginTop: 12, marginBottom: 12 }} />
+                  )}
+
+                  <View style={styles.heroActionRow}>
+                    {!today?.checkInTime && (
+                      <Button variant="gradient" onPress={() => handleCheck('in')} loading={actionLoading === 'in'} fullWidth size="large">
+                        Check-in Sekarang
+                      </Button>
+                    )}
+                    {today?.checkInTime && !today.checkOutTime && (
+                      <Button variant="primary" onPress={() => handleCheck('out')} loading={actionLoading === 'out'} fullWidth size="large">
+                        Check-out
+                      </Button>
+                    )}
+                  </View>
+                </CardContent>
+              </Card>
+            )}
+
+            <Text style={[styles.sectionTitle, { color: tokens.colors.textPrimary }]}>Menu Utama</Text>
+            <View style={styles.grid}>
+              <QuickAction icon="list-outline" label="Riwayat" onPress={() => navigation.navigate('Attendance')} color={tokens.colors.primary} delay={100} />
+              <QuickAction icon="calendar-clear-outline" label="Cuti" onPress={() => navigation.navigate('Leave')} color={tokens.colors.primary} delay={150} />
+              <QuickAction icon="time-outline" label="Lembur" onPress={() => navigation.navigate('Overtime')} color={tokens.colors.primary} delay={200} />
+              <QuickAction icon="document-text-outline" label="Slip Gaji" onPress={() => navigation.navigate('Payslip')} color={tokens.colors.primary} delay={250} />
+            </View>
+
+            <Text style={[styles.sectionTitle, { color: tokens.colors.textPrimary }]}>Informasi Anda</Text>
+            {isLoading && !data ? (
+              <View style={{ flexDirection: 'row', gap: 16 }}>
+                <Skeleton width="48%" height={100} borderRadius={16} />
+                <Skeleton width="48%" height={100} borderRadius={16} />
               </View>
-            </View>
-            <View style={styles.heroActionRow}>
-              {!today.checkInTime && (
-                <Button title="Check-in Sekarang" onPress={() => handleCheck('in')} loading={actionLoading === 'in'} style={styles.heroButton} />
-              )}
-              {today.checkInTime && !today.checkOutTime && (
-                <Button title="Check-out" onPress={() => handleCheck('out')} loading={actionLoading === 'out'} style={styles.heroButton} />
-              )}
-            </View>
-          </View>
-        ) : (
-          <View style={styles.heroEmpty}>
-            <Text style={styles.heroEmptyText}>Belum ada kehadiran hari ini.</Text>
-            <Button title="Check-in Sekarang" onPress={() => handleCheck('in')} loading={actionLoading === 'in'} style={styles.heroButton} />
-          </View>
+            ) : (
+              <View style={styles.statsRow}>
+                <StatCard
+                  title="Cuti Pending"
+                  value={data?.pendingLeave ?? 0}
+                  icon={<Ionicons name="hourglass-outline" size={20} color={tokens.colors.warning} />}
+                  style={{ marginRight: 8 }}
+                />
+                <StatCard
+                  title="Lembur Pending"
+                  value={data?.pendingOvertime ?? 0}
+                  icon={<Ionicons name="hourglass-outline" size={20} color={tokens.colors.warning} />}
+                  style={{ marginLeft: 8 }}
+                />
+              </View>
+            )}
+
+            <Card style={styles.marginCard}>
+              <CardHeader title="Saldo Cuti" />
+              <CardContent>
+                {data && data.leaveBalances.length > 0 ? (
+                  data.leaveBalances.map((b) => (
+                    <View key={b.leaveTypeId} style={[styles.leaveRow, { borderBottomColor: tokens.colors.border }]}>
+                      <Text style={[styles.leaveName, { color: tokens.colors.textPrimary }]}>{b.leaveTypeName}</Text>
+                      <Badge variant="subtle" color="info">{`sisa ${b.remaining}/${b.quota}`}</Badge>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={[styles.emptyText, { color: tokens.colors.textSecondary }]}>Belum ada saldo cuti.</Text>
+                )}
+              </CardContent>
+            </Card>
+          </>
         )}
-        {actionError && <ErrorBanner message={actionError} />}
-      </View>
-
-      <Text style={styles.sectionTitle}>Menu Utama</Text>
-      <View style={styles.grid}>
-        <QuickAction icon="time-outline" label="Riwayat" onPress={() => navigation.navigate('Attendance')} color="#3b82f6" />
-        <QuickAction icon="calendar-outline" label="Cuti" onPress={() => navigation.navigate('Leave')} color="#10b981" />
-        <QuickAction icon="alarm-outline" label="Lembur" onPress={() => navigation.navigate('Overtime')} color="#f59e0b" />
-        <QuickAction icon="wallet-outline" label="Slip Gaji" onPress={() => navigation.navigate('Payslip')} color="#8b5cf6" />
-      </View>
-
-      <Text style={styles.sectionTitle}>Informasi Anda</Text>
-      <Card style={styles.card}>
-        <CardTitle>Pengajuan Menunggu</CardTitle>
-        <Row label="Cuti" value={`${data?.pendingLeave ?? 0}`} big />
-        <Row label="Lembur" value={`${data?.pendingOvertime ?? 0}`} big />
-      </Card>
-
-      <Card style={styles.card}>
-        <CardTitle>Saldo Cuti</CardTitle>
-        {data && data.leaveBalances.length > 0 ? (
-          data.leaveBalances.map((b) => (
-            <Row key={b.leaveTypeId} label={b.leaveTypeName} value={`sisa ${b.remaining}/${b.quota}`} big />
-          ))
-        ) : (
-          <Text style={styles.emptyText}>Belum ada saldo cuti.</Text>
-        )}
-      </Card>
-    </ScrollView>
-  </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#f8fafc' },
-  fixedBrandHeader: {
-    backgroundColor: '#ffffff',
+  flex: { flex: 1 },
+  container: { paddingHorizontal: 20, paddingBottom: 130 },
+  headerBackground: {
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
     paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    zIndex: 10,
+    paddingBottom: 24,
+    marginHorizontal: -20,
+    marginBottom: 24,
   },
-  container: { padding: 20, paddingTop: 16, paddingBottom: 40 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  header: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+  },
   headerText: { flex: 1 },
-  greeting: { fontSize: 22, fontWeight: 'bold', color: '#0f172a' },
-  date: { fontSize: 13, color: '#64748b', marginTop: 4 },
-  avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#0f172a', alignItems: 'center', justifyContent: 'center' },
-  heroCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 24,
-    shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.05,
-    shadowRadius: 16,
-    elevation: 3,
-    marginBottom: 28,
+  greeting: { fontSize: 26, fontWeight: '800', letterSpacing: -0.5, lineHeight: 32 },
+  date: { fontSize: 13, marginTop: 4, fontWeight: '500', opacity: 0.9, letterSpacing: 0.1 },
+  sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16, marginTop: 8 },
+  heroCard: { marginBottom: 28 },
+  heroTimes: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    padding: 16, 
+    borderRadius: 12, 
+    marginBottom: 20,
+    marginTop: 8,
   },
-  heroTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a', marginBottom: 16 },
-  heroContent: {},
-  heroRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  heroShift: { fontSize: 13, color: '#64748b', fontWeight: '500' },
-  heroTimes: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#f8fafc', padding: 16, borderRadius: 16, marginBottom: 20 },
   heroTimeBlock: { flex: 1, alignItems: 'center' },
-  heroTimeLabel: { fontSize: 12, color: '#64748b', marginBottom: 4 },
-  heroTimeValue: { fontSize: 18, fontWeight: 'bold', color: '#0f172a' },
-  heroTimeDivider: { width: 1, backgroundColor: '#e2e8f0', marginHorizontal: 16 },
+  heroTimeLabel: { fontSize: 12, marginBottom: 4 },
+  heroTimeValue: { fontSize: 20, fontWeight: 'bold' },
+  heroTimeDivider: { width: 1, marginHorizontal: 16 },
   heroActionRow: { marginTop: 4 },
-  heroButton: { width: '100%', borderRadius: 14 },
-  heroEmpty: { alignItems: 'center', paddingVertical: 10 },
-  heroEmptyText: { color: '#64748b', fontSize: 14, marginBottom: 20 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a', marginBottom: 16 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 28 },
-  quickAction: { width: '48%', backgroundColor: '#ffffff', borderRadius: 16, padding: 16, alignItems: 'center', marginBottom: 16, shadowColor: '#0f172a', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 12, elevation: 2 },
-  quickActionIcon: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
-  quickActionLabel: { fontSize: 13, fontWeight: '600', color: '#334155' },
-  card: { marginBottom: 16 },
-  emptyText: { color: '#64748b', fontSize: 14, marginBottom: 12 },
+  quickAction: { 
+    width: '48%', 
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    alignItems: 'center', 
+    marginBottom: 16,
+    minHeight: 120,
+    justifyContent: 'center',
+  },
+  quickActionIconDirect: {
+    marginBottom: 12,
+  },
+  quickActionLabel: { fontSize: 15, fontWeight: '600', textAlign: 'center' },
+  statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
+  marginCard: { marginBottom: 24 },
+  leaveRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+  leaveName: { fontSize: 15, fontWeight: '500' },
+  emptyText: { fontSize: 14, textAlign: 'center', paddingVertical: 12 },
 });
