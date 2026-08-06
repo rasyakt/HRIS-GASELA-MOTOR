@@ -232,4 +232,61 @@ export class ReportsService {
     };
     return map[s] ?? s;
   }
+
+  async attendancePreview(params: AttendanceReportQuery) {
+    const from = new Date(`${params.from}T00:00:00Z`);
+    const to = new Date(`${params.to}T00:00:00Z`);
+    to.setUTCDate(to.getUTCDate() + 1);
+
+    return this.prisma.attendance.findMany({
+      where: {
+        attendanceDate: { gte: from, lt: to },
+        employee: params.departmentId
+          ? { departmentId: params.departmentId }
+          : undefined,
+      },
+      include: {
+        employee: { include: { department: true, position: true } },
+        shift: true,
+      },
+      orderBy: [{ attendanceDate: 'desc' }, { employeeId: 'asc' }],
+    });
+  }
+
+  async leavePreview(params: LeaveReportQuery) {
+    const from = new Date(`${params.from}T00:00:00Z`);
+    const to = new Date(`${params.to}T00:00:00Z`);
+    to.setUTCDate(to.getUTCDate() + 1);
+
+    return this.prisma.leaveRequest.findMany({
+      where: {
+        startDate: { gte: from, lt: to },
+        status: params.status
+          ? (params.status as Prisma.LeaveRequestWhereInput['status'])
+          : undefined,
+      },
+      include: {
+        employee: { include: { department: true } },
+        leaveType: true,
+        approvedBy: true,
+      },
+      orderBy: [{ startDate: 'desc' }, { employeeId: 'asc' }],
+    });
+  }
+
+  async payrollPreview(params: PayrollReportQuery) {
+    return this.prisma.payroll.findMany({
+      where: {
+        month: params.month,
+        year: params.year,
+        status: params.status
+          ? (params.status as Prisma.PayrollWhereInput['status'])
+          : undefined,
+      },
+      include: {
+        employee: { include: { department: true, position: true } },
+      },
+      orderBy: [{ employeeId: 'asc' }],
+    });
+  }
 }

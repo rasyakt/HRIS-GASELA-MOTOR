@@ -61,4 +61,31 @@ export class ReportsController {
     const result = await this.reportsService.payrollReport(query);
     return this.streamCsv(res, result);
   }
+
+  @Get('attendance/preview')
+  @ApiOperation({ summary: 'Preview data laporan kehadiran (JSON)' })
+  @Roles('admin', 'hrd', 'owner', 'manager')
+  async attendancePreview(
+    @Query(new ZodValidationPipe()) query: AttendanceReportQueryDto,
+  ) {
+    return this.reportsService.attendancePreview(query);
+  }
+
+  @Get('leave/preview')
+  @ApiOperation({ summary: 'Preview data laporan cuti (JSON)' })
+  @Roles('admin', 'hrd', 'owner', 'manager')
+  async leavePreview(
+    @Query(new ZodValidationPipe()) query: LeaveReportQueryDto,
+  ) {
+    return this.reportsService.leavePreview(query);
+  }
+
+  @Get('payroll/preview')
+  @ApiOperation({ summary: 'Preview data laporan gaji (JSON)' })
+  @Roles('admin', 'hrd', 'owner')
+  async payrollPreview(
+    @Query(new ZodValidationPipe()) query: PayrollReportQueryDto,
+  ) {
+    return this.reportsService.payrollPreview(query);
+  }
 }

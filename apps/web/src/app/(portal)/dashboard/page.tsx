@@ -1,6 +1,18 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 import type {
   AdminDashboard,
   DashboardSummary,
@@ -313,27 +325,140 @@ function CompanyStatsGrid({ stats }: { stats: AdminDashboard['stats'] }) {
   );
 }
 
-function DepartmentBars({ departments }: { departments: AdminDashboard['departments'] }) {
-  const max = Math.max(1, ...departments.map((d) => d.count));
+function AttendanceDonutChart({ stats }: { stats: AdminDashboard['stats'] }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const data = [
+    { name: 'Tepat Waktu', value: stats.presentToday, color: '#10b981' },
+    { name: 'Terlambat', value: stats.lateToday, color: '#f59e0b' },
+    { name: 'Cuti', value: stats.onLeaveToday, color: '#3b82f6' },
+    { name: 'Absen', value: stats.absentToday, color: '#ef4444' },
+  ].filter((item) => item.value > 0);
+
+  const total = data.reduce((acc, curr) => acc + curr.value, 0);
+
+  if (!mounted) {
+    return (
+      <div className="rounded-xl border border-zinc-200 bg-white p-4">
+        <h3 className="mb-3 text-sm font-semibold text-zinc-900">Analisis Kehadiran Hari Ini</h3>
+        <div className="h-64 w-full bg-zinc-50 animate-pulse rounded-lg" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-white p-4">
+      <h3 className="mb-3 text-sm font-semibold text-zinc-900">Analisis Kehadiran Hari Ini</h3>
+      {total === 0 ? (
+        <div className="flex h-64 flex-col items-center justify-center text-center">
+          <p className="text-sm text-zinc-500">Belum ada data kehadiran hari ini.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col sm:flex-row items-center justify-around gap-6 h-64">
+          <div className="relative size-40 shrink-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={75}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
+                  {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
+              <span className="text-3xl font-extrabold text-zinc-900">{total}</span>
+              <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mt-1">Karyawan</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 min-w-44 text-sm w-full sm:w-auto">
+            {data.map((item) => {
+              const percentage = Math.round((item.value / total) * 100);
+              return (
+                <div key={item.name} className="flex items-center justify-between gap-4 py-0.5 border-b border-zinc-50 last:border-0">
+                  <div className="flex items-center gap-2">
+                    <span className="size-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="text-zinc-600 font-medium text-xs">{item.name}</span>
+                  </div>
+                  <div className="text-right text-xs">
+                    <span className="font-semibold text-zinc-900">{item.value}</span>
+                    <span className="text-zinc-400 ml-1">({percentage}%)</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DepartmentChart({ departments }: { departments: AdminDashboard['departments'] }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="rounded-xl border border-zinc-200 bg-white p-4">
+        <h3 className="mb-3 text-sm font-semibold text-zinc-900">Sebaran Karyawan per Departemen</h3>
+        <div className="h-64 w-full bg-zinc-50 animate-pulse rounded-lg" />
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4">
       <h3 className="mb-3 text-sm font-semibold text-zinc-900">Sebaran Karyawan per Departemen</h3>
       {departments.length === 0 ? (
         <p className="text-sm text-zinc-500">Belum ada data departemen.</p>
       ) : (
-        <div className="space-y-2">
-          {departments.map((d) => (
-            <div key={d.name} className="flex items-center gap-3">
-              <div className="w-40 shrink-0 truncate text-sm text-zinc-700">{d.name}</div>
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-zinc-100">
-                <div
-                  className="h-full rounded-full bg-zinc-900"
-                  style={{ width: `${Math.max(4, (d.count / max) * 100)}%` }}
-                />
-              </div>
-              <div className="w-6 text-right text-sm font-medium text-zinc-900">{d.count}</div>
-            </div>
-          ))}
+        <div className="h-64 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={departments}
+              layout="vertical"
+              margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
+            >
+              <XAxis type="number" hide />
+              <YAxis
+                dataKey="name"
+                type="category"
+                stroke="#71717a"
+                fontSize={11}
+                tickLine={false}
+                axisLine={false}
+                width={85}
+              />
+              <Tooltip
+                cursor={{ fill: '#f4f4f5' }}
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="rounded-lg border border-zinc-200 bg-white p-2 shadow-md text-xs font-semibold text-zinc-900">
+                        {payload[0].value} Karyawan
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Bar dataKey="count" fill="#18181b" radius={[0, 4, 4, 0]} barSize={16} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       )}
     </div>
@@ -390,9 +515,12 @@ export default function DashboardPage() {
             </div>
           )}
           {data.role === 'admin' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <CompanyStatsGrid stats={data.stats} />
-              <DepartmentBars departments={data.departments} />
+              <div className="grid gap-6 md:grid-cols-2">
+                <AttendanceDonutChart stats={data.stats} />
+                <DepartmentChart departments={data.departments} />
+              </div>
             </div>
           )}
         </>
