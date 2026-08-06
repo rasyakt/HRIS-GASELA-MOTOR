@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
-import { createReadStream, existsSync, mkdirSync, rmSync } from 'fs';
-import { writeFile } from 'fs/promises';
+import { createReadStream, existsSync, mkdirSync } from 'fs';
+import { writeFile, rm } from 'fs/promises';
 import { join, extname, isAbsolute } from 'path';
 import { Readable } from 'stream';
 
@@ -59,7 +59,7 @@ export class UploadsService {
     }
   }
 
-  async save(file: UploadFile, category: UploadCategory  ): Promise<SavedUpload> {
+  async save(file: UploadFile, category: UploadCategory): Promise<SavedUpload> {
     if (!(category in ALLOWED)) {
       throw new BadRequestException(
         `Kategori upload tidak valid (izin: ${Object.keys(ALLOWED).join(', ')})`,
@@ -113,7 +113,7 @@ export class UploadsService {
     if (parts.length !== 2 || !parts[0] || !parts[1]) {
       throw new NotFoundException('Path upload tidak valid');
     }
-    if (!(Object.keys(ALLOWED) as string[]).includes(parts[0])) {
+    if (!Object.keys(ALLOWED).includes(parts[0])) {
       throw new NotFoundException('Kategori upload tidak valid');
     }
     const full = join(this.uploadDir, cleaned);
@@ -139,7 +139,7 @@ export class UploadsService {
   async remove(relative: string): Promise<void> {
     try {
       const full = this.getFilePath(relative);
-      rmSync(full, { force: true });
+      await rm(full, { force: true });
       this.logger.log(`File deleted: ${relative}`);
     } catch (err) {
       if (err instanceof NotFoundException) {

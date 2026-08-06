@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { Prisma } from '@prisma/client';
 import type {
   CreateWarningLetterDto,
   UpdateWarningLetterDto,
@@ -13,7 +14,7 @@ export class WarningLettersService {
   async list(query: WarningLetterQueryDto) {
     const page = query.page ?? 1;
     const limit = Math.min(query.limit ?? 20, 100);
-    const where: any = {};
+    const where: Prisma.WarningLetterWhereInput = {};
 
     if (query.employeeId) where.employeeId = query.employeeId;
     if (query.level) where.level = query.level;
