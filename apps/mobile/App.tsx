@@ -10,6 +10,20 @@ import { useAuthStore } from './src/store/auth-store';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { ThemeProvider } from './src/theme/ThemeProvider';
 
+// Suppress Reanimated reduced motion warning in development
+if (__DEV__) {
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    if (
+      typeof args[0] === 'string' &&
+      args[0].includes('Reduced motion setting is enabled')
+    ) {
+      return;
+    }
+    originalWarn(...args);
+  };
+}
+
 export default function App() {
   const accessToken = useAuthStore((s) => s.accessToken);
   const isHydrated = useAuthStore((s) => s.isHydrated);

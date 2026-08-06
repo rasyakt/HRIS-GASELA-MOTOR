@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -11,6 +11,7 @@ import { Button } from '../../components/Button';
 import { Card, CardContent } from '../../components/Card';
 import { ListItem } from '../../components/ListItem';
 import { Avatar } from '../../components/Avatar';
+import { ChangePasswordModal } from './ChangePasswordModal';
 import { ROLE_LABEL } from '../../lib/format';
 import { api } from '../../services/api-client';
 import { useAuthStore } from '../../store/auth-store';
@@ -23,6 +24,7 @@ export function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
   const accessToken = useAuthStore((s) => s.accessToken);
   const clearSession = useAuthStore((s) => s.clearSession);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   // Animations
   const headerOpacity = useSharedValue(0);
@@ -72,33 +74,34 @@ export function ProfileScreen() {
 
   return (
     <View style={[styles.flex, { backgroundColor: tokens.colors.background }]}>
-      <Animated.View style={[styles.headerGradient, headerStyle]}>
-        <LinearGradient
-          colors={tokens.gradients.primary as [string, string, ...string[]]}
-          style={StyleSheet.absoluteFill}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        />
-        <View style={styles.headerContent}>
-          <Avatar 
-            name={user?.fullName ?? '?'} 
-            size="xl" 
-            border 
-            style={{ marginBottom: 16 }} 
-          />
-          <Text style={[styles.userName, { color: tokens.colors.textInverse }]}>
-            {user?.fullName ?? '—'}
-          </Text>
-          <Text style={[styles.userRole, { color: tokens.colors.textInverse + 'CC' }]}>
-            {user ? (ROLE_LABEL[user.role] ?? user.role) : '—'}
-          </Text>
-        </View>
-      </Animated.View>
-
       <ScrollView 
         contentContainerStyle={styles.container}
         style={styles.flex}
+        showsVerticalScrollIndicator={false}
       >
+        <Animated.View style={headerStyle}>
+          <LinearGradient
+            colors={tokens.gradients.primary as [string, string, ...string[]]}
+            style={styles.headerGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={styles.headerContent}>
+              <Avatar 
+                name={user?.fullName ?? '?'} 
+                size="xl" 
+                border 
+                style={{ marginBottom: 16 }} 
+              />
+              <Text style={[styles.userName, { color: tokens.colors.textInverse }]}>
+                {user?.fullName ?? '—'}
+              </Text>
+              <Text style={[styles.userRole, { color: tokens.colors.textInverse + 'CC' }]}>
+                {user ? (ROLE_LABEL[user.role] ?? user.role) : '—'}
+              </Text>
+            </View>
+          </LinearGradient>
+        </Animated.View>
         <Animated.View style={[styles.cardWrapper, listStyle1]}>
           <Text style={[styles.sectionTitle, { color: tokens.colors.textSecondary }]}>Informasi Karyawan</Text>
           <Card variant="default">
@@ -138,7 +141,7 @@ export function ProfileScreen() {
               <ListItem
                 icon="lock-closed-outline"
                 title="Ubah Password"
-                onPress={() => {}} // Placeholder
+                onPress={() => setShowChangePasswordModal(true)}
                 hasDivider={false}
                 trailing={<Ionicons name="chevron-forward" size={20} color={tokens.colors.textTertiary} />}
               />
@@ -173,17 +176,30 @@ export function ProfileScreen() {
           </Button>
         </Animated.View>
       </ScrollView>
+
+      <ChangePasswordModal
+        visible={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        accessToken={accessToken}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  container: { 
+    paddingHorizontal: 20,
+    paddingTop: 0,
+    paddingBottom: 100,
+  },
   headerGradient: {
-    paddingTop: 60, // safe area approx
+    paddingTop: 60,
     paddingBottom: 40,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
+    marginHorizontal: -20,
+    marginBottom: 24,
     overflow: 'hidden',
   },
   headerContent: {
@@ -198,10 +214,6 @@ const styles = StyleSheet.create({
   userRole: {
     fontSize: 16,
     fontWeight: '500',
-  },
-  container: { 
-    padding: 20, 
-    paddingBottom: 40,
   },
   cardWrapper: {
     marginBottom: 24,
@@ -221,6 +233,5 @@ const styles = StyleSheet.create({
   },
   buttonWrapper: {
     marginTop: 8,
-    marginBottom: 60, // For tab bar
   }
 });

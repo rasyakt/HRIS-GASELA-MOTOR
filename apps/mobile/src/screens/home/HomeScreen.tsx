@@ -18,6 +18,7 @@ import Animated, {
   withDelay,
   withSpring,
 } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Button } from '../../components/Button';
 import { Card, CardHeader, CardContent } from '../../components/Card';
@@ -70,14 +71,12 @@ function QuickAction({ icon, label, onPress, color, delay }: { icon: any; label:
 
   return (
     <AnimatedPressable
-      style={[styles.quickAction, { backgroundColor: tokens.colors.surface, ...tokens.shadows.sm }]}
+      style={[styles.quickAction, { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border, ...tokens.shadows.sm }]}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       onPress={handlePress}
     >
-      <View style={[styles.quickActionIcon, { backgroundColor: `${color}1A` }]}>
-        <Ionicons name={icon} size={28} color={color} />
-      </View>
+      <Ionicons name={icon} size={32} color={color} style={styles.quickActionIconDirect} />
       <Text style={[styles.quickActionLabel, { color: tokens.colors.textPrimary }]}>{label}</Text>
     </AnimatedPressable>
   );
@@ -144,22 +143,32 @@ export function HomeScreen() {
     <View style={[styles.flex, { backgroundColor: tokens.colors.background }]}>
       <ScrollView
         style={styles.flex}
-        contentContainerStyle={[styles.container, { paddingTop: Math.max(insets.top, 16) + 8 }]}
+        contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl refreshing={isLoading && !data} onRefresh={refetch} tintColor={tokens.colors.primary} />
         }
       >
-        <Animated.View style={[styles.header, animatedHeaderStyle]}>
-          <View style={styles.headerText}>
-            <Text style={[styles.greeting, { color: tokens.colors.textPrimary }]}>
-              Halo, {user?.fullName?.split(' ')[0] ?? 'Karyawan'}
-            </Text>
-            <Text style={[styles.date, { color: tokens.colors.textSecondary }]}>
-              {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-              {user ? ` · ${ROLE_LABEL[user.role]}` : ''}
-            </Text>
-          </View>
-          <Avatar name={user?.fullName || '?'} size="md" border />
+        {/* Header with Gradient Background */}
+        <Animated.View style={animatedHeaderStyle}>
+          <LinearGradient
+            colors={tokens.gradients.primary as unknown as readonly [string, string, ...string[]]}
+            style={[styles.headerBackground, { paddingTop: Math.max(insets.top, 16) + 16 }]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={styles.header}>
+              <View style={styles.headerText}>
+                <Text style={[styles.greeting, { color: tokens.colors.surface }]}>
+                  Halo, {user?.fullName?.split(' ')[0] ?? 'Karyawan'}
+                </Text>
+                <Text style={[styles.date, { color: 'rgba(255,255,255,0.8)' }]}>
+                  {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  {user ? ` · ${ROLE_LABEL[user.role]}` : ''}
+                </Text>
+              </View>
+              <Avatar name={user?.fullName || '?'} size="md" border />
+            </View>
+          </LinearGradient>
         </Animated.View>
         {isError && !data ? (
           <ErrorState description="Gagal memuat data dashboard." onRetry={refetch} />
@@ -169,7 +178,7 @@ export function HomeScreen() {
             {isLoading && !data ? (
               <Skeleton height={200} borderRadius={16} style={{ marginBottom: 24 }} />
             ) : (
-              <Card variant="elevated" elevation="md" style={styles.heroCard}>
+              <Card variant="elevated" elevation="lg" style={styles.heroCard}>
                 <CardHeader 
                   title={today?.shiftName || 'Jadwal Reguler'} 
                   icon="time-outline"
@@ -190,14 +199,14 @@ export function HomeScreen() {
                   <View style={[styles.heroTimes, { backgroundColor: tokens.colors.neutral100 }]}>
                     <View style={styles.heroTimeBlock}>
                       <Text style={[styles.heroTimeLabel, { color: tokens.colors.textSecondary }]}>Check-in</Text>
-                      <Text style={[styles.heroTimeValue, { color: tokens.colors.textPrimary }]}>
+                      <Text style={[styles.heroTimeValue, { color: tokens.colors.primary }]}>
                         {today?.checkInTime ? fmtTime(today.checkInTime) : '--:--'}
                       </Text>
                     </View>
                     <View style={[styles.heroTimeDivider, { backgroundColor: tokens.colors.border }]} />
                     <View style={styles.heroTimeBlock}>
                       <Text style={[styles.heroTimeLabel, { color: tokens.colors.textSecondary }]}>Check-out</Text>
-                      <Text style={[styles.heroTimeValue, { color: tokens.colors.textPrimary }]}>
+                      <Text style={[styles.heroTimeValue, { color: tokens.colors.primary }]}>
                         {today?.checkOutTime ? fmtTime(today.checkOutTime) : '--:--'}
                       </Text>
                     </View>
@@ -225,10 +234,10 @@ export function HomeScreen() {
 
             <Text style={[styles.sectionTitle, { color: tokens.colors.textPrimary }]}>Menu Utama</Text>
             <View style={styles.grid}>
-              <QuickAction icon="time-outline" label="Riwayat" onPress={() => navigation.navigate('Attendance')} color={tokens.colors.info} delay={100} />
-              <QuickAction icon="calendar-outline" label="Cuti" onPress={() => navigation.navigate('Leave')} color={tokens.colors.success} delay={150} />
-              <QuickAction icon="alarm-outline" label="Lembur" onPress={() => navigation.navigate('Overtime')} color={tokens.colors.warning} delay={200} />
-              <QuickAction icon="wallet-outline" label="Slip Gaji" onPress={() => navigation.navigate('Payslip')} color={tokens.colors.secondary} delay={250} />
+              <QuickAction icon="list-outline" label="Riwayat" onPress={() => navigation.navigate('Attendance')} color={tokens.colors.primary} delay={100} />
+              <QuickAction icon="calendar-clear-outline" label="Cuti" onPress={() => navigation.navigate('Leave')} color={tokens.colors.primary} delay={150} />
+              <QuickAction icon="time-outline" label="Lembur" onPress={() => navigation.navigate('Overtime')} color={tokens.colors.primary} delay={200} />
+              <QuickAction icon="document-text-outline" label="Slip Gaji" onPress={() => navigation.navigate('Payslip')} color={tokens.colors.primary} delay={250} />
             </View>
 
             <Text style={[styles.sectionTitle, { color: tokens.colors.textPrimary }]}>Informasi Anda</Text>
@@ -278,16 +287,23 @@ export function HomeScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  container: { paddingHorizontal: 20, paddingBottom: 130 },
+  headerBackground: {
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    marginHorizontal: -20,
+    marginBottom: 24,
+  },
   header: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: 24,
+    alignItems: 'center',
   },
   headerText: { flex: 1 },
   greeting: { fontSize: 24, fontWeight: '700' },
   date: { fontSize: 13, marginTop: 4 },
-  container: { padding: 20, paddingBottom: 100 },
   sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16, marginTop: 8 },
   heroCard: { marginBottom: 28 },
   heroTimes: { 
@@ -306,20 +322,19 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 28 },
   quickAction: { 
     width: '48%', 
-    borderRadius: 16, 
-    padding: 16, 
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 24,
+    paddingHorizontal: 16,
     alignItems: 'center', 
-    marginBottom: 16, 
+    marginBottom: 16,
+    minHeight: 120,
+    justifyContent: 'center',
   },
-  quickActionIcon: { 
-    width: 56, 
-    height: 56, 
-    borderRadius: 28, 
-    alignItems: 'center', 
-    justifyContent: 'center', 
+  quickActionIconDirect: {
     marginBottom: 12,
   },
-  quickActionLabel: { fontSize: 14, fontWeight: '600' },
+  quickActionLabel: { fontSize: 15, fontWeight: '600', textAlign: 'center' },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
   marginCard: { marginBottom: 24 },
   leaveRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
