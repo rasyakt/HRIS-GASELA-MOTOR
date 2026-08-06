@@ -131,8 +131,17 @@ export function ProfileScreen() {
                 subtitle="Tema antarmuka aplikasi"
                 onPress={toggleTheme}
                 trailing={
-                  <View style={[styles.themeToggle, { backgroundColor: tokens.colors.primaryLight }]}>
-                    <Text style={{ color: tokens.colors.primary, fontWeight: '600', fontSize: 12 }}>
+                  <View style={[
+                    styles.themeToggle, 
+                    { 
+                      backgroundColor: theme === 'dark' ? tokens.colors.primary : tokens.colors.neutral200,
+                    }
+                  ]}>
+                    <Text style={{ 
+                      color: theme === 'dark' ? '#ffffff' : tokens.colors.textPrimary, 
+                      fontWeight: '600', 
+                      fontSize: 12 
+                    }}>
                       {theme === 'dark' ? 'ON' : 'OFF'}
                     </Text>
                   </View>
@@ -227,9 +236,12 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   themeToggle: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    minWidth: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonWrapper: {
     marginTop: 8,

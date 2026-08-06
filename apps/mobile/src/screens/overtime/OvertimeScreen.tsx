@@ -20,10 +20,13 @@ import { Button, Card, CardTitle, ErrorBanner, StatusBadge, TextField, DateField
 import { fmtDate, fmtDateTime, fmtHours, fmtTime, todayInput } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
 
+import { useTheme } from '../../theme/ThemeProvider';
+
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export function OvertimeScreen() {
+  const { tokens } = useTheme();
   const authApi = useAuthApi();
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
@@ -113,20 +116,20 @@ export function OvertimeScreen() {
 
   return (
     <ScrollView
-      style={styles.flex}
+      style={[styles.flex, { backgroundColor: tokens.colors.background }]}
       contentContainerStyle={styles.container}
       refreshControl={
         <RefreshControl
           refreshing={myRequests.isLoading}
           onRefresh={() => myRequests.refetch()}
-          tintColor="#18181b"
+          tintColor={tokens.colors.primary}
         />
       }
     >
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.header}>Lembur</Text>
-          <Text style={styles.subheader}>Pengajuan lembur Anda.</Text>
+          <Text style={[styles.header, { color: tokens.colors.textPrimary }]}>Lembur</Text>
+          <Text style={[styles.subheader, { color: tokens.colors.textSecondary }]}>Pengajuan lembur Anda.</Text>
         </View>
         <Button title="Ajukan Lembur" onPress={() => setModalOpen(true)} />
       </View>
@@ -135,15 +138,15 @@ export function OvertimeScreen() {
         <CardTitle>Riwayat Pengajuan</CardTitle>
         {myRequests.data && myRequests.data.items.length > 0 ? (
           myRequests.data.items.map((r) => (
-            <View key={r.id} style={styles.reqRow}>
+            <View key={r.id} style={[styles.reqRow, { borderBottomColor: tokens.colors.border }]}>
               <View style={styles.reqLeft}>
-                <Text style={styles.reqNumber}>{r.requestNumber}</Text>
-                <Text style={styles.reqMeta}>
+                <Text style={[styles.reqNumber, { color: tokens.colors.textPrimary }]}>{r.requestNumber}</Text>
+                <Text style={[styles.reqMeta, { color: tokens.colors.textSecondary }]}>
                   {fmtDate(r.overtimeDate)} · {fmtTime(r.startTime)} – {fmtTime(r.endTime)} (
                   {fmtHours(r.hours)} jam)
                 </Text>
-                {r.purpose ? <Text style={styles.reqMeta}>“{r.purpose}”</Text> : null}
-                <Text style={styles.reqMeta}>Diajukan {fmtDateTime(r.createdAt)}</Text>
+                {r.purpose ? <Text style={[styles.reqMeta, { color: tokens.colors.textSecondary }]}>“{r.purpose}”</Text> : null}
+                <Text style={[styles.reqMeta, { color: tokens.colors.textTertiary }]}>Diajukan {fmtDateTime(r.createdAt)}</Text>
               </View>
               <View style={styles.reqRight}>
                 <StatusBadge status={r.status} />
@@ -159,7 +162,7 @@ export function OvertimeScreen() {
             </View>
           ))
         ) : (
-          <Text style={styles.emptyText}>Belum ada pengajuan lembur.</Text>
+          <Text style={[styles.emptyText, { color: tokens.colors.textSecondary }]}>Belum ada pengajuan lembur.</Text>
         )}
       </Card>
 
@@ -170,8 +173,8 @@ export function OvertimeScreen() {
         onRequestClose={handleCloseModal}
       >
         <View style={styles.modalBackdrop}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Ajukan Lembur</Text>
+          <View style={[styles.modal, { backgroundColor: tokens.colors.surface }]}>
+            <Text style={[styles.modalTitle, { color: tokens.colors.textPrimary }]}>Ajukan Lembur</Text>
             <ScrollView keyboardShouldPersistTaps="handled">
               {formError && <ErrorBanner message={formError} />}
               <DateField
@@ -222,7 +225,7 @@ export function OvertimeScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fafafa' },
+  flex: { flex: 1 },
   container: { padding: 16, paddingBottom: 32 },
   headerRow: {
     flexDirection: 'row',

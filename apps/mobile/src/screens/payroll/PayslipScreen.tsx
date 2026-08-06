@@ -20,6 +20,8 @@ import { useAuthApi } from '../../services/auth-api';
 import { useAuthStore } from '../../store/auth-store';
 import { apiUrl } from '../../services/api-client';
 
+import { useTheme } from '../../theme/ThemeProvider';
+
 const MONTHS_ID = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
@@ -35,9 +37,10 @@ function fmtRupiah(value: number | null | undefined): string {
 }
 
 function PeriodBadge({ month, year }: { month: number; year: number }) {
+  const { tokens } = useTheme();
   return (
-    <View style={styles.periodBadge}>
-      <Text style={styles.periodBadgeText}>
+    <View style={[styles.periodBadge, { backgroundColor: tokens.colors.neutral100 }]}>
+      <Text style={[styles.periodBadgeText, { color: tokens.colors.textPrimary }]}>
         {MONTHS_ID[month - 1]} {year}
       </Text>
     </View>
@@ -60,6 +63,7 @@ function StatusChip({ status }: { status: PayrollDto['status'] }) {
 }
 
 export function PayslipScreen() {
+  const { tokens } = useTheme();
   const authApi = useAuthApi();
   const accessToken = useAuthStore((s) => s.accessToken);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -101,7 +105,7 @@ export function PayslipScreen() {
   const items = list.data?.items ?? [];
 
   return (
-    <View style={styles.flex}>
+    <View style={[styles.flex, { backgroundColor: tokens.colors.background }]}>
       <ScrollView
         style={styles.flex}
         contentContainerStyle={styles.container}
@@ -109,12 +113,12 @@ export function PayslipScreen() {
           <RefreshControl
             refreshing={list.isLoading}
             onRefresh={() => list.refetch()}
-            tintColor="#18181b"
+            tintColor={tokens.colors.primary}
           />
         }
       >
-        <Text style={styles.header}>Slip Gaji</Text>
-        <Text style={styles.subheader}>Riwayat gaji Anda per bulan.</Text>
+        <Text style={[styles.header, { color: tokens.colors.textPrimary }]}>Slip Gaji</Text>
+        <Text style={[styles.subheader, { color: tokens.colors.textSecondary }]}>Riwayat gaji Anda per bulan.</Text>
 
         {list.isError && (
           <ErrorBanner message="Gagal memuat slip gaji. Tarik untuk muat ulang." />
@@ -122,7 +126,7 @@ export function PayslipScreen() {
 
         {items.length === 0 && !list.isLoading && !list.isError && (
           <Card>
-            <Text style={styles.emptyText}>Belum ada data slip gaji.</Text>
+            <Text style={[styles.emptyText, { color: tokens.colors.textSecondary }]}>Belum ada data slip gaji.</Text>
           </Card>
         )}
 
@@ -132,27 +136,28 @@ export function PayslipScreen() {
             onPress={() => setSelectedId(item.id)}
             style={({ pressed }) => [
               styles.slipCard,
-              pressed && styles.slipCardPressed,
+              { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border },
+              pressed && { backgroundColor: tokens.colors.neutral100 },
             ]}
           >
             <View style={styles.slipTop}>
               <PeriodBadge month={item.month} year={item.year} />
               <StatusChip status={item.status} />
             </View>
-            <Text style={styles.netSalary}>{fmtRupiah(item.netSalary)}</Text>
-            <Text style={styles.slipNumber}>{item.payrollNumber}</Text>
+            <Text style={[styles.netSalary, { color: tokens.colors.textPrimary }]}>{fmtRupiah(item.netSalary)}</Text>
+            <Text style={[styles.slipNumber, { color: tokens.colors.textTertiary }]}>{item.payrollNumber}</Text>
             <View style={styles.slipMeta}>
-              <Text style={styles.slipMetaText}>
+              <Text style={[styles.slipMetaText, { color: tokens.colors.textSecondary }]}>
                 Gaji pokok: {fmtRupiah(item.basicSalary)}
               </Text>
               {item.paymentDate && (
-                <Text style={styles.slipMetaText}>
+                <Text style={[styles.slipMetaText, { color: tokens.colors.textSecondary }]}>
                   Dibayar: {fmtDate(item.paymentDate)}
                 </Text>
               )}
             </View>
             <View style={styles.slipArrow}>
-              <Text style={styles.slipArrowText}>Lihat detail →</Text>
+              <Text style={[styles.slipArrowText, { color: tokens.colors.primary }]}>Lihat detail →</Text>
             </View>
           </Pressable>
         ))}
@@ -166,16 +171,16 @@ export function PayslipScreen() {
         onRequestClose={() => setSelectedId(null)}
       >
         <View style={styles.modalBackdrop}>
-          <View style={styles.modal}>
+          <View style={[styles.modal, { backgroundColor: tokens.colors.surface }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Detail Slip Gaji</Text>
+              <Text style={[styles.modalTitle, { color: tokens.colors.textPrimary }]}>Detail Slip Gaji</Text>
               <Pressable onPress={() => setSelectedId(null)} hitSlop={10}>
-                <Text style={styles.closeBtn}>✕</Text>
+                <Text style={[styles.closeBtn, { color: tokens.colors.textSecondary }]}>✕</Text>
               </Pressable>
             </View>
 
             {detail.isLoading && (
-              <ActivityIndicator size="large" color="#18181b" style={styles.loader} />
+              <ActivityIndicator size="large" color={tokens.colors.primary} style={styles.loader} />
             )}
             {detail.isError && (
               <ErrorBanner message="Gagal memuat detail slip gaji." />
@@ -210,14 +215,14 @@ export function PayslipScreen() {
                     <StatusChip status={detail.data.status} />
                   </View>
 
-                  <Text style={styles.detailNet}>{fmtRupiah(detail.data.netSalary)}</Text>
-                  <Text style={styles.detailNetLabel}>Gaji Bersih (Take Home Pay · {netPct}%)</Text>
+                  <Text style={[styles.detailNet, { color: tokens.colors.textPrimary }]}>{fmtRupiah(detail.data.netSalary)}</Text>
+                  <Text style={[styles.detailNetLabel, { color: tokens.colors.textSecondary }]}>Gaji Bersih (Take Home Pay · {netPct}%)</Text>
 
-                  <View style={styles.separator} />
+                  <View style={[styles.separator, { backgroundColor: tokens.colors.border }]} />
 
                   <View style={styles.sectionHeaderRow}>
                     <Ionicons name="arrow-down-circle" size={16} color="#059669" />
-                    <Text style={styles.sectionLabel}>Pendapatan</Text>
+                    <Text style={[styles.sectionLabel, { color: tokens.colors.textSecondary }]}>Pendapatan</Text>
                   </View>
                   <Row label="Gaji Pokok" value={fmtRupiah(detail.data.basicSalary)} />
                   {detail.data.components
@@ -230,11 +235,11 @@ export function PayslipScreen() {
                   )}
                   <Row label="Total Bruto" value={fmtRupiah(detail.data.grossSalary)} big />
 
-                  <View style={styles.separator} />
+                  <View style={[styles.separator, { backgroundColor: tokens.colors.border }]} />
 
                   <View style={styles.sectionHeaderRow}>
                     <Ionicons name="arrow-up-circle" size={16} color="#dc2626" />
-                    <Text style={styles.sectionLabel}>Potongan ({dedPct}% dari Bruto)</Text>
+                    <Text style={[styles.sectionLabel, { color: tokens.colors.textSecondary }]}>Potongan ({dedPct}% dari Bruto)</Text>
                   </View>
                   {detail.data.components
                     .filter((c) => c.type === 'deduction' && c.amount > 0)
@@ -245,38 +250,38 @@ export function PayslipScreen() {
                     label={`BPJS Kesehatan (${bpjsKesPct}%)`}
                     value={`- ${fmtRupiah(detail.data.bpjsKesehatanEmployee)}`}
                   />
-                  <Text style={styles.rowSubtext}>• 1% iuran pemeliharaan kesehatan keluarga</Text>
+                  <Text style={[styles.rowSubtext, { color: tokens.colors.textTertiary }]}>• 1% iuran pemeliharaan kesehatan keluarga</Text>
 
                   <Row
                     label={`BPJS Ketenagakerjaan (${bpjsTkPct}%)`}
                     value={`- ${fmtRupiah(detail.data.bpjsKetenagakerjaanEmployee)}`}
                   />
-                  <Text style={styles.rowSubtext}>• 2% Tabungan JHT + 1% Jaminan Pensiun</Text>
+                  <Text style={[styles.rowSubtext, { color: tokens.colors.textTertiary }]}>• 2% Tabungan JHT + 1% Jaminan Pensiun</Text>
 
                   {detail.data.taxPph21 > 0 && (
                     <>
                       <Row label={`PPh21 Pajak (${pph21Pct}%)`} value={`- ${fmtRupiah(detail.data.taxPph21)}`} />
-                      <Text style={styles.rowSubtext}>• Setoran Pajak Resmi ke Kas Negara (TER)</Text>
+                      <Text style={[styles.rowSubtext, { color: tokens.colors.textTertiary }]}>• Setoran Pajak Resmi ke Kas Negara (TER)</Text>
                     </>
                   )}
 
-                  <View style={styles.transparencyCard}>
+                  <View style={[styles.transparencyCard, { backgroundColor: tokens.colors.neutral100, borderColor: tokens.colors.border }]}>
                     <View style={styles.transparencyTitleRow}>
-                      <Ionicons name="stats-chart" size={16} color="#0f172a" />
-                      <Text style={styles.transparencyTitle}>Transparansi Alokasi Gaji</Text>
+                      <Ionicons name="stats-chart" size={16} color={tokens.colors.textPrimary} />
+                      <Text style={[styles.transparencyTitle, { color: tokens.colors.textPrimary }]}>Transparansi Alokasi Gaji</Text>
                     </View>
                     <View style={styles.transparencyRow}>
-                      <Text style={styles.transparencyLabel}>Gaji Diterima (THP)</Text>
+                      <Text style={[styles.transparencyLabel, { color: tokens.colors.textSecondary }]}>Gaji Diterima (THP)</Text>
                       <Text style={styles.transparencyValGreen}>{netPct}% ({fmtRupiah(net)})</Text>
                     </View>
                     <View style={styles.transparencyRow}>
-                      <Text style={styles.transparencyLabel}>Total Terpotong</Text>
+                      <Text style={[styles.transparencyLabel, { color: tokens.colors.textSecondary }]}>Total Terpotong</Text>
                       <Text style={styles.transparencyValRed}>{dedPct}% (-{fmtRupiah(totalDeductions)})</Text>
                     </View>
-                    <View style={styles.progressTrack}>
+                    <View style={[styles.progressTrack, { backgroundColor: tokens.colors.border }]}>
                       <View style={[styles.progressFill, { width: `${Math.min(100, Math.max(0, Number(netPct)))}%` }]} />
                     </View>
-                    <Text style={styles.benefitText}>
+                    <Text style={[styles.benefitText, { color: tokens.colors.textSecondary }]}>
                       <Ionicons name="gift-outline" size={13} color="#059669" />{' '}
                       <Text style={{ fontWeight: '700' }}>Manfaat Ekstra dari Perusahaan:</Text> Perusahaan membayarkan{' '}
                       <Text style={{ fontWeight: '700', color: '#059669' }}>{fmtRupiah(totalCompanyBenefit)} (+{companyPct}%)</Text>{' '}
@@ -284,11 +289,11 @@ export function PayslipScreen() {
                     </Text>
                   </View>
 
-                  <View style={styles.separator} />
+                  <View style={[styles.separator, { backgroundColor: tokens.colors.border }]} />
 
                   <View style={styles.sectionHeaderRow}>
                     <Ionicons name="business" size={16} color="#64748b" />
-                    <Text style={styles.sectionLabel}>Kontribusi Perusahaan</Text>
+                    <Text style={[styles.sectionLabel, { color: tokens.colors.textSecondary }]}>Kontribusi Perusahaan</Text>
                   </View>
                   <Row
                     label="BPJS Kesehatan"
@@ -345,7 +350,7 @@ export function PayslipScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fafafa' },
+  flex: { flex: 1 },
   container: { padding: 16, paddingBottom: 32 },
   header: { fontSize: 20, fontWeight: '700', color: '#18181b' },
   subheader: { fontSize: 13, color: '#71717a', marginTop: 2, marginBottom: 16 },

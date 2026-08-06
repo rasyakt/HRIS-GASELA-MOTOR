@@ -77,14 +77,6 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
             >
               <Animated.View style={[styles.iconContainer, animatedStyle]}>
                 {options.tabBarIcon && options.tabBarIcon({ focused: isFocused, color, size: 24 })}
-                
-                <Animated.View
-                  style={[
-                    styles.indicator,
-                    { backgroundColor: tokens.colors.primary },
-                    indicatorStyle
-                  ]}
-                />
               </Animated.View>
               
               <Text

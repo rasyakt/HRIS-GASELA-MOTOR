@@ -39,9 +39,9 @@ export const lightTheme: ColorPalette = {
 };
 
 export const darkTheme: ColorPalette = {
-  primary: '#ffffff', // Inverted primary
-  primaryLight: '#f4f4f5',
-  primaryDark: '#d4d4d8',
+  primary: '#3b82f6', // Blue accent as primary in dark mode
+  primaryLight: '#60a5fa',
+  primaryDark: '#2563eb',
   secondary: '#27272a',
   accent: '#60a5fa', // Lighter accent for dark mode
 
@@ -65,13 +65,13 @@ export const darkTheme: ColorPalette = {
   info: '#60a5fa',
   infoLight: '#1e3a8a',
 
-  background: '#09090b', // Deep dark
-  surface: '#18181b', // Slightly lighter dark
-  surfaceElevated: '#27272a', // Even lighter dark for elevation
-  border: '#3f3f46',
+  background: '#000000', // Pure black for OLED
+  surface: '#1a1a1a', // Slightly lighter for cards
+  surfaceElevated: '#262626', // Even lighter for elevated elements
+  border: '#404040',
 
-  textPrimary: '#fafafa',
-  textSecondary: '#a1a1aa',
-  textTertiary: '#71717a',
-  textInverse: '#18181b',
+  textPrimary: '#ffffff',
+  textSecondary: '#a3a3a3',
+  textTertiary: '#737373',
+  textInverse: '#000000',
 };

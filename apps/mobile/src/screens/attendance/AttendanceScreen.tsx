@@ -14,6 +14,8 @@ import { fmtDate, fmtHours, fmtTime, OFFICE_LOCATION } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
 import { getPosition } from '../../services/location';
 
+import { useTheme } from '../../theme/ThemeProvider';
+
 interface AttendanceRow {
   id: number;
   attendanceDate: string;
@@ -26,6 +28,7 @@ interface AttendanceRow {
 }
 
 export function AttendanceScreen() {
+  const { tokens } = useTheme();
   const authApi = useAuthApi();
   const queryClient = useQueryClient();
   const [actionError, setActionError] = useState<string | null>(null);
@@ -74,7 +77,7 @@ export function AttendanceScreen() {
 
   return (
     <ScrollView
-      style={styles.flex}
+      style={[styles.flex, { backgroundColor: tokens.colors.background }]}
       contentContainerStyle={styles.container}
       refreshControl={
         <RefreshControl
@@ -83,12 +86,12 @@ export function AttendanceScreen() {
             dashboard.refetch();
             history.refetch();
           }}
-          tintColor="#18181b"
+          tintColor={tokens.colors.primary}
         />
       }
     >
-      <Text style={styles.header}>Kehadiran</Text>
-      <Text style={styles.subheader}>
+      <Text style={[styles.header, { color: tokens.colors.textPrimary }]}>Kehadiran</Text>
+      <Text style={[styles.subheader, { color: tokens.colors.textSecondary }]}>
         {new Date().toLocaleDateString('id-ID', {
           weekday: 'long',
           day: 'numeric',
@@ -126,7 +129,7 @@ export function AttendanceScreen() {
           </View>
         ) : (
           <View>
-            <Text style={styles.emptyText}>Belum ada kehadiran hari ini.</Text>
+            <Text style={[styles.emptyText, { color: tokens.colors.textSecondary }]}>Belum ada kehadiran hari ini.</Text>
             <Button
               title="Check-in Sekarang"
               onPress={() => handleCheck('in')}
@@ -140,13 +143,13 @@ export function AttendanceScreen() {
       <Card style={styles.card}>
         <CardTitle>Riwayat</CardTitle>
         {rows.length === 0 ? (
-          <Text style={styles.emptyText}>Belum ada riwayat kehadiran.</Text>
+          <Text style={[styles.emptyText, { color: tokens.colors.textSecondary }]}>Belum ada riwayat kehadiran.</Text>
         ) : (
           rows.map((r) => (
-            <View key={r.id} style={styles.row}>
+            <View key={r.id} style={[styles.row, { borderBottomColor: tokens.colors.border }]}>
               <View style={styles.rowLeft}>
-                <Text style={styles.rowDate}>{fmtDate(r.attendanceDate)}</Text>
-                <Text style={styles.rowTime}>
+                <Text style={[styles.rowDate, { color: tokens.colors.textPrimary }]}>{fmtDate(r.attendanceDate)}</Text>
+                <Text style={[styles.rowTime, { color: tokens.colors.textSecondary }]}>
                   {fmtTime(r.checkInTime)} – {fmtTime(r.checkOutTime)} ·{' '}
                   {fmtHours(r.workHours)} jam
                   {r.lateMinutes && r.lateMinutes > 0 ? ` · telat ${r.lateMinutes}m` : ''}
@@ -162,7 +165,7 @@ export function AttendanceScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fafafa' },
+  flex: { flex: 1 },
   container: { padding: 16, paddingBottom: 32 },
   header: { fontSize: 20, fontWeight: '700', color: '#18181b' },
   subheader: { fontSize: 13, color: '#71717a', marginTop: 2, marginBottom: 16 },

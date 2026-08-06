@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useMemo, useEffect } from 'react';
@@ -8,7 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { useAuthStore } from './src/store/auth-store';
 import { OfflineBanner } from './src/components/OfflineBanner';
-import { ThemeProvider } from './src/theme/ThemeProvider';
+import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
 
 // Suppress Reanimated reduced motion warning in development
 if (__DEV__) {
@@ -22,6 +22,35 @@ if (__DEV__) {
     }
     originalWarn(...args);
   };
+}
+
+function AppContent({ loggedIn }: { loggedIn: boolean }) {
+  const { theme, tokens } = useTheme();
+
+  const navigationTheme = useMemo(() => {
+    const isDark = theme === 'dark';
+    const baseTheme = isDark ? DarkTheme : DefaultTheme;
+    return {
+      dark: isDark,
+      colors: {
+        ...baseTheme.colors,
+        primary: tokens.colors.primary,
+        background: tokens.colors.background,
+        card: tokens.colors.surface,
+        text: tokens.colors.textPrimary,
+        border: tokens.colors.border,
+      },
+      fonts: baseTheme.fonts,
+    };
+  }, [theme, tokens]);
+
+  return (
+    <NavigationContainer theme={navigationTheme}>
+      <OfflineBanner />
+      <RootNavigator loggedIn={loggedIn} />
+      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+    </NavigationContainer>
+  );
 }
 
 export default function App() {
@@ -58,11 +87,7 @@ export default function App() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <NavigationContainer>
-            <OfflineBanner />
-            <RootNavigator loggedIn={!!accessToken} />
-            <StatusBar style="auto" />
-          </NavigationContainer>
+          <AppContent loggedIn={!!accessToken} />
         </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>

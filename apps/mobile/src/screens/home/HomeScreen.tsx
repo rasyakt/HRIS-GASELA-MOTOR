@@ -28,7 +28,7 @@ import { StatCard } from '../../components/Progress';
 import { Skeleton, FullScreenLoader } from '../../components/Loading';
 import { ErrorState, ErrorBanner } from '../../components/ErrorState';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { fmtTime, ROLE_LABEL } from '../../lib/format';
+import { fmtTime, ROLE_LABEL, statusLabel } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
 import { getPosition } from '../../services/location';
 import { useAuthStore } from '../../store/auth-store';
@@ -188,7 +188,7 @@ export function HomeScreen() {
                         variant="subtle" 
                         color={today.status === 'present' ? 'success' : today.status === 'late' ? 'warning' : 'neutral'}
                       >
-                        {today.status ? today.status.toUpperCase() : 'BELUM ABSEN'}
+                        {today.status ? statusLabel(today.status).toUpperCase() : 'BELUM ABSEN'}
                       </Badge>
                     ) : (
                       <Badge variant="subtle" color="neutral">BELUM ABSEN</Badge>
@@ -302,8 +302,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerText: { flex: 1 },
-  greeting: { fontSize: 24, fontWeight: '700' },
-  date: { fontSize: 13, marginTop: 4 },
+  greeting: { fontSize: 26, fontWeight: '800', letterSpacing: -0.5, lineHeight: 32 },
+  date: { fontSize: 13, marginTop: 4, fontWeight: '500', opacity: 0.9, letterSpacing: 0.1 },
   sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16, marginTop: 8 },
   heroCard: { marginBottom: 28 },
   heroTimes: { 

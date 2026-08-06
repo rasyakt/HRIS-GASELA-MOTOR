@@ -15,6 +15,8 @@ import { Button, Card, CardTitle, ErrorBanner } from '../../components/ui';
 import { fmtDate, fmtDateTime } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
 
+import { useTheme } from '../../theme/ThemeProvider';
+
 const PRIORITY_MAP: Record<string, { label: string; color: string }> = {
   low:    { label: 'Rendah',  color: '#71717a' },
   normal: { label: 'Normal',  color: '#0284c7' },
@@ -33,6 +35,7 @@ function PriorityBadge({ priority }: { priority: string }) {
 }
 
 export function AnnouncementScreen() {
+  const { tokens } = useTheme();
   const authApi = useAuthApi();
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<AnnouncementDto | null>(null);
@@ -79,7 +82,7 @@ export function AnnouncementScreen() {
   const unreadCount = unread.data?.unread ?? 0;
 
   return (
-    <View style={styles.flex}>
+    <View style={[styles.flex, { backgroundColor: tokens.colors.background }]}>
       <ScrollView
         style={styles.flex}
         contentContainerStyle={styles.container}
@@ -90,14 +93,14 @@ export function AnnouncementScreen() {
               list.refetch();
               unread.refetch();
             }}
-            tintColor="#18181b"
+            tintColor={tokens.colors.primary}
           />
         }
       >
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.header}>Pengumuman</Text>
-            <Text style={styles.subheader}>
+            <Text style={[styles.header, { color: tokens.colors.textPrimary }]}>Pengumuman</Text>
+            <Text style={[styles.subheader, { color: tokens.colors.textSecondary }]}>
               {unreadCount > 0
                 ? `${unreadCount} belum dibaca`
                 : 'Semua sudah dibaca'}
@@ -116,7 +119,7 @@ export function AnnouncementScreen() {
 
         {items.length === 0 && !list.isLoading && !list.isError && (
           <Card>
-            <Text style={styles.emptyText}>Tidak ada pengumuman untuk Anda saat ini.</Text>
+            <Text style={[styles.emptyText, { color: tokens.colors.textSecondary }]}>Tidak ada pengumuman untuk Anda saat ini.</Text>
           </Card>
         )}
 
@@ -126,28 +129,29 @@ export function AnnouncementScreen() {
             onPress={() => openDetail(item)}
             style={({ pressed }) => [
               styles.card,
-              !item.isRead && styles.cardUnread,
-              pressed && styles.cardPressed,
+              { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border },
+              !item.isRead && { borderColor: tokens.colors.primary, borderWidth: 1.5 },
+              pressed && { backgroundColor: tokens.colors.neutral100 },
             ]}
           >
             <View style={styles.cardTop}>
               <PriorityBadge priority={item.priority} />
-              <Text style={styles.dateText}>{fmtDate(item.publishDate)}</Text>
+              <Text style={[styles.dateText, { color: tokens.colors.textTertiary }]}>{fmtDate(item.publishDate)}</Text>
             </View>
 
             <View style={styles.titleRow}>
-              {!item.isRead && <View style={styles.unreadDot} />}
-              <Text style={[styles.cardTitle, !item.isRead && styles.cardTitleUnread]} numberOfLines={2}>
+              {!item.isRead && <View style={[styles.unreadDot, { backgroundColor: tokens.colors.primary }]} />}
+              <Text style={[styles.cardTitle, { color: tokens.colors.textPrimary }, !item.isRead && { fontWeight: '700' }]} numberOfLines={2}>
                 {item.title}
               </Text>
             </View>
 
-            <Text style={styles.cardPreview} numberOfLines={2}>
+            <Text style={[styles.cardPreview, { color: tokens.colors.textSecondary }]} numberOfLines={2}>
               {item.content}
             </Text>
 
             {item.createdByName && (
-              <Text style={styles.authorText}>Oleh: {item.createdByName}</Text>
+              <Text style={[styles.authorText, { color: tokens.colors.textTertiary }]}>Oleh: {item.createdByName}</Text>
             )}
           </Pressable>
         ))}
@@ -161,38 +165,38 @@ export function AnnouncementScreen() {
         onRequestClose={() => setSelected(null)}
       >
         <View style={styles.modalBackdrop}>
-          <View style={styles.modal}>
+          <View style={[styles.modal, { backgroundColor: tokens.colors.surface }]}>
             {selected && (
               <>
                 <View style={styles.modalHeader}>
                   <PriorityBadge priority={selected.priority} />
                   <Pressable onPress={() => setSelected(null)} hitSlop={10}>
-                    <Text style={styles.closeBtn}>✕</Text>
+                    <Text style={[styles.closeBtn, { color: tokens.colors.textSecondary }]}>✕</Text>
                   </Pressable>
                 </View>
 
                 <ScrollView showsVerticalScrollIndicator={false}>
-                  <Text style={styles.modalTitle}>{selected.title}</Text>
+                  <Text style={[styles.modalTitle, { color: tokens.colors.textPrimary }]}>{selected.title}</Text>
 
                   <View style={styles.modalMeta}>
-                    <Text style={styles.modalMetaText}>
+                    <Text style={[styles.modalMetaText, { color: tokens.colors.textSecondary }]}>
                       {fmtDateTime(selected.publishDate)}
                     </Text>
                     {selected.createdByName && (
-                      <Text style={styles.modalMetaText}>
+                      <Text style={[styles.modalMetaText, { color: tokens.colors.textSecondary }]}>
                         · {selected.createdByName}
                       </Text>
                     )}
                     {selected.expiryDate && (
-                      <Text style={styles.modalMetaText}>
+                      <Text style={[styles.modalMetaText, { color: tokens.colors.textSecondary }]}>
                         · Berakhir: {fmtDate(selected.expiryDate)}
                       </Text>
                     )}
                   </View>
 
-                  <View style={styles.divider} />
+                  <View style={[styles.divider, { backgroundColor: tokens.colors.border }]} />
 
-                  <Text style={styles.modalContent}>{selected.content}</Text>
+                  <Text style={[styles.modalContent, { color: tokens.colors.textPrimary }]}>{selected.content}</Text>
 
                   <View style={styles.closeRow}>
                     <Button
@@ -212,7 +216,7 @@ export function AnnouncementScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fafafa' },
+  flex: { flex: 1 },
   container: { padding: 16, paddingBottom: 32 },
 
   headerRow: {

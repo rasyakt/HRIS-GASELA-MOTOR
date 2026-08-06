@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
-import { DesignTokens, typography, spacing, borderRadius, gradients } from './design-tokens';
+import { DesignTokens, typography, spacing, borderRadius } from './design-tokens';
 import { lightTheme, darkTheme } from './themes';
 
 // Dummy storage for Expo Go compatibility in MVP
@@ -37,6 +37,28 @@ const generateShadows = (isDark: boolean) => {
   };
 };
 
+// Generate gradients based on theme
+const generateGradients = (isDark: boolean) => {
+  if (isDark) {
+    return {
+      primary: ['#1e40af', '#3b82f6'], // Blue gradient for dark mode
+      secondary: ['#374151', '#52525b'],
+      accent: ['#2563eb', '#60a5fa'],
+      success: ['#047857', '#34d399'],
+      warning: ['#d97706', '#fbbf24'],
+      brand: ['#1e293b', '#334155'],
+    };
+  }
+  return {
+    primary: ['#18181b', '#3f3f46'],
+    secondary: ['#52525b', '#a1a1aa'],
+    accent: ['#3b82f6', '#2563eb'],
+    success: ['#10b981', '#059669'],
+    warning: ['#f59e0b', '#d97706'],
+    brand: ['#18181b', '#27272a'],
+  };
+};
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemColorScheme = useColorScheme() as ThemeType | null;
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
@@ -62,7 +84,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     spacing,
     borderRadius,
     shadows: generateShadows(isDark),
-    gradients,
+    gradients: generateGradients(isDark),
   };
 
   const setTheme = (newPreference: ThemePreference) => {

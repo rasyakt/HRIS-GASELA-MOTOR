@@ -27,6 +27,8 @@ LocaleConfig.locales['id'] = {
 };
 LocaleConfig.defaultLocale = 'id';
 
+import { useTheme } from '../theme/ThemeProvider';
+
 type ButtonVariant = 'primary' | 'outline' | 'destructive' | 'ghost';
 
 export function Button({
@@ -44,17 +46,50 @@ export function Button({
   loading?: boolean;
   style?: object;
 }) {
+  const { tokens } = useTheme();
   const isDisabled = disabled || loading;
+
+  const getButtonStyles = () => {
+    switch (variant) {
+      case 'primary':
+        return { backgroundColor: tokens.colors.primary };
+      case 'outline':
+        return {
+          backgroundColor: tokens.colors.surface,
+          borderWidth: 1,
+          borderColor: tokens.colors.border,
+        };
+      case 'destructive':
+        return { backgroundColor: `${tokens.colors.error}1A` };
+      case 'ghost':
+        return { backgroundColor: 'transparent' };
+      default:
+        return { backgroundColor: tokens.colors.primary };
+    }
+  };
+
+  const getTextColor = () => {
+    switch (variant) {
+      case 'primary':
+        return tokens.colors.surface;
+      case 'destructive':
+        return tokens.colors.error;
+      case 'outline':
+        return tokens.colors.textPrimary;
+      case 'ghost':
+        return tokens.colors.primary;
+      default:
+        return tokens.colors.surface;
+    }
+  };
+
   return (
     <Pressable
       onPress={onPress}
       disabled={isDisabled}
       style={({ pressed }) => [
         styles.button,
-        variant === 'primary' && styles.buttonPrimary,
-        variant === 'outline' && styles.buttonOutline,
-        variant === 'destructive' && styles.buttonDestructive,
-        variant === 'ghost' && styles.buttonGhost,
+        getButtonStyles(),
         isDisabled && styles.buttonDisabled,
         pressed && !isDisabled && styles.buttonPressed,
         style,
@@ -63,16 +98,10 @@ export function Button({
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === 'primary' ? '#fff' : '#18181b'}
+          color={getTextColor()}
         />
       ) : (
-        <Text
-          style={[
-            styles.buttonText,
-            variant === 'primary' && styles.buttonTextPrimary,
-            variant === 'destructive' && styles.buttonTextDestructive,
-          ]}
-        >
+        <Text style={[styles.buttonText, { color: getTextColor() }]}>
           {title}
         </Text>
       )}
@@ -81,11 +110,28 @@ export function Button({
 }
 
 export function Card({ children, style }: { children: ReactNode; style?: object }) {
-  return <View style={[styles.card, style]}>{children}</View>;
+  const { tokens } = useTheme();
+  return (
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: tokens.colors.surface,
+          borderColor: tokens.colors.border,
+          borderWidth: 1,
+          ...tokens.shadows.sm,
+        },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
 }
 
 export function CardTitle({ children }: { children: ReactNode }) {
-  return <Text style={styles.cardTitle}>{children}</Text>;
+  const { tokens } = useTheme();
+  return <Text style={[styles.cardTitle, { color: tokens.colors.textPrimary }]}>{children}</Text>;
 }
 
 export function StatusBadge({ status }: { status: string | null | undefined }) {
@@ -117,29 +163,34 @@ export function TextField({
   multiline?: boolean;
   autoCapitalize?: 'none' | 'sentences' | 'words';
 }) {
+  const { tokens } = useTheme();
   const [isSecure, setIsSecure] = useState(secureTextEntry);
 
   return (
     <View style={styles.field}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      <View style={styles.inputContainer}>
+      <Text style={[styles.fieldLabel, { color: tokens.colors.textSecondary }]}>{label}</Text>
+      <View style={[styles.inputContainer, { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border }]}>
         <TextInput
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor="#a1a1aa"
+          placeholderTextColor={tokens.colors.textTertiary}
           keyboardType={keyboardType}
           secureTextEntry={isSecure}
           multiline={multiline}
           autoCapitalize={autoCapitalize}
-          style={[styles.inputField, multiline && styles.inputMultiline]}
+          style={[
+            styles.inputField,
+            { color: tokens.colors.textPrimary },
+            multiline && styles.inputMultiline
+          ]}
         />
         {secureTextEntry && (
           <Pressable onPress={() => setIsSecure(!isSecure)} style={styles.eyeButton}>
             <Ionicons
               name={isSecure ? 'eye-off-outline' : 'eye-outline'}
               size={20}
-              color="#71717a"
+              color={tokens.colors.textSecondary}
             />
           </Pressable>
         )}
@@ -159,6 +210,7 @@ export function DateField({
   onChange: (v: string) => void;
   mode?: 'date' | 'time';
 }) {
+  const { tokens } = useTheme();
   const [show, setShow] = useState(false);
   const authApi = useAuthApi();
 
@@ -177,16 +229,16 @@ export function DateField({
       if (h.isRecurringYearly) {
         for(let yr = currentYear - 1; yr <= currentYear + 1; yr++) {
           const dateStr = `${yr}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
-          markedDates[dateStr] = { marked: true, dotColor: '#dc2626' };
+          markedDates[dateStr] = { marked: true, dotColor: tokens.colors.error };
         }
       } else {
         const dateStr = d.toISOString().split('T')[0];
-        markedDates[dateStr] = { marked: true, dotColor: '#dc2626' };
+        markedDates[dateStr] = { marked: true, dotColor: tokens.colors.error };
       }
     });
 
     if (value) {
-      markedDates[value] = { ...markedDates[value], selected: true, selectedColor: '#18181b' };
+      markedDates[value] = { ...markedDates[value], selected: true, selectedColor: tokens.colors.primary };
     }
   }
 
@@ -215,9 +267,9 @@ export function DateField({
 
   return (
     <View style={styles.field}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      <Pressable onPress={() => setShow(true)} style={styles.input}>
-        <Text style={{ color: value ? '#18181b' : '#a1a1aa', paddingTop: Platform.OS === 'ios' ? 0 : 3 }}>
+      <Text style={[styles.fieldLabel, { color: tokens.colors.textSecondary }]}>{label}</Text>
+      <Pressable onPress={() => setShow(true)} style={[styles.input, { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border }]}>
+        <Text style={{ color: value ? tokens.colors.textPrimary : tokens.colors.textTertiary, paddingTop: Platform.OS === 'ios' ? 0 : 3 }}>
           {value || (mode === 'date' ? 'Pilih Tanggal' : 'Pilih Waktu')}
         </Text>
       </Pressable>
@@ -225,16 +277,26 @@ export function DateField({
       {mode === 'date' && (
         <Modal visible={show} transparent animationType="fade" onRequestClose={() => setShow(false)}>
           <View style={styles.modalBackdrop}>
-            <View style={styles.calendarModal}>
-              <Text style={styles.modalTitle}>Pilih Tanggal</Text>
+            <View style={[styles.calendarModal, { backgroundColor: tokens.colors.surface }]}>
+              <Text style={[styles.modalTitle, { color: tokens.colors.textPrimary }]}>Pilih Tanggal</Text>
               <Calendar
                 current={value || undefined}
                 onDayPress={handleDateSelect}
                 markedDates={markedDates}
                 theme={{
-                  selectedDayBackgroundColor: '#18181b',
-                  todayTextColor: '#dc2626',
-                  arrowColor: '#18181b',
+                  calendarBackground: tokens.colors.surface,
+                  textSectionTitleColor: tokens.colors.textSecondary,
+                  selectedDayBackgroundColor: tokens.colors.primary,
+                  selectedDayTextColor: tokens.colors.surface,
+                  todayTextColor: tokens.colors.error,
+                  dayTextColor: tokens.colors.textPrimary,
+                  textDisabledColor: tokens.colors.textTertiary,
+                  dotColor: tokens.colors.primary,
+                  selectedDotColor: tokens.colors.surface,
+                  arrowColor: tokens.colors.textPrimary,
+                  disabledArrowColor: tokens.colors.textTertiary,
+                  monthTextColor: tokens.colors.textPrimary,
+                  indicatorColor: tokens.colors.primary,
                 }}
               />
               <Button title="Tutup" variant="ghost" onPress={() => setShow(false)} style={{ marginTop: 12 }} />
@@ -257,21 +319,24 @@ export function DateField({
 }
 
 export function EmptyState({ message }: { message: string }) {
-  return <Text style={styles.empty}>{message}</Text>;
+  const { tokens } = useTheme();
+  return <Text style={[styles.empty, { color: tokens.colors.textSecondary }]}>{message}</Text>;
 }
 
 export function ErrorBanner({ message }: { message: string }) {
+  const { tokens } = useTheme();
   return (
-    <View style={styles.errorBanner}>
-      <Text style={styles.errorText}>{message}</Text>
+    <View style={[styles.errorBanner, { backgroundColor: `${tokens.colors.error}1A` }]}>
+      <Text style={[styles.errorText, { color: tokens.colors.error }]}>{message}</Text>
     </View>
   );
 }
 
 export function InfoBanner({ message }: { message: string }) {
+  const { tokens } = useTheme();
   return (
-    <View style={styles.infoBanner}>
-      <Text style={styles.infoText}>{message}</Text>
+    <View style={[styles.infoBanner, { backgroundColor: `${tokens.colors.success}1A` }]}>
+      <Text style={[styles.infoText, { color: tokens.colors.success }]}>{message}</Text>
     </View>
   );
 }
@@ -285,10 +350,11 @@ export function Row({
   value: string;
   big?: boolean;
 }) {
+  const { tokens } = useTheme();
   return (
     <View style={styles.row}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={[styles.rowValue, big && styles.rowValueBig]}>{value}</Text>
+      <Text style={[styles.rowLabel, { color: tokens.colors.textSecondary }]}>{label}</Text>
+      <Text style={[styles.rowValue, { color: tokens.colors.textPrimary }, big && styles.rowValueBig]}>{value}</Text>
     </View>
   );
 }
@@ -301,30 +367,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
-  buttonPrimary: { backgroundColor: '#18181b' },
-  buttonOutline: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e4e4e7',
-  },
-  buttonDestructive: { backgroundColor: '#fee2e2' },
+  buttonPrimary: {},
+  buttonOutline: {},
+  buttonDestructive: {},
   buttonGhost: { backgroundColor: 'transparent' },
   buttonDisabled: { opacity: 0.5 },
   buttonPressed: { opacity: 0.85 },
   buttonText: { fontSize: 15, fontWeight: '600' },
-  buttonTextPrimary: { color: '#fff' },
-  buttonTextDestructive: { color: '#dc2626' },
+  buttonTextPrimary: {},
+  buttonTextDestructive: {},
   card: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 2,
   },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#18181b', marginBottom: 12 },
+  cardTitle: { fontSize: 15, fontWeight: '600', marginBottom: 12 },
   badge: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
@@ -336,26 +392,21 @@ const styles = StyleSheet.create({
   badgeDot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
   badgeText: { fontSize: 12, fontWeight: '600' },
   field: { marginBottom: 14 },
-  fieldLabel: { fontSize: 13, fontWeight: '500', color: '#3f3f46', marginBottom: 6 },
+  fieldLabel: { fontSize: 13, fontWeight: '500', marginBottom: 6 },
   input: {
     minHeight: 44,
     borderWidth: 1,
-    borderColor: '#e4e4e7',
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 15,
-    color: '#18181b',
-    backgroundColor: '#fff',
   },
   inputContainer: {
     minHeight: 44,
     borderWidth: 1,
-    borderColor: '#e4e4e7',
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     paddingRight: 10,
   },
   inputField: {
@@ -364,7 +415,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 15,
-    color: '#18181b',
   },
   eyeButton: {
     padding: 4,
@@ -372,27 +422,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   inputMultiline: { minHeight: 90, textAlignVertical: 'top' },
-  empty: { color: '#71717a', fontSize: 14, textAlign: 'center', paddingVertical: 24 },
+  empty: { fontSize: 14, textAlign: 'center', paddingVertical: 24 },
   errorBanner: {
-    backgroundColor: '#fef2f2',
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
   },
-  errorText: { color: '#dc2626', fontSize: 13 },
+  errorText: { fontSize: 13 },
   infoBanner: {
-    backgroundColor: '#f0fdf4',
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
   },
-  infoText: { color: '#059669', fontSize: 13 },
+  infoText: { fontSize: 13 },
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 },
-  rowLabel: { fontSize: 14, color: '#71717a' },
-  rowValue: { fontSize: 14, color: '#18181b', fontWeight: '500', flexShrink: 1, textAlign: 'right' },
+  rowLabel: { fontSize: 14 },
+  rowValue: { fontSize: 14, fontWeight: '500', flexShrink: 1, textAlign: 'right' },
   rowValueBig: { fontSize: 18, fontWeight: '700' },
   calendarModal: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     width: '90%',
@@ -404,5 +451,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
-  modalTitle: { fontSize: 17, fontWeight: '700', color: '#18181b', marginBottom: 14 },
+  modalTitle: { fontSize: 17, fontWeight: '700', marginBottom: 14 },
 });
