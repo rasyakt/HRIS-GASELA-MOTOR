@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { ArrowLeft, Phone, Mail, Facebook, Clock, ShieldCheck, MapPin, Navigation } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { SocialMediaSection } from '@/components/landing/SocialMediaSection';
+import { QuickLinksSection } from '@/components/landing/QuickLinksSection';
 
 // ─────────────────────────────────────────────────────────────
 // Types & Data
@@ -117,8 +119,8 @@ const UNIT_DETAILS: Record<string, UnitDetail> = {
       'Bumbu Industri Pangan',
     ],
   },
-  makaroni: {
-    id: 'makaroni',
+  makaronikantawes: {
+    id: 'makaronikantawes',
     name: 'Makaroni Spesial Cap Ikan Tawes',
     tagline: 'Produksi DN - Citarasa Legendaris',
     year: '1996',
@@ -147,6 +149,9 @@ const UNIT_DETAILS: Record<string, UnitDetail> = {
   },
 };
 
+// Alias fallback for makaroni route
+UNIT_DETAILS['makaroni'] = UNIT_DETAILS['makaronikantawes'];
+
 // ─────────────────────────────────────────────────────────────
 // Next.js Config
 // ─────────────────────────────────────────────────────────────
@@ -162,7 +167,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export async function generateStaticParams() {
-  return [{ id: 'futsal' }, { id: 'motor' }, { id: 'sellular' }, { id: 'makaroni' }];
+  return [{ id: 'futsal' }, { id: 'motor' }, { id: 'sellular' }, { id: 'makaronikantawes' }, { id: 'makaroni' }];
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -241,7 +246,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
         {/* Features & Content Grids */}
         <div className="grid md:grid-cols-2 gap-8 pt-6">
           {/* Left Block: Features */}
-          <div className="p-8 rounded-3xl border border-slate-200 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-lg shadow-slate-200/50 dark:shadow-xl space-y-6">
+          <div className="p-8 rounded-3xl border border-slate-200 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-lg shadow-slate-200/50 dark:shadow-2xl dark:shadow-black/50 space-y-6">
             <div className="flex items-center gap-3 pb-4 border-b border-slate-200 dark:border-zinc-800/80">
               <ShieldCheck className="w-5 h-5 text-blue-500 dark:text-blue-400" />
               <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Fasilitas & Penghargaan</h2>
@@ -258,15 +263,22 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
 
           {/* Right Block: Menu (For Futsal / Makaroni / Motor / Sellular) or Contact Box */}
           {unit.menus ? (
-            <div className="p-8 rounded-3xl border border-slate-200 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-lg shadow-slate-200/50 dark:shadow-xl space-y-6">
-              <div className="flex items-center gap-3 pb-4 border-b border-slate-200 dark:border-zinc-800/80">
-                <span className="w-2 h-2 rounded-full bg-red-500 dark:bg-red-400" />
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                  {id === 'futsal' && 'Menu Favorit Café'}
-                  {id === 'makaroni' && 'Varian Rasa Makaroni'}
-                  {id === 'motor' && 'Layanan Otomotif'}
-                  {id === 'sellular' && 'Layanan Ritel & Jasa'}
-                </h2>
+            <div className="p-8 rounded-3xl border border-slate-200 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-lg shadow-slate-200/50 dark:shadow-2xl dark:shadow-black/50 space-y-6">
+              <div className="pb-4 border-b border-slate-200 dark:border-zinc-800/80">
+                <div className="flex items-center gap-3">
+                  <span className="w-2 h-2 rounded-full bg-red-500 dark:bg-red-400" />
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                    {id === 'futsal' && 'Menu Favorit Café'}
+                    {(id === 'makaronikantawes' || id === 'makaroni') && 'Varian Rasa Makaroni'}
+                    {id === 'motor' && 'Layanan Otomotif'}
+                    {id === 'sellular' && 'Layanan Ritel & Jasa'}
+                  </h2>
+                </div>
+                {unit.tagline && (
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium pl-5 mt-1">
+                    {unit.tagline}
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600 dark:text-zinc-300">
                 {unit.menus.map((item) => (
@@ -278,7 +290,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
               </div>
             </div>
           ) : (
-            <div className="p-8 rounded-3xl border border-slate-200 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-lg shadow-slate-200/50 dark:shadow-xl flex flex-col justify-between space-y-6">
+            <div className="p-8 rounded-3xl border border-slate-200 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-lg shadow-slate-200/50 dark:shadow-2xl dark:shadow-black/50 flex flex-col justify-between space-y-6">
               <div className="space-y-6">
                 <div className="flex items-center gap-3 pb-4 border-b border-slate-200 dark:border-zinc-800/80">
                   <MapPin className="w-5 h-5 text-red-500 dark:text-red-400" />
@@ -297,36 +309,32 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
           )}
         </div>
 
-        {/* Location & Map */}
-        {unit.mapEmbed && (
-          <div className="grid lg:grid-cols-12 gap-8 pt-6">
-            {/* Address Card */}
-            <div className="lg:col-span-4 flex flex-col justify-between space-y-6 p-8 rounded-3xl border border-amber-500/25 bg-linear-to-b from-amber-500/[0.05] to-transparent backdrop-blur-xl shadow-lg shadow-zinc-900/5 dark:border-amber-300/20 dark:from-amber-300/[0.06] dark:to-transparent dark:shadow-xl dark:shadow-black/30">
-              <div className="space-y-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-zinc-200/70 dark:border-white/10">
-                  <span className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:bg-amber-300/10 dark:border-amber-300/30 dark:text-amber-300">
-                    <MapPin className="w-5 h-5" />
-                  </span>
-                  <h2 className="font-display text-xl font-black text-zinc-900 dark:text-white tracking-tight">
-                    Lokasi &amp; Peta
-                  </h2>
-                </div>
-                <p className="text-sm text-zinc-600 leading-relaxed dark:text-zinc-400">{unit.location}</p>
-              </div>
+        {/* Makaroni Cap Ikan Tawes Exclusive Order Hub & Social Media Sections */}
+        {(id === 'makaronikantawes' || id === 'makaroni') && (
+          <div className="-mx-6 md:-mx-16 lg:-mx-24 pt-6 space-y-12">
+            <QuickLinksSection />
+            <SocialMediaSection />
+          </div>
+        )}
 
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(unit.location)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-linear-to-r from-amber-500 to-amber-600 text-white font-black text-sm uppercase tracking-[0.15em] shadow-xl shadow-amber-500/25 hover:shadow-2xl hover:shadow-amber-500/35 hover:-translate-y-0.5 transition-all duration-300 dark:from-amber-300 dark:via-amber-400 dark:to-amber-300 dark:text-zinc-950 dark:shadow-[0_10px_40px_-10px_rgba(251,191,36,0.6)] dark:hover:shadow-[0_12px_55px_-8px_rgba(251,191,36,0.8)]"
-              >
-                <Navigation className="w-4 h-4" />
-                Buka di Google Maps
-              </a>
+        {/* Full-width Google Maps Embed */}
+        {unit.mapEmbed && (
+          <div className="pt-6 space-y-4">
+            <div className="text-center space-y-1.5 max-w-2xl mx-auto">
+              <div className="flex items-center justify-center gap-2">
+                <span className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:bg-amber-300/10 dark:border-amber-300/30 dark:text-amber-300 shrink-0">
+                  <MapPin className="w-4 h-4" />
+                </span>
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+                  Lokasi &amp; Peta Pabrik
+                </h2>
+              </div>
+              <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-medium">
+                {unit.location}
+              </p>
             </div>
 
-            {/* Map Embed */}
-            <div className="lg:col-span-8 rounded-3xl border border-zinc-200/80 bg-zinc-100/60 overflow-hidden relative min-h-[320px] md:min-h-[420px] shadow-lg shadow-zinc-900/5 dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-2xl dark:shadow-black/50">
+            <div className="w-full rounded-3xl border border-zinc-200/80 bg-zinc-100/60 overflow-hidden relative min-h-[360px] md:min-h-[440px] shadow-lg shadow-zinc-900/5 dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-2xl dark:shadow-black/50">
               <iframe
                 src={unit.mapEmbed}
                 title={`Peta lokasi ${unit.name}`}
@@ -340,7 +348,6 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
           </div>
         )}
 
-        {/* Contacts Matrix */}
         {/* Contacts Matrix */}
         <div className="border-t border-zinc-200 dark:border-zinc-800/60 pt-12 grid sm:grid-cols-3 gap-6 text-sm text-zinc-500 dark:text-zinc-400">
           <a

@@ -70,7 +70,7 @@ export function SocialMediaSection() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500 dark:bg-amber-300" />
               </span>
               <span className="text-amber-600 dark:text-amber-300 text-xs font-bold tracking-[0.3em] uppercase flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" /> Media Sosial Resmi
+                Media Sosial Resmi
               </span>
             </div>
             <h2

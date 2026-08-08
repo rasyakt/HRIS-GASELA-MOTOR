@@ -89,7 +89,7 @@ const BUSINESS_UNITS: BusinessUnit[] = [
     textColor: 'text-blue-600 dark:text-blue-400',
   },
   {
-    id: 'makaroni',
+    id: 'makaronikantawes',
     number: '04',
     name: 'Makaroni Cap Ikan Tawes',
     category: 'Industri Pangan',
@@ -113,12 +113,12 @@ function UnitCard({ unit }: { unit: BusinessUnit }) {
   return (
     <Link
       href={`/landing/unit/${unit.id}`}
-      className={`unit-card relative shrink-0 w-[82vw] sm:w-85 md:w-105 h-[60vh] min-h-105 max-h-135 rounded-3xl border border-zinc-200/80 bg-white/85 backdrop-blur-2xl overflow-hidden flex flex-col transition-all duration-500 hover:border-amber-500/40 hover:-translate-y-1.5 shadow-xl shadow-zinc-900/5 dark:border-white/10 dark:bg-zinc-900/70 dark:hover:border-amber-300/30 dark:shadow-2xl dark:shadow-black/50 group cursor-pointer`}
+      className={`unit-card relative shrink-0 w-[82vw] sm:w-85 md:w-105 h-[460px] md:h-[480px] rounded-3xl border border-zinc-200/80 bg-white/90 backdrop-blur-2xl overflow-hidden flex flex-col justify-between transition-all duration-500 hover:border-amber-500/40 hover:-translate-y-1.5 shadow-xl shadow-zinc-900/5 dark:border-white/10 dark:bg-zinc-900/80 dark:hover:border-amber-300/30 dark:shadow-2xl dark:shadow-black/50 group cursor-pointer`}
       style={{ willChange: 'transform, opacity' }}
       aria-label={`Lihat detail Unit Bisnis: ${unit.name}`}
     >
       {/* ── Image Header ── */}
-      <div className="relative h-36 md:h-44 shrink-0 overflow-hidden">
+      <div className="relative h-40 md:h-44 shrink-0 overflow-hidden">
         <Image
           src={unit.image}
           alt={unit.name}
@@ -126,60 +126,54 @@ function UnitCard({ unit }: { unit: BusinessUnit }) {
           sizes="(max-width: 640px) 82vw, 30rem"
           className="object-cover transition-transform duration-700 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-linear-to-t from-zinc-50/50 via-transparent to-transparent dark:from-zinc-900 dark:via-zinc-900/25 dark:to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-zinc-50/60 via-transparent to-transparent dark:from-zinc-900 dark:via-zinc-900/30 dark:to-transparent" />
 
         {/* Watermark number */}
-        <span className="absolute top-4 right-6 font-display text-6xl font-black text-zinc-900/10 leading-none select-none tracking-tight dark:text-amber-200/25">
+        <span className="absolute top-4 right-6 font-display text-5xl font-black text-zinc-900/10 leading-none select-none tracking-tight dark:text-amber-200/20">
           {unit.number}
         </span>
 
         {/* Category badge */}
-        <span className="absolute bottom-4 left-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-500/40 bg-white/85 backdrop-blur-md text-[9px] font-extrabold uppercase tracking-[0.22em] text-amber-700 dark:border-amber-300/30 dark:bg-zinc-950/70 dark:text-amber-200">
-          <span className="w-1 h-1 rounded-full bg-amber-500 dark:bg-amber-300" />
+        <span className="absolute bottom-4 left-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-500/40 bg-white/90 backdrop-blur-md text-[9px] font-extrabold uppercase tracking-[0.2em] text-amber-700 dark:border-amber-300/30 dark:bg-zinc-950/80 dark:text-amber-200 shadow-xs">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-300" />
           {unit.category}
         </span>
       </div>
 
       {/* ── Body ── */}
-      <div className="relative flex-1 flex flex-col justify-between p-4 md:p-6">
+      <div className="relative flex-1 flex flex-col justify-between p-5 md:p-6">
         <div>
-          <div className="flex items-start gap-3 md:gap-4 mb-2 md:mb-3">
+          <div className="flex items-center gap-3.5 mb-2.5">
             <div
-              className={`w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700 group-hover:scale-105 group-hover:border-amber-500/30 transition-all dark:bg-white/[0.05] dark:border-white/10 dark:text-zinc-300 dark:group-hover:border-amber-300/30`}
+              className={`w-10 h-10 md:w-11 md:h-11 shrink-0 rounded-xl bg-zinc-100 border border-zinc-200/80 flex items-center justify-center text-zinc-700 group-hover:scale-105 group-hover:border-amber-500/30 transition-all dark:bg-white/[0.06] dark:border-white/10 dark:text-zinc-300 dark:group-hover:border-amber-300/30`}
             >
-              <Icon className="w-4 h-4 md:w-5 md:h-5" />
+              <Icon className="w-4.5 h-4.5 md:w-5 md:h-5" />
             </div>
-            <h3 className="font-display text-xl md:text-2xl font-black text-zinc-900 dark:text-white tracking-tight leading-tight pt-1">
+            <h3 className="font-sans text-lg md:text-xl font-extrabold text-zinc-900 dark:text-white tracking-tight leading-snug">
               {unit.name}
             </h3>
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-2">{unit.description}</p>
         </div>
 
-        {/* Services */}
-        <div className="my-2.5 py-2.5 border-y border-zinc-200/80 grid grid-cols-1 gap-1.5 dark:border-white/[0.07]">
+        {/* Services List */}
+        <div className="my-2.5 py-2.5 border-y border-zinc-200/70 grid grid-cols-1 gap-1.5 dark:border-white/10">
           {unit.services.map((svc) => (
             <div key={svc} className="flex items-center gap-2 text-[11px] md:text-xs text-zinc-700 dark:text-zinc-300">
-              <CheckCircle2 className={`w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-zinc-400 dark:text-zinc-500`} />
+              <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
               <span className="font-medium line-clamp-1">{svc}</span>
             </div>
           ))}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="space-y-1.5 text-[11px] text-zinc-500">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-3.5 h-3.5 shrink-0 text-zinc-400 dark:text-zinc-600" />
-              <span className="truncate block">{unit.location}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Phone className="w-3.5 h-3.5 shrink-0 text-zinc-400 dark:text-zinc-600" />
-              <span className="truncate block">{unit.phone}</span>
-            </div>
+        <div className="flex items-center justify-between gap-3 pt-1">
+          <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 font-medium min-w-0">
+            <MapPin className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <span className="truncate">{unit.location}</span>
           </div>
 
-          <div className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-500 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 dark:bg-white/[0.06] dark:border-white/10 dark:text-zinc-400 dark:group-hover:bg-linear-to-r dark:group-hover:from-amber-300 dark:group-hover:to-amber-400 dark:group-hover:text-zinc-950">
+          <div className="w-8 h-8 rounded-full bg-zinc-100 border border-zinc-200/80 flex items-center justify-center text-zinc-600 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500 transition-all duration-300 shrink-0 dark:bg-white/10 dark:border-white/10 dark:text-zinc-300 dark:group-hover:bg-amber-400 dark:group-hover:text-zinc-950">
             <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
           </div>
         </div>

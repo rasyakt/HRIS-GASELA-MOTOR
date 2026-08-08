@@ -1,16 +1,25 @@
+'use client';
+
 /**
  * LandingFooter.tsx
  * ─────────────────
  * Luxury footer with oversized watermark for CV GASELA GROUP.
- * Fully theme-aware (light & dark).
+ * Fully theme-aware (light & dark) with 100% functional navigation links across all pages.
  */
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { Mail, Phone, MapPin, Instagram, Facebook, ArrowRight } from 'lucide-react';
+import { SiTiktok } from 'react-icons/si';
 
 export function LandingFooter() {
+  const pathname = usePathname();
+  const isLandingPage = pathname === '/landing';
   const year = new Date().getFullYear();
+
+  const getAnchorHref = (anchor: string) => (isLandingPage ? anchor : `/landing${anchor}`);
+
   return (
     <footer
       className="relative bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200/80 dark:border-white/[0.06] pt-20 pb-8 px-6 md:px-12 lg:px-24 overflow-hidden"
@@ -35,29 +44,37 @@ export function LandingFooter() {
               <span className="text-zinc-900 dark:text-white font-black text-sm tracking-[0.25em] uppercase leading-none block">
                 CV. GASELA GROUP
               </span>
-              
             </div>
           </div>
           <p className="text-sm text-zinc-500 leading-relaxed pr-4">
             Ekosistem bisnis terpadu yang menaungi sektor otomotif, ritel, arena olahraga, dan manufaktur pangan dengan
             standar profesionalisme tinggi di Jawa Barat.
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <a
               href="https://www.instagram.com/makaroni.ikantawes?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram @makaroni.ikantawes"
-              className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-500 hover:bg-amber-500 hover:text-white hover:border-transparent transition-all duration-300 dark:bg-white/4 dark:border-white/10 dark:text-zinc-400 dark:hover:bg-amber-400"
+              className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-600 hover:bg-pink-600 hover:text-white hover:border-transparent transition-all duration-300 dark:bg-white/5 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-pink-600"
             >
               <Instagram className="w-4 h-4" />
             </a>
             <a
-              href="https://facebook.com"
+              href="https://www.tiktok.com/@capikantawes?is_from_webapp=1&sender_device=pc"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="TikTok @capikantawes"
+              className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-600 hover:bg-zinc-950 hover:text-white hover:border-transparent transition-all duration-300 dark:bg-white/5 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-950"
+            >
+              <SiTiktok className="w-3.5 h-3.5" />
+            </a>
+            <a
+              href="https://facebook.com/search/top?q=Gasela%20Group"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook CV Gasela Group"
-              className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-500 hover:bg-amber-500 hover:text-white hover:border-transparent transition-all duration-300 dark:bg-white/4 dark:border-white/10 dark:text-zinc-400 dark:hover:bg-amber-400"
+              className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-600 hover:bg-blue-600 hover:text-white hover:border-transparent transition-all duration-300 dark:bg-white/5 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-blue-600"
             >
               <Facebook className="w-4 h-4" />
             </a>
@@ -74,7 +91,7 @@ export function LandingFooter() {
               { href: '/landing/unit/motor', label: 'Gasela Motor' },
               { href: '/landing/unit/sellular', label: 'Gasela Sellular & Plastik' },
               { href: '/landing/unit/futsal', label: 'Gasela Futsal Stadium' },
-              { href: '/landing/unit/makaroni', label: 'Makaroni Cap Ikan Tawes' },
+              { href: '/landing/unit/makaronikantawes', label: 'Makaroni Cap Ikan Tawes' },
             ].map((item) => (
               <li key={item.href}>
                 <Link
@@ -96,28 +113,28 @@ export function LandingFooter() {
           </h3>
           <ul className="space-y-4">
             <li>
-              <a
-                href="#hero"
+              <Link
+                href={getAnchorHref('#hero')}
                 className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
               >
                 Beranda
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href="#about"
+              <Link
+                href={getAnchorHref('#about')}
                 className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
               >
                 Biografi Perusahaan
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href="#portfolio"
+              <Link
+                href={getAnchorHref('#portfolio')}
                 className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
               >
                 Portofolio Bisnis
-              </a>
+              </Link>
             </li>
             <li>
               <Link
@@ -138,19 +155,34 @@ export function LandingFooter() {
           <ul className="space-y-4">
             <li className="flex items-start gap-3">
               <MapPin className="w-5 h-5 text-amber-600/70 dark:text-amber-300/70 shrink-0 mt-0.5" />
-              <span className="text-sm font-medium text-zinc-500 leading-relaxed">
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=Jl.+Tentara+Pelajar+No.165+Cikoneng+Ciamis"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-zinc-500 hover:text-amber-600 dark:hover:text-amber-300 transition-colors leading-relaxed"
+              >
                 JL. Raya Cikoneng - Ciamis,
                 <br />
                 Jawa Barat, Indonesia
-              </span>
+              </a>
             </li>
             <li className="flex items-center gap-3">
               <Phone className="w-5 h-5 text-amber-600/70 dark:text-amber-300/70 shrink-0" />
-              <span className="text-sm font-medium text-zinc-500">(0265) 776103</span>
+              <a
+                href="tel:0265776103"
+                className="text-sm font-medium text-zinc-500 hover:text-amber-600 dark:hover:text-amber-300 transition-colors"
+              >
+                (0265) 776103
+              </a>
             </li>
             <li className="flex items-center gap-3">
               <Mail className="w-5 h-5 text-amber-600/70 dark:text-amber-300/70 shrink-0" />
-              <span className="text-sm font-medium text-zinc-500">info@gaselagrup.com</span>
+              <a
+                href="mailto:info@gaselagrup.com"
+                className="text-sm font-medium text-zinc-500 hover:text-amber-600 dark:hover:text-amber-300 transition-colors"
+              >
+                info@gaselagrup.com
+              </a>
             </li>
           </ul>
         </div>
@@ -162,12 +194,12 @@ export function LandingFooter() {
           © {year} CV GASELA GROUP. Hak cipta dilindungi undang-undang.
         </p>
         <div className="flex items-center gap-6 text-xs font-medium text-zinc-400 dark:text-zinc-600">
-          <a href="#" className="hover:text-amber-600 dark:hover:text-amber-200 transition-colors">
+          <Link href={getAnchorHref('#about')} className="hover:text-amber-600 dark:hover:text-amber-200 transition-colors">
             Kebijakan Privasi
-          </a>
-          <a href="#" className="hover:text-amber-600 dark:hover:text-amber-200 transition-colors">
+          </Link>
+          <Link href={getAnchorHref('#about')} className="hover:text-amber-600 dark:hover:text-amber-200 transition-colors">
             Syarat &amp; Ketentuan
-          </a>
+          </Link>
         </div>
       </div>
     </footer>
