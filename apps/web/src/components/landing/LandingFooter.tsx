@@ -44,16 +44,20 @@ export function LandingFooter() {
           </p>
           <div className="flex items-center gap-4">
             <a
-              href="#"
-              aria-label="Instagram"
-              className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-500 hover:bg-amber-500 hover:text-white hover:border-transparent transition-all duration-300 dark:bg-white/[0.04] dark:border-white/10 dark:text-zinc-400 dark:hover:bg-amber-400"
+              href="https://www.instagram.com/makaroni.ikantawes?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram @makaroni.ikantawes"
+              className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-500 hover:bg-amber-500 hover:text-white hover:border-transparent transition-all duration-300 dark:bg-white/4 dark:border-white/10 dark:text-zinc-400 dark:hover:bg-amber-400"
             >
               <Instagram className="w-4 h-4" />
             </a>
             <a
-              href="#"
-              aria-label="Facebook"
-              className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-500 hover:bg-amber-500 hover:text-white hover:border-transparent transition-all duration-300 dark:bg-white/[0.04] dark:border-white/10 dark:text-zinc-400 dark:hover:bg-amber-400"
+              href="https://facebook.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook CV Gasela Group"
+              className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-500 hover:bg-amber-500 hover:text-white hover:border-transparent transition-all duration-300 dark:bg-white/4 dark:border-white/10 dark:text-zinc-400 dark:hover:bg-amber-400"
             >
               <Facebook className="w-4 h-4" />
             </a>

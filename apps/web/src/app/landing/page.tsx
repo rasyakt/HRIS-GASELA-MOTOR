@@ -14,6 +14,7 @@ import { HeroSection } from '@/components/landing/HeroSection';
 import { MarqueeSection } from '@/components/landing/MarqueeSection';
 import { AboutSection } from '@/components/landing/AboutSection';
 import { ScrollAnimationSection } from '@/components/landing/ScrollAnimationSection';
+import { SocialMediaSection } from '@/components/landing/SocialMediaSection';
 import { ContactSection } from '@/components/landing/ContactSection';
 
 // ── SEO Metadata ──────────────────────────────────────────────────────────────
@@ -64,7 +65,10 @@ export default function LandingPage() {
         <ScrollAnimationSection />
       </section>
 
-      {/* 5. Contact / CTA section */}
+      {/* 5. Social Media & Activity Feed */}
+      <SocialMediaSection />
+
+      {/* 6. Contact / CTA section */}
       <ContactSection />
     </>
   );
