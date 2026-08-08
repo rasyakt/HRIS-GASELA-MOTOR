@@ -178,7 +178,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white relative py-28 px-6 md:px-16 lg:px-24 overflow-hidden">
+    <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-white relative py-28 px-6 md:px-16 lg:px-24 overflow-hidden">
       {/* Background patterns */}
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.015)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-size-[64px_64px]" />
       <div className="absolute top-1/4 right-1/4 w-150 h-150 bg-blue-500/5 rounded-full blur-[150px] pointer-events-none" />
@@ -231,10 +231,10 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
               src={unit.image}
               alt={unit.name}
               fill
-              className="object-cover opacity-80"
+              className="object-cover dark:opacity-80"
               priority
             />
-            <div className="absolute inset-0 bg-linear-to-t from-white via-white/20 dark:from-zinc-950 dark:via-zinc-950/20 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-zinc-50/50 via-transparent to-transparent dark:from-zinc-950 dark:via-zinc-950/20 dark:to-transparent" />
           </div>
         </div>
 
@@ -301,22 +301,24 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
         {unit.mapEmbed && (
           <div className="grid lg:grid-cols-12 gap-8 pt-6">
             {/* Address Card */}
-            <div className="lg:col-span-4 flex flex-col justify-between space-y-6 p-8 rounded-3xl border border-amber-300/20 bg-linear-to-b from-amber-300/[0.06] to-transparent backdrop-blur-xl shadow-xl shadow-black/30">
+            <div className="lg:col-span-4 flex flex-col justify-between space-y-6 p-8 rounded-3xl border border-amber-500/25 bg-linear-to-b from-amber-500/[0.05] to-transparent backdrop-blur-xl shadow-lg shadow-zinc-900/5 dark:border-amber-300/20 dark:from-amber-300/[0.06] dark:to-transparent dark:shadow-xl dark:shadow-black/30">
               <div className="space-y-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-white/10">
-                  <span className="w-10 h-10 rounded-xl bg-amber-300/10 border border-amber-300/30 flex items-center justify-center text-amber-300">
+                <div className="flex items-center gap-3 pb-4 border-b border-zinc-200/70 dark:border-white/10">
+                  <span className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:bg-amber-300/10 dark:border-amber-300/30 dark:text-amber-300">
                     <MapPin className="w-5 h-5" />
                   </span>
-                  <h2 className="font-display text-xl font-black text-white tracking-tight">Lokasi &amp; Peta</h2>
+                  <h2 className="font-display text-xl font-black text-zinc-900 dark:text-white tracking-tight">
+                    Lokasi &amp; Peta
+                  </h2>
                 </div>
-                <p className="text-sm text-zinc-400 leading-relaxed">{unit.location}</p>
+                <p className="text-sm text-zinc-600 leading-relaxed dark:text-zinc-400">{unit.location}</p>
               </div>
 
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(unit.location)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-linear-to-r from-amber-300 via-amber-400 to-amber-300 text-zinc-950 font-black text-sm uppercase tracking-[0.15em] shadow-[0_10px_40px_-10px_rgba(251,191,36,0.6)] hover:shadow-[0_12px_55px_-8px_rgba(251,191,36,0.8)] hover:-translate-y-0.5 transition-all duration-300"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-linear-to-r from-amber-500 to-amber-600 text-white font-black text-sm uppercase tracking-[0.15em] shadow-xl shadow-amber-500/25 hover:shadow-2xl hover:shadow-amber-500/35 hover:-translate-y-0.5 transition-all duration-300 dark:from-amber-300 dark:via-amber-400 dark:to-amber-300 dark:text-zinc-950 dark:shadow-[0_10px_40px_-10px_rgba(251,191,36,0.6)] dark:hover:shadow-[0_12px_55px_-8px_rgba(251,191,36,0.8)]"
               >
                 <Navigation className="w-4 h-4" />
                 Buka di Google Maps
@@ -324,12 +326,12 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
             </div>
 
             {/* Map Embed */}
-            <div className="lg:col-span-8 rounded-3xl border border-white/10 bg-zinc-900/40 overflow-hidden relative min-h-[320px] md:min-h-[420px] shadow-2xl shadow-black/50">
+            <div className="lg:col-span-8 rounded-3xl border border-zinc-200/80 bg-zinc-100/60 overflow-hidden relative min-h-[320px] md:min-h-[420px] shadow-lg shadow-zinc-900/5 dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-2xl dark:shadow-black/50">
               <iframe
                 src={unit.mapEmbed}
                 title={`Peta lokasi ${unit.name}`}
-                className="absolute inset-0 w-full h-full"
-                style={{ border: 0, filter: 'invert(0.88) hue-rotate(180deg) contrast(0.9) saturate(0.65)' }}
+                className="absolute inset-0 w-full h-full dark:[filter:invert(0.88)_hue-rotate(180deg)_contrast(0.9)_saturate(0.65)]"
+                style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="strict-origin-when-cross-origin"
@@ -339,36 +341,48 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
         )}
 
         {/* Contacts Matrix */}
-        <div className="border-t border-slate-200 dark:border-zinc-900 pt-12 grid sm:grid-cols-3 gap-6 text-sm text-slate-500 dark:text-zinc-400">
-          <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50/50 dark:bg-zinc-900/30 border border-slate-200 dark:border-zinc-800/60 shadow-sm dark:shadow-none">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
-              <Phone className="w-5 h-5" />
+        {/* Contacts Matrix */}
+        <div className="border-t border-zinc-200 dark:border-zinc-800/60 pt-12 grid sm:grid-cols-3 gap-6 text-sm text-zinc-500 dark:text-zinc-400">
+          <a
+            href={`tel:${unit.phone.replace(/[^0-9+]/g, '')}`}
+            className="group flex items-center gap-3 p-4 rounded-2xl bg-zinc-50/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800/60 shadow-sm hover:shadow-md hover:border-zinc-300 hover:bg-white hover:-translate-y-1 dark:hover:bg-zinc-900/50 dark:hover:border-zinc-700 transition-all duration-300"
+          >
+            <div className="w-10 h-10 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700 group-hover:scale-110 transition-all dark:bg-white/5 dark:border-white/10 dark:text-zinc-300">
+              <Phone className="w-4 h-4 md:w-5 md:h-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 dark:text-zinc-500 font-semibold uppercase">Telepon</p>
-              <p className="text-slate-900 dark:text-white font-bold tracking-tight mt-0.5">{unit.phone}</p>
+              <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">Telepon</p>
+              <p className="text-zinc-900 dark:text-white font-bold tracking-tight mt-0.5">{unit.phone}</p>
             </div>
-          </div>
+          </a>
 
-          <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50/50 dark:bg-zinc-900/30 border border-slate-200 dark:border-zinc-800/60 shadow-sm dark:shadow-none">
-            <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-400">
-              <Mail className="w-5 h-5" />
+          <a
+            href={`mailto:${unit.email ?? 'info@gaselagrup.com'}`}
+            className="group flex items-center gap-3 p-4 rounded-2xl bg-zinc-50/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800/60 shadow-sm hover:shadow-md hover:border-zinc-300 hover:bg-white hover:-translate-y-1 dark:hover:bg-zinc-900/50 dark:hover:border-zinc-700 transition-all duration-300"
+          >
+            <div className="w-10 h-10 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700 group-hover:scale-110 transition-all dark:bg-white/5 dark:border-white/10 dark:text-zinc-300">
+              <Mail className="w-4 h-4 md:w-5 md:h-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 dark:text-zinc-500 font-semibold uppercase">Email</p>
-              <p className="text-slate-900 dark:text-white font-bold tracking-tight mt-0.5">{unit.email ?? 'info@gaselagrup.com'}</p>
+              <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">Email</p>
+              <p className="text-zinc-900 dark:text-white font-bold tracking-tight mt-0.5">{unit.email ?? 'info@gaselagrup.com'}</p>
             </div>
-          </div>
+          </a>
 
-          <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50/50 dark:bg-zinc-900/30 border border-slate-200 dark:border-zinc-800/60 shadow-sm dark:shadow-none">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
-              <Facebook className="w-5 h-5" />
+          <a
+            href={`https://facebook.com/search/top?q=${encodeURIComponent(unit.facebook ?? 'Gasela Group')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-3 p-4 rounded-2xl bg-zinc-50/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800/60 shadow-sm hover:shadow-md hover:border-zinc-300 hover:bg-white hover:-translate-y-1 dark:hover:bg-zinc-900/50 dark:hover:border-zinc-700 transition-all duration-300"
+          >
+            <div className="w-10 h-10 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700 group-hover:scale-110 transition-all dark:bg-white/5 dark:border-white/10 dark:text-zinc-300">
+              <Facebook className="w-4 h-4 md:w-5 md:h-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 dark:text-zinc-500 font-semibold uppercase">Facebook</p>
-              <p className="text-slate-900 dark:text-white font-bold tracking-tight mt-0.5 truncate">{unit.facebook ?? 'Gasela Group'}</p>
+              <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">Facebook</p>
+              <p className="text-zinc-900 dark:text-white font-bold tracking-tight mt-0.5 truncate">{unit.facebook ?? 'Gasela Group'}</p>
             </div>
-          </div>
+          </a>
         </div>
 
       </div>

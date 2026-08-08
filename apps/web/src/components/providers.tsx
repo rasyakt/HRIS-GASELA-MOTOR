@@ -7,7 +7,7 @@ import { ThemeProvider } from './ThemeProvider';
 export function Providers({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClientProvider();
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </ThemeProvider>
   );

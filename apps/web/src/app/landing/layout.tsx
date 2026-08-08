@@ -8,7 +8,6 @@
  */
 
 import { Playfair_Display } from 'next/font/google';
-import { ForceDark } from '@/components/landing/ForceDark';
 import { HashScroll } from '@/components/landing/HashScroll';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
@@ -23,7 +22,6 @@ const playfair = Playfair_Display({
 export default function LandingLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className={`${playfair.variable}`}>
-      <ForceDark />
       <HashScroll />
 
       <a

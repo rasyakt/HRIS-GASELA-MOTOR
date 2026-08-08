@@ -1,7 +1,8 @@
 /**
  * LandingFooter.tsx
  * ─────────────────
- * Luxury dark footer with oversized watermark for CV GASELA GROUP.
+ * Luxury footer with oversized watermark for CV GASELA GROUP.
+ * Fully theme-aware (light & dark).
  */
 
 import Link from 'next/link';
@@ -12,12 +13,12 @@ export function LandingFooter() {
   const year = new Date().getFullYear();
   return (
     <footer
-      className="relative bg-zinc-950 border-t border-white/[0.06] pt-20 pb-8 px-6 md:px-12 lg:px-24 overflow-hidden"
+      className="relative bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200/80 dark:border-white/[0.06] pt-20 pb-8 px-6 md:px-12 lg:px-24 overflow-hidden"
       role="contentinfo"
     >
       {/* Giant watermark */}
       <div
-        className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 font-display font-black leading-none text-white/[0.02] text-[24vw] tracking-[0.05em] whitespace-nowrap select-none"
+        className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 font-display font-black leading-none text-zinc-900/[0.035] text-[24vw] tracking-[0.05em] whitespace-nowrap select-none dark:text-white/[0.02]"
         aria-hidden
       >
         GASELA
@@ -27,16 +28,14 @@ export function LandingFooter() {
         {/* 1. Brand */}
         <div className="space-y-6">
           <div className="flex items-center gap-3">
-            <div className="relative w-11 h-11 rounded-full overflow-hidden ring-1 ring-white/15 bg-zinc-900 flex items-center justify-center shadow-lg shadow-black/40">
+            <div className="relative w-11 h-11 rounded-full overflow-hidden ring-1 ring-zinc-200 bg-white flex items-center justify-center shadow-lg shadow-zinc-900/10 dark:ring-white/15 dark:bg-zinc-900 dark:shadow-black/40">
               <Image src="/cvgasela.png" alt="CV Gasela Logo" width={40} height={40} className="object-contain" />
             </div>
             <div>
-              <span className="text-white font-black text-sm tracking-[0.25em] uppercase leading-none block">
+              <span className="text-zinc-900 dark:text-white font-black text-sm tracking-[0.25em] uppercase leading-none block">
                 CV. GASELA GROUP
               </span>
-              <span className="bg-linear-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent text-[10px] font-extrabold tracking-[0.4em] uppercase block mt-1.5">
-                Terintegrasi Sempurna
-              </span>
+              
             </div>
           </div>
           <p className="text-sm text-zinc-500 leading-relaxed pr-4">
@@ -47,14 +46,14 @@ export function LandingFooter() {
             <a
               href="#"
               aria-label="Instagram"
-              className="w-9 h-9 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-linear-to-r hover:from-amber-300 hover:to-amber-400 hover:text-zinc-950 hover:border-transparent transition-all duration-300"
+              className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-500 hover:bg-amber-500 hover:text-white hover:border-transparent transition-all duration-300 dark:bg-white/[0.04] dark:border-white/10 dark:text-zinc-400 dark:hover:bg-amber-400"
             >
               <Instagram className="w-4 h-4" />
             </a>
             <a
               href="#"
               aria-label="Facebook"
-              className="w-9 h-9 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-linear-to-r hover:from-amber-300 hover:to-amber-400 hover:text-zinc-950 hover:border-transparent transition-all duration-300"
+              className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-500 hover:bg-amber-500 hover:text-white hover:border-transparent transition-all duration-300 dark:bg-white/[0.04] dark:border-white/10 dark:text-zinc-400 dark:hover:bg-amber-400"
             >
               <Facebook className="w-4 h-4" />
             </a>
@@ -63,7 +62,9 @@ export function LandingFooter() {
 
         {/* 2. Lini Perusahaan */}
         <div>
-          <h3 className="text-white font-bold text-sm tracking-[0.2em] uppercase mb-6">Lini Perusahaan</h3>
+          <h3 className="text-zinc-900 dark:text-white font-bold text-sm tracking-[0.2em] uppercase mb-6">
+            Lini Perusahaan
+          </h3>
           <ul className="space-y-4">
             {[
               { href: '/landing/unit/motor', label: 'Gasela Motor' },
@@ -74,9 +75,9 @@ export function LandingFooter() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="text-sm font-medium text-zinc-500 hover:text-amber-200 flex items-center gap-2 group transition-colors"
+                  className="text-sm font-medium text-zinc-500 hover:text-amber-600 dark:hover:text-amber-200 flex items-center gap-2 group transition-colors"
                 >
-                  <ArrowRight className="w-3.5 h-3.5 text-amber-300/60 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="w-3.5 h-3.5 text-amber-600/70 dark:text-amber-300/60 transition-transform group-hover:translate-x-1" />
                   {item.label}
                 </Link>
               </li>
@@ -86,27 +87,38 @@ export function LandingFooter() {
 
         {/* 3. Akses Cepat */}
         <div>
-          <h3 className="text-white font-bold text-sm tracking-[0.2em] uppercase mb-6">Akses Cepat</h3>
+          <h3 className="text-zinc-900 dark:text-white font-bold text-sm tracking-[0.2em] uppercase mb-6">
+            Akses Cepat
+          </h3>
           <ul className="space-y-4">
             <li>
-              <a href="#hero" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">
+              <a
+                href="#hero"
+                className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              >
                 Beranda
               </a>
             </li>
             <li>
-              <a href="#about" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">
+              <a
+                href="#about"
+                className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              >
                 Biografi Perusahaan
               </a>
             </li>
             <li>
-              <a href="#portfolio" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">
+              <a
+                href="#portfolio"
+                className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              >
                 Portofolio Bisnis
               </a>
             </li>
             <li>
               <Link
                 href="/login"
-                className="text-sm font-bold text-amber-300 hover:text-amber-200 transition-colors"
+                className="text-sm font-bold text-amber-600 hover:text-amber-700 dark:text-amber-300 dark:hover:text-amber-200 transition-colors"
               >
                 Portal HRIS Karyawan
               </Link>
@@ -116,10 +128,12 @@ export function LandingFooter() {
 
         {/* 4. Hubungi Kami */}
         <div>
-          <h3 className="text-white font-bold text-sm tracking-[0.2em] uppercase mb-6">Hubungi Kami</h3>
+          <h3 className="text-zinc-900 dark:text-white font-bold text-sm tracking-[0.2em] uppercase mb-6">
+            Hubungi Kami
+          </h3>
           <ul className="space-y-4">
             <li className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-amber-300/70 shrink-0 mt-0.5" />
+              <MapPin className="w-5 h-5 text-amber-600/70 dark:text-amber-300/70 shrink-0 mt-0.5" />
               <span className="text-sm font-medium text-zinc-500 leading-relaxed">
                 JL. Raya Cikoneng - Ciamis,
                 <br />
@@ -127,11 +141,11 @@ export function LandingFooter() {
               </span>
             </li>
             <li className="flex items-center gap-3">
-              <Phone className="w-5 h-5 text-amber-300/70 shrink-0" />
+              <Phone className="w-5 h-5 text-amber-600/70 dark:text-amber-300/70 shrink-0" />
               <span className="text-sm font-medium text-zinc-500">(0265) 776103</span>
             </li>
             <li className="flex items-center gap-3">
-              <Mail className="w-5 h-5 text-amber-300/70 shrink-0" />
+              <Mail className="w-5 h-5 text-amber-600/70 dark:text-amber-300/70 shrink-0" />
               <span className="text-sm font-medium text-zinc-500">info@gaselagrup.com</span>
             </li>
           </ul>
@@ -139,13 +153,15 @@ export function LandingFooter() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="max-w-7xl mx-auto pt-8 border-t border-white/[0.07] flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
-        <p className="text-xs text-zinc-600 font-medium">© {year} CV GASELA GROUP. Hak cipta dilindungi undang-undang.</p>
-        <div className="flex items-center gap-6 text-xs font-medium text-zinc-600">
-          <a href="#" className="hover:text-amber-200 transition-colors">
+      <div className="max-w-7xl mx-auto pt-8 border-t border-zinc-200/80 flex flex-col md:flex-row items-center justify-between gap-4 relative z-10 dark:border-white/[0.07]">
+        <p className="text-xs text-zinc-400 dark:text-zinc-600 font-medium">
+          © {year} CV GASELA GROUP. Hak cipta dilindungi undang-undang.
+        </p>
+        <div className="flex items-center gap-6 text-xs font-medium text-zinc-400 dark:text-zinc-600">
+          <a href="#" className="hover:text-amber-600 dark:hover:text-amber-200 transition-colors">
             Kebijakan Privasi
           </a>
-          <a href="#" className="hover:text-amber-200 transition-colors">
+          <a href="#" className="hover:text-amber-600 dark:hover:text-amber-200 transition-colors">
             Syarat &amp; Ketentuan
           </a>
         </div>
