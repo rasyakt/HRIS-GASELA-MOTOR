@@ -182,14 +182,14 @@ export function HeroSection() {
             return (
               <div
                 key={stat.label}
-                className="hero-stat-card group relative p-6 rounded-2xl bg-white/75 border border-zinc-200/80 backdrop-blur-xl overflow-hidden transition-all duration-500 hover:border-amber-500/40 hover:bg-white hover:-translate-y-1 shadow-lg shadow-zinc-900/5 dark:bg-white/[0.04] dark:border-white/10 dark:hover:border-amber-300/30 dark:hover:bg-white/[0.06] dark:shadow-xl dark:shadow-black/30"
+                className="hero-stat-card group relative p-6 rounded-2xl bg-white/75 border border-zinc-200/80 backdrop-blur-xl overflow-hidden transition-all duration-500 hover:border-amber-500/40 hover:bg-white hover:-translate-y-1 shadow-lg shadow-zinc-900/5 dark:bg-white/4 dark:border-white/10 dark:hover:border-amber-300/30 dark:hover:bg-white/6 dark:shadow-xl dark:shadow-black/30"
               >
                 {/* Glowing top line */}
                 <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-amber-500/50 to-transparent dark:via-amber-300/50 opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 <div className="flex items-center justify-between mb-4">
                   <div
-                    className={`w-11 h-11 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform dark:bg-white/[0.05] dark:border-white/10`}
+                    className={`w-11 h-11 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700 group-hover:scale-110 transition-transform dark:bg-white/5 dark:border-white/10 dark:text-zinc-300`}
                   >
                     <Icon className="w-5 h-5" />
                   </div>

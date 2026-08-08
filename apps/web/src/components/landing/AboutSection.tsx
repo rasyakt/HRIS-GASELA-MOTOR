@@ -237,12 +237,12 @@ export function AboutSection() {
             return (
               <div
                 key={pillar.title}
-                className="pillar-card group relative p-7 rounded-2xl bg-white/80 border border-zinc-200/80 backdrop-blur-xl space-y-4 overflow-hidden transition-all duration-500 hover:border-amber-500/30 hover:bg-white hover:-translate-y-1 shadow-lg shadow-zinc-900/5 dark:bg-white/[0.03] dark:border-white/[0.08] dark:hover:border-amber-300/25 dark:hover:bg-white/[0.05] dark:shadow-xl dark:shadow-black/30"
+                className="pillar-card group relative p-7 rounded-2xl bg-white/80 border border-zinc-200/80 backdrop-blur-xl space-y-4 overflow-hidden transition-all duration-500 hover:border-amber-500/30 hover:bg-white hover:-translate-y-1 shadow-lg shadow-zinc-900/5 dark:bg-white/3 dark:border-white/8 dark:hover:border-amber-300/25 dark:hover:bg-white/5 dark:shadow-xl dark:shadow-black/30"
               >
                 <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-amber-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity dark:via-amber-300/40" />
 
                 <div
-                  className={`w-12 h-12 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center ${pillar.color} group-hover:scale-110 group-hover:border-amber-500/30 transition-all duration-300 dark:bg-white/[0.05] dark:border-white/10 dark:group-hover:border-amber-300/30`}
+                  className={`w-12 h-12 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700 group-hover:scale-110 group-hover:border-amber-500/30 transition-all duration-300 dark:bg-white/5 dark:border-white/10 dark:text-zinc-300 dark:group-hover:border-amber-300/30`}
                 >
                   <Icon className="w-6 h-6" />
                 </div>
