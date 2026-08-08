@@ -4,19 +4,17 @@
  * The CV GASELA GROUP public landing page.
  *
  * Architecture:
- *  - This is a Server Component (no "use client") that composes client
- *    sub-components.
+ *  - Server Component composing focused Client Components.
  *  - The route is /landing — separate from the HRIS dashboard redirect at /.
- *  - Each section is a focused Client Component so GSAP can run in the browser.
+ *  - Shared chrome (nav, footer, force-dark) lives in the landing layout.
  */
 
 import type { Metadata } from 'next';
-import { LandingNav } from '@/components/landing/LandingNav';
 import { HeroSection } from '@/components/landing/HeroSection';
+import { MarqueeSection } from '@/components/landing/MarqueeSection';
 import { AboutSection } from '@/components/landing/AboutSection';
 import { ScrollAnimationSection } from '@/components/landing/ScrollAnimationSection';
 import { ContactSection } from '@/components/landing/ContactSection';
-import { LandingFooter } from '@/components/landing/LandingFooter';
 
 // ── SEO Metadata ──────────────────────────────────────────────────────────────
 export const metadata: Metadata = {
@@ -49,43 +47,25 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <>
+      {/* 1. Full-screen cinematic hero with animated stats */}
+      <HeroSection />
+
+      {/* 2. Infinite business-line ticker */}
+      <MarqueeSection />
+
+      {/* 3. Company biography, founder & journey timeline */}
+      <AboutSection />
+
       {/*
-       * Skip-to-content link for keyboard / screen-reader accessibility.
-       * Visually hidden until focused.
+       * 4. The signature scroll-driven pinned portfolio section.
+       *    The 500vh height lives inside ScrollAnimationSection.
        */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-999 focus:px-4 focus:py-2 focus:bg-emerald-500 focus:text-zinc-950 focus:font-bold focus:rounded-lg"
-      >
-        Langsung ke konten
-      </a>
+      <section id="portfolio" aria-label="Portfolio bisnis Gasela Group">
+        <ScrollAnimationSection />
+      </section>
 
-      {/* Sticky navigation */}
-      <LandingNav />
-
-      {/* Main page content */}
-      <main id="main-content">
-        {/* 1. Full-screen hero with entrance animations */}
-        <HeroSection />
-
-        {/* 2. Company biography & core values */}
-        <AboutSection />
-
-        {/*
-         * 3. The signature scroll-driven pinned section.
-         *    Wrapped in a labelled landmark for screen readers.
-         *    The 500vh height lives inside ScrollAnimationSection.
-         */}
-        <section id="portfolio" aria-label="Portfolio bisnis Gasela Group">
-          <ScrollAnimationSection />
-        </section>
-
-        {/* 4. Contact / CTA section */}
-        <ContactSection />
-      </main>
-
-      {/* Footer */}
-      <LandingFooter />
+      {/* 5. Contact / CTA section */}
+      <ContactSection />
     </>
   );
 }

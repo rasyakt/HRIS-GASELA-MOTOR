@@ -3,8 +3,8 @@
 /**
  * AboutSection.tsx
  * ────────────────
- * Editorial corporate story section for CV GASELA GROUP.
- * Themes and colors matching the official corporate logo (Red & Blue).
+ * Editorial corporate story for CV GASELA GROUP:
+ * narrative, founder profile, company journey timeline and core values.
  */
 
 import { useRef } from 'react';
@@ -15,34 +15,57 @@ import { ShieldCheck, Award, Users2, Zap } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
+const TIMELINE = [
+  {
+    year: '1996',
+    title: 'Makaroni Cap Ikan Tawes',
+    desc: 'Industri rumahan yang menjadi cikal bakal CV GASELA. Di tengah krisis moneter 1998, permintaan justru melonjak signifikan.',
+    accent: 'text-amber-300',
+  },
+  {
+    year: '2008',
+    title: 'Gasela Motor & Sellular',
+    desc: 'Ekspansi besar ke sektor otomotif dan ritel di JL. Raya Cikoneng-Ciamis, menandai lahirnya grup multi-bisnis.',
+    accent: 'text-blue-400',
+  },
+  {
+    year: '2012',
+    title: 'Gasela Futsal Stadium',
+    desc: 'Arena futsal rumput sintetis kelas premium — dijuluki lapangan termegah di kawasan Priangan Timur.',
+    accent: 'text-red-400',
+  },
+  {
+    year: 'Kini',
+    title: 'GaselaPulse — Era Digital',
+    desc: 'Tata kelola SDM terintegrasi melalui sistem HRIS modern yang melayani seluruh lini perusahaan.',
+    accent: 'text-amber-300',
+  },
+];
+
 const PILLARS = [
   {
     icon: ShieldCheck,
     title: 'Integritas & Kepemimpinan',
-    desc: 'Dirintis dari nol oleh Bpk. H. Didin Rojidin hingga berkembang pesat menjadi grup bisnis terpandang di Ciamis.',
-    colorClass: 'text-blue-600 dark:text-blue-400',
-    hoverClass: 'hover:border-blue-400/40 dark:hover:border-blue-500/40 shadow-blue-500/5',
+    desc: 'Dirintis dari nol oleh Bpk. H. Didin Rojidin hingga menjadi grup bisnis terpandang di Ciamis.',
+    color: 'text-blue-400',
   },
   {
     icon: Award,
-    title: 'Standar Layanan Kualitas',
-    desc: 'Komitmen mutu konsisten di seluruh sektor otomotif, ritel telekomunikasi, arena futsal, dan manufaktur pangan.',
-    colorClass: 'text-red-600 dark:text-red-400',
-    hoverClass: 'hover:border-red-400/40 dark:hover:border-red-500/40 shadow-red-500/5',
+    title: 'Standar Kualitas Premium',
+    desc: 'Komitmen mutu konsisten di seluruh sektor otomotif, ritel, arena futsal, dan manufaktur pangan.',
+    color: 'text-red-400',
   },
   {
     icon: Users2,
-    title: 'Pemberdayaan Ekonomi Lokal',
-    desc: 'Menciptakan ratusan lapangan kerja dan mendorong percepatan roda ekonomi masyarakat Cikoneng & sekitarnya.',
-    colorClass: 'text-blue-600 dark:text-blue-400',
-    hoverClass: 'hover:border-blue-400/40 dark:hover:border-blue-500/40 shadow-blue-500/5',
+    title: 'Pemberdayaan Lokal',
+    desc: 'Menciptakan ratusan lapangan kerja dan mendorong percepatan roda ekonomi masyarakat Cikoneng.',
+    color: 'text-blue-400',
   },
   {
     icon: Zap,
     title: 'Administrasi Terpadu',
-    desc: 'Sistem tata kelola HRIS terintegrasi demi efisiensi, akurasi data karyawan, dan operasional modern.',
-    colorClass: 'text-red-600 dark:text-red-400',
-    hoverClass: 'hover:border-red-400/40 dark:hover:border-red-500/40 shadow-red-500/5',
+    desc: 'Tata kelola HRIS terintegrasi demi efisiensi, akurasi data, dan operasional yang modern.',
+    color: 'text-red-400',
   },
 ];
 
@@ -53,32 +76,51 @@ export function AboutSection() {
     () => {
       gsap.fromTo(
         '.about-title',
-        { opacity: 0, y: 30 },
+        { opacity: 0, y: 34 },
         {
           opacity: 1,
           y: 0,
           duration: 0.8,
           ease: 'power3.out',
-          scrollTrigger: {
-            trigger: '.about-title',
-            start: 'top 85%',
-          },
+          scrollTrigger: { trigger: '.about-title', start: 'top 85%' },
+        },
+      );
+
+      gsap.fromTo(
+        '.about-copy',
+        { opacity: 0, y: 26 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.7,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: '.about-copy', start: 'top 88%' },
+        },
+      );
+
+      gsap.fromTo(
+        '.timeline-item',
+        { opacity: 0, x: 28 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 0.6,
+          ease: 'power3.out',
+          stagger: 0.14,
+          scrollTrigger: { trigger: '.timeline', start: 'top 80%' },
         },
       );
 
       gsap.fromTo(
         '.pillar-card',
-        { opacity: 0, y: 25 },
+        { opacity: 0, y: 26 },
         {
           opacity: 1,
           y: 0,
           duration: 0.6,
           ease: 'power3.out',
           stagger: 0.1,
-          scrollTrigger: {
-            trigger: '.pillars-grid',
-            start: 'top 85%',
-          },
+          scrollTrigger: { trigger: '.pillars-grid', start: 'top 85%' },
         },
       );
     },
@@ -89,64 +131,120 @@ export function AboutSection() {
     <section
       ref={sectionRef}
       id="about"
-      className="relative bg-white dark:bg-zinc-950 py-32 px-6 md:px-16 lg:px-24 border-t border-slate-100 dark:border-zinc-900 overflow-hidden"
+      className="relative bg-zinc-950 py-32 px-6 md:px-12 lg:px-24 overflow-hidden"
       aria-labelledby="about-heading"
     >
-      {/* Background ambient glow matching logo blue */}
-      <div className="absolute top-0 right-0 w-150 h-150 bg-blue-500/5 rounded-full blur-[150px] pointer-events-none" />
+      {/* Ambient glows */}
+      <div className="absolute top-0 right-0 w-150 h-150 bg-blue-600/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-1/3 -left-32 w-125 h-125 bg-amber-400/[0.06] rounded-full blur-[140px] pointer-events-none" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-size-[64px_64px]" />
 
-      <div className="max-w-7xl mx-auto space-y-20 relative z-10">
-        
-        {/* Editorial Story Header */}
-        <div className="grid lg:grid-cols-12 gap-12 items-start">
-          <div className="lg:col-span-5 space-y-4">
-            <div className="flex items-center gap-3">
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* ── Story + Founder ── */}
+        <div className="grid lg:grid-cols-12 gap-14 lg:gap-16 items-start">
+          {/* Narrative */}
+          <div className="lg:col-span-6">
+            <div className="flex items-center gap-3 mb-5">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-300" />
               </span>
-              <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">
-                BIOGRAFI & REPUTASI
-              </span>
+              <span className="text-amber-300 text-xs font-bold tracking-[0.3em] uppercase">Biografi &amp; Reputasi</span>
             </div>
+
             <h2
               id="about-heading"
-              className="about-title text-4xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight"
+              className="about-title font-display text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.05] mb-8"
             >
-              Merintis Sukses Dari Nol.
+              Merintis Sukses
+              <br />
+              Dari <span className="text-transparent bg-clip-text bg-linear-to-r from-amber-200 to-amber-500">Nol.</span>
             </h2>
+
+            <div className="about-copy space-y-5 text-zinc-400 leading-relaxed text-[15px]">
+              <p>
+                <strong className="text-white font-bold">CV GASELA GROUP</strong> merupakan entitas penggabungan
+                beberapa cabang perusahaan strategis yang berbasis di kawasan Kecamatan Cikoneng, Kabupaten Ciamis,
+                Jawa Barat. Dipimpin langsung oleh{' '}
+                <strong className="text-white font-bold">Bpk. H. Didin Rojidin</strong> sebagai Owner sekaligus
+                Direktur Perusahaan.
+              </p>
+              <p>
+                Beliau adalah sosok pengusaha muda yang sukses merintis usaha dari titik awal hingga mencapai
+                keberhasilan sejak usia menginjak kepala dua. Kini CV GASELA menaungi empat unit bisnis utama:{' '}
+                <span className="text-blue-400 font-semibold">Gasela Motor</span>,{' '}
+                <span className="text-red-400 font-semibold">Gasela Sellular &amp; Plastik</span>,{' '}
+                <span className="text-blue-400 font-semibold">Gasela Futsal Stadium</span>, serta industri pangan{' '}
+                <span className="text-red-400 font-semibold">Makaroni Spesial Cap Ikan Tawes</span>.
+              </p>
+            </div>
+
+            {/* Founder card */}
+            <div className="about-copy mt-10 p-7 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl flex items-center gap-5 shadow-xl shadow-black/30 hover:border-amber-300/25 transition-colors duration-300">
+              <div className="relative shrink-0 w-16 h-16 rounded-full bg-linear-to-br from-amber-300 to-amber-500 flex items-center justify-center shadow-[0_10px_30px_-8px_rgba(251,191,36,0.6)]">
+                <span className="font-display text-xl font-black text-zinc-950">DR</span>
+                <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-400 border-[3px] border-zinc-950" />
+              </div>
+              <div>
+                <p className="text-white font-bold text-base tracking-tight">H. Didin Rojidin</p>
+                <p className="text-amber-300 text-[11px] font-bold uppercase tracking-[0.22em] mt-1">
+                  Owner &amp; Direktur Utama
+                </p>
+                <p className="text-zinc-500 text-xs mt-1.5 leading-relaxed">
+                  &ldquo;Membangun kepercayaan lebih dulu, keuntungan mengikuti kemudian.&rdquo;
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="lg:col-span-7 space-y-6 text-slate-600 dark:text-zinc-300 text-base leading-relaxed font-normal bg-slate-50/80 dark:bg-zinc-900/40 p-8 rounded-3xl border border-slate-200 dark:border-zinc-800/80 backdrop-blur-xl">
-            <p>
-              <strong className="text-slate-900 dark:text-white">CV GASELA GROUP</strong> merupakan entitas penggabungan 
-              beberapa cabang perusahaan strategis yang berbasis di kawasan Kecamatan Cikoneng, Kabupaten Ciamis, Jawa Barat. 
-              Dipimpin langsung oleh <strong className="text-slate-900 dark:text-white">Bpk. H. Didin Rojidin</strong> sebagai Owner sekaligus Direktur Perusahaan.
-            </p>
-            <p>
-              Beliau adalah sosok pengusaha muda yang sukses merintis usaha dari titik awal hingga mencapai keberhasilan sejak usia masih menginjak kepala dua. 
-              Kini CV GASELA menaungi empat unit bisnis utama: <span className="text-blue-600 dark:text-blue-400 font-semibold">Gasela Motor</span>,{' '}
-              <span className="text-red-600 dark:text-red-400 font-semibold">Gasela Sellular & Plastik</span>,{' '}
-              <span className="text-blue-600 dark:text-blue-400 font-semibold">Gasela Futsal Stadium</span>, serta industri pangan{' '}
-              <span className="text-red-600 dark:text-red-400 font-semibold">Makaroni Spesial Cap Ikan Tawes</span>.
-            </p>
+          {/* Timeline */}
+          <div className="lg:col-span-6">
+            <div className="timeline relative pl-8 md:pl-10 space-y-10">
+              {/* Vertical line */}
+              <div className="absolute left-[7px] md:left-[9px] top-2 bottom-2 w-px bg-linear-to-b from-amber-300/60 via-white/15 to-red-500/50" />
+
+              {TIMELINE.map((item) => (
+                <div key={item.year} className="timeline-item relative">
+                  {/* Node dot */}
+                  <span className="absolute -left-8 md:-left-10 top-1.5 flex h-[15px] w-[15px] -translate-x-1/2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-amber-300/40 animate-ping opacity-60" />
+                    <span className="relative inline-flex rounded-full h-[15px] w-[15px] bg-linear-to-br from-amber-300 to-amber-500 shadow-[0_0_16px_rgba(251,191,36,0.55)]" />
+                  </span>
+
+                  <div className="group p-6 rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl hover:border-amber-300/25 hover:bg-white/[0.05] transition-all duration-300">
+                    <div className="flex items-center gap-3 mb-2.5">
+                      <span className={`font-display text-2xl font-black tracking-tight ${item.accent}`}>
+                        {item.year}
+                      </span>
+                      <span className="h-px flex-1 bg-linear-to-r from-white/15 to-transparent" />
+                    </div>
+                    <h3 className="text-white font-bold text-lg tracking-tight mb-1.5">{item.title}</h3>
+                    <p className="text-zinc-500 text-sm leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Pillars Grid */}
-        <div className="pillars-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* ── Core Values ── */}
+        <div className="pillars-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mt-24">
           {PILLARS.map((pillar) => {
             const Icon = pillar.icon;
             return (
               <div
                 key={pillar.title}
-                className={`pillar-card relative p-8 rounded-3xl bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/80 backdrop-blur-xl space-y-4 ${pillar.hoverClass} transition-all duration-300 group shadow-lg shadow-slate-200/50 dark:shadow-xl`}
+                className="pillar-card group relative p-7 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-xl space-y-4 overflow-hidden transition-all duration-500 hover:border-amber-300/25 hover:bg-white/[0.05] hover:-translate-y-1 shadow-xl shadow-black/30"
               >
-                <div className={`w-12 h-12 rounded-2xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-100 dark:border-zinc-700/60 flex items-center justify-center ${pillar.colorClass} group-hover:scale-110 transition-transform`}>
+                <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-amber-300/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                <div
+                  className={`w-12 h-12 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center ${pillar.color} group-hover:scale-110 group-hover:border-amber-300/30 transition-all duration-300`}
+                >
                   <Icon className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{pillar.title}</h3>
-                <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed font-normal">{pillar.desc}</p>
+                <h3 className="text-lg font-bold text-white tracking-tight">{pillar.title}</h3>
+                <p className="text-xs text-zinc-500 leading-relaxed">{pillar.desc}</p>
               </div>
             );
           })}

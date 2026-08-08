@@ -1,7 +1,7 @@
 /**
  * LandingFooter.tsx
  * ─────────────────
- * Sleek, high-contrast minimalist corporate footer.
+ * Luxury dark footer with oversized watermark for CV GASELA GROUP.
  */
 
 import Link from 'next/link';
@@ -11,32 +11,51 @@ import { Mail, Phone, MapPin, Instagram, Facebook, ArrowRight } from 'lucide-rea
 export function LandingFooter() {
   const year = new Date().getFullYear();
   return (
-    <footer className="bg-slate-50 dark:bg-zinc-950 border-t border-slate-200 dark:border-zinc-900 pt-20 pb-10 px-6 md:px-16 lg:px-24" role="contentinfo">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
-        
-        {/* 1. Brand & About */}
+    <footer
+      className="relative bg-zinc-950 border-t border-white/[0.06] pt-20 pb-8 px-6 md:px-12 lg:px-24 overflow-hidden"
+      role="contentinfo"
+    >
+      {/* Giant watermark */}
+      <div
+        className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 font-display font-black leading-none text-white/[0.02] text-[24vw] tracking-[0.05em] whitespace-nowrap select-none"
+        aria-hidden
+      >
+        GASELA
+      </div>
+
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16 relative z-10">
+        {/* 1. Brand */}
         <div className="space-y-6">
           <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm">
-              <Image src="/cvgasela.png" alt="CV Gasela Logo" width={32} height={32} className="object-contain" />
+            <div className="relative w-11 h-11 rounded-full overflow-hidden ring-1 ring-white/15 bg-zinc-900 flex items-center justify-center shadow-lg shadow-black/40">
+              <Image src="/cvgasela.png" alt="CV Gasela Logo" width={40} height={40} className="object-contain" />
             </div>
             <div>
-              <span className="text-slate-900 dark:text-white font-extrabold text-sm tracking-wider uppercase leading-none block">
+              <span className="text-white font-black text-sm tracking-[0.25em] uppercase leading-none block">
                 CV. GASELA GROUP
               </span>
-              <span className="text-blue-600 dark:text-blue-400 text-[10px] font-bold tracking-widest uppercase block mt-1">
+              <span className="bg-linear-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent text-[10px] font-extrabold tracking-[0.4em] uppercase block mt-1.5">
                 Terintegrasi Sempurna
               </span>
             </div>
           </div>
-          <p className="text-sm text-slate-500 dark:text-zinc-400 leading-relaxed pr-4">
-            Ekosistem bisnis terpadu yang menaungi sektor otomotif, ritel, arena olahraga, dan manufaktur pangan dengan standar profesionalisme tinggi di Jawa Barat.
+          <p className="text-sm text-zinc-500 leading-relaxed pr-4">
+            Ekosistem bisnis terpadu yang menaungi sektor otomotif, ritel, arena olahraga, dan manufaktur pangan dengan
+            standar profesionalisme tinggi di Jawa Barat.
           </p>
           <div className="flex items-center gap-4">
-            <a href="#" aria-label="Instagram" className="w-8 h-8 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-500 transition-colors">
+            <a
+              href="#"
+              aria-label="Instagram"
+              className="w-9 h-9 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-linear-to-r hover:from-amber-300 hover:to-amber-400 hover:text-zinc-950 hover:border-transparent transition-all duration-300"
+            >
               <Instagram className="w-4 h-4" />
             </a>
-            <a href="#" aria-label="Facebook" className="w-8 h-8 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-500 transition-colors">
+            <a
+              href="#"
+              aria-label="Facebook"
+              className="w-9 h-9 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-linear-to-r hover:from-amber-300 hover:to-amber-400 hover:text-zinc-950 hover:border-transparent transition-all duration-300"
+            >
               <Facebook className="w-4 h-4" />
             </a>
           </div>
@@ -44,40 +63,51 @@ export function LandingFooter() {
 
         {/* 2. Lini Perusahaan */}
         <div>
-          <h3 className="text-slate-900 dark:text-white font-bold text-sm tracking-wider uppercase mb-6">Lini Perusahaan</h3>
+          <h3 className="text-white font-bold text-sm tracking-[0.2em] uppercase mb-6">Lini Perusahaan</h3>
           <ul className="space-y-4">
-            <li>
-              <Link href="/landing/unit/motor" className="text-sm font-medium text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2 group transition-colors">
-                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" /> Gasela Motor
-              </Link>
-            </li>
-            <li>
-              <Link href="/landing/unit/sellular" className="text-sm font-medium text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2 group transition-colors">
-                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" /> Gasela Sellular & Plastik
-              </Link>
-            </li>
-            <li>
-              <Link href="/landing/unit/futsal" className="text-sm font-medium text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2 group transition-colors">
-                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" /> Gasela Futsal Stadium
-              </Link>
-            </li>
-            <li>
-              <Link href="/landing/unit/makaroni" className="text-sm font-medium text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2 group transition-colors">
-                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" /> Makaroni Cap Ikan Tawes
-              </Link>
-            </li>
+            {[
+              { href: '/landing/unit/motor', label: 'Gasela Motor' },
+              { href: '/landing/unit/sellular', label: 'Gasela Sellular & Plastik' },
+              { href: '/landing/unit/futsal', label: 'Gasela Futsal Stadium' },
+              { href: '/landing/unit/makaroni', label: 'Makaroni Cap Ikan Tawes' },
+            ].map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className="text-sm font-medium text-zinc-500 hover:text-amber-200 flex items-center gap-2 group transition-colors"
+                >
+                  <ArrowRight className="w-3.5 h-3.5 text-amber-300/60 transition-transform group-hover:translate-x-1" />
+                  {item.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 
         {/* 3. Akses Cepat */}
         <div>
-          <h3 className="text-slate-900 dark:text-white font-bold text-sm tracking-wider uppercase mb-6">Akses Cepat</h3>
+          <h3 className="text-white font-bold text-sm tracking-[0.2em] uppercase mb-6">Akses Cepat</h3>
           <ul className="space-y-4">
-            <li><a href="#hero" className="text-sm font-medium text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors">Beranda</a></li>
-            <li><a href="#about" className="text-sm font-medium text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors">Biografi Perusahaan</a></li>
-            <li><a href="#portfolio" className="text-sm font-medium text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors">Portofolio Bisnis</a></li>
             <li>
-              <Link href="/login" className="text-sm font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+              <a href="#hero" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">
+                Beranda
+              </a>
+            </li>
+            <li>
+              <a href="#about" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">
+                Biografi Perusahaan
+              </a>
+            </li>
+            <li>
+              <a href="#portfolio" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">
+                Portofolio Bisnis
+              </a>
+            </li>
+            <li>
+              <Link
+                href="/login"
+                className="text-sm font-bold text-amber-300 hover:text-amber-200 transition-colors"
+              >
                 Portal HRIS Karyawan
               </Link>
             </li>
@@ -86,34 +116,38 @@ export function LandingFooter() {
 
         {/* 4. Hubungi Kami */}
         <div>
-          <h3 className="text-slate-900 dark:text-white font-bold text-sm tracking-wider uppercase mb-6">Hubungi Kami</h3>
+          <h3 className="text-white font-bold text-sm tracking-[0.2em] uppercase mb-6">Hubungi Kami</h3>
           <ul className="space-y-4">
             <li className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-slate-400 dark:text-zinc-500 shrink-0 mt-0.5" />
-              <span className="text-sm font-medium text-slate-500 dark:text-zinc-400 leading-relaxed">
-                JL. Raya Cikoneng - Ciamis,<br/>Jawa Barat, Indonesia
+              <MapPin className="w-5 h-5 text-amber-300/70 shrink-0 mt-0.5" />
+              <span className="text-sm font-medium text-zinc-500 leading-relaxed">
+                JL. Raya Cikoneng - Ciamis,
+                <br />
+                Jawa Barat, Indonesia
               </span>
             </li>
             <li className="flex items-center gap-3">
-              <Phone className="w-5 h-5 text-slate-400 dark:text-zinc-500 shrink-0" />
-              <span className="text-sm font-medium text-slate-500 dark:text-zinc-400">(0265) 776103</span>
+              <Phone className="w-5 h-5 text-amber-300/70 shrink-0" />
+              <span className="text-sm font-medium text-zinc-500">(0265) 776103</span>
             </li>
             <li className="flex items-center gap-3">
-              <Mail className="w-5 h-5 text-slate-400 dark:text-zinc-500 shrink-0" />
-              <span className="text-sm font-medium text-slate-500 dark:text-zinc-400">info@gaselagrup.com</span>
+              <Mail className="w-5 h-5 text-amber-300/70 shrink-0" />
+              <span className="text-sm font-medium text-zinc-500">info@gaselagrup.com</span>
             </li>
           </ul>
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="max-w-7xl mx-auto pt-8 border-t border-slate-200 dark:border-zinc-800/80 flex flex-col md:flex-row items-center justify-between gap-4">
-        <p className="text-xs text-slate-400 dark:text-zinc-500 font-medium">
-          © {year} CV GASELA GROUP. Hak cipta dilindungi undang-undang.
-        </p>
-        <div className="flex items-center gap-6 text-xs font-medium text-slate-400 dark:text-zinc-500">
-          <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Kebijakan Privasi</a>
-          <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Syarat & Ketentuan</a>
+      <div className="max-w-7xl mx-auto pt-8 border-t border-white/[0.07] flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
+        <p className="text-xs text-zinc-600 font-medium">© {year} CV GASELA GROUP. Hak cipta dilindungi undang-undang.</p>
+        <div className="flex items-center gap-6 text-xs font-medium text-zinc-600">
+          <a href="#" className="hover:text-amber-200 transition-colors">
+            Kebijakan Privasi
+          </a>
+          <a href="#" className="hover:text-amber-200 transition-colors">
+            Syarat &amp; Ketentuan
+          </a>
         </div>
       </div>
     </footer>
