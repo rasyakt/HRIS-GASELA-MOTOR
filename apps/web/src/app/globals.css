@@ -3,6 +3,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     --background: #f8fafc;
     --foreground: #0f172a;
     --card: #ffffff;
@@ -23,6 +24,10 @@
     --input: #cbd5e1;
     --ring: #0f172a;
     --radius: 0.5rem;
+  }
+  
+  .dark {
+    color-scheme: dark;
   }
 }
 
@@ -101,5 +106,32 @@ body {
   .animate-scroll-cue {
     animation: none;
   }
+}
+
+/* Custom Scrollbar untuk tampilan yang konsisten dan premium */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* zinc-300 */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* zinc-400 */
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3f3f46; /* zinc-700 */
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #52525b; /* zinc-600 */
 }
 

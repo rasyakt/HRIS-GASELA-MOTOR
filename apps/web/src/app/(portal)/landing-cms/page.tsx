@@ -123,12 +123,12 @@ function FieldEditor({
   if (isTextarea) {
     return (
       <div>
-        <Label>{label}</Label>
+        <Label className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{label}</Label>
         <textarea
           value={strValue}
           onChange={(e) => onChange(e.target.value)}
           rows={3}
-          className="mt-1.5 w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/60 focus:border-amber-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+          className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
         />
       </div>
     );
@@ -137,12 +137,12 @@ function FieldEditor({
   if (typeof value === 'number') {
     return (
       <div>
-        <Label>{label}</Label>
+        <Label className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{label}</Label>
         <Input
           type="number"
           value={strValue}
           onChange={(e) => onChange(e.target.value === '' ? 0 : Number(e.target.value))}
-          className="mt-1.5"
+          className="mt-2 rounded-xl h-11 px-4 shadow-sm focus-visible:ring-amber-500/20 dark:border-zinc-800"
         />
       </div>
     );
@@ -150,8 +150,12 @@ function FieldEditor({
 
   return (
     <div>
-      <Label>{label}</Label>
-      <Input value={strValue} onChange={(e) => onChange(e.target.value)} className="mt-1.5" />
+      <Label className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{label}</Label>
+      <Input 
+        value={strValue} 
+        onChange={(e) => onChange(e.target.value)} 
+        className="mt-2 rounded-xl h-11 px-4 shadow-sm focus-visible:ring-amber-500/20 dark:border-zinc-800" 
+      />
     </div>
   );
 }
@@ -194,29 +198,37 @@ function ImageFieldEditor({
 
   return (
     <div>
-      <Label>{label}</Label>
-      <div className="mt-1.5 flex items-center gap-2">
-        <Input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="/path/gambar.png atau /api/uploads/landing/..."
-        />
+      <Label className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{label}</Label>
+      <div className="mt-2 flex items-center gap-3">
+        <div className="relative flex-1">
+          <Input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="/path/gambar.png atau /api/uploads/landing/..."
+            className="rounded-xl h-11 px-4 shadow-sm focus-visible:ring-amber-500/20 dark:border-zinc-800 pr-10"
+          />
+          {value && (
+            <a 
+              href={value} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              title="Lihat gambar"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors dark:hover:text-zinc-200"
+            >
+              <ExternalLink className="size-4" />
+            </a>
+          )}
+        </div>
         <Button
           type="button"
           variant="outline"
-          size="sm"
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
-          className="shrink-0"
+          className="shrink-0 h-11 rounded-xl px-4 shadow-sm bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800"
         >
-          {uploading ? <Loader2 className="size-4 animate-spin" /> : <ImagePlus className="size-4" />}
+          {uploading ? <Loader2 className="size-4 mr-2 animate-spin" /> : <ImagePlus className="size-4 mr-2" />}
           {uploading ? 'Mengunggah…' : 'Upload'}
         </Button>
-        {value && (
-          <a href={value} target="_blank" rel="noopener noreferrer" title="Lihat gambar">
-            <ExternalLink className="size-4 text-zinc-400 hover:text-zinc-700" />
-          </a>
-        )}
       </div>
       <input
         ref={fileRef}
@@ -240,58 +252,63 @@ function SectionEditor({
   const set = (key: string, value: JsonValue) => onChange({ ...data, [key]: value });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       {Object.entries(data).map(([key, value]) => {
         if (isArrayOfObjects(value)) {
           return (
-            <div key={key} className="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-bold text-zinc-900 dark:text-white">{fieldLabel(key)}</p>
+            <div key={key} className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                <p className="text-base font-bold text-zinc-900 dark:text-white">{fieldLabel(key)}</p>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => set(key, [...value, emptyLike(value[0] ?? {})])}
+                  className="shadow-sm"
                 >
-                  <Plus className="size-3.5 mr-1" /> Tambah
+                  <Plus className="size-4 mr-1.5" /> Tambah Item
                 </Button>
               </div>
-              {value.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-lg border border-zinc-100 bg-zinc-50/60 dark:border-zinc-800/80 dark:bg-zinc-900/40 p-3 space-y-3 relative"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                      {fieldLabel(key)} #{idx + 1}
-                    </p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => set(key, value.filter((_, i) => i !== idx))}
-                      className="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
+              <div className="space-y-4">
+                {value.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="group rounded-xl border border-zinc-200 bg-zinc-50/50 p-5 space-y-4 relative transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800/80 dark:bg-zinc-900/40 dark:hover:border-zinc-700"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        Item #{idx + 1}
+                      </p>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => set(key, value.filter((_, i) => i !== idx))}
+                        className="size-8 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Hapus Item"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                    {Object.entries(item).map(([subKey, subValue]) => (
+                      <div key={subKey} className="pb-1">
+                        <FieldEditor
+                          label={fieldLabel(subKey)}
+                          value={subValue}
+                          isImage={IMAGE_FIELD.test(subKey)}
+                          isTextarea={TEXTAREA_FIELD.test(subKey)}
+                          onChange={(next) =>
+                            set(
+                              key,
+                              value.map((x, i) => (i === idx ? { ...x, [subKey]: next } : x)),
+                            )
+                          }
+                        />
+                      </div>
+                    ))}
                   </div>
-                  {Object.entries(item).map(([subKey, subValue]) => (
-                    <FieldEditor
-                      key={subKey}
-                      label={fieldLabel(subKey)}
-                      value={subValue}
-                      isImage={IMAGE_FIELD.test(subKey)}
-                      isTextarea={TEXTAREA_FIELD.test(subKey)}
-                      onChange={(next) =>
-                        set(
-                          key,
-                          value.map((x, i) => (i === idx ? { ...x, [subKey]: next } : x)),
-                        )
-                      }
-                    />
-                  ))}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           );
         }
@@ -300,27 +317,28 @@ function SectionEditor({
           // Array primitif (mis. paragraphs) → satu textarea, satu baris per entri
           return (
             <div key={key}>
-              <Label>{fieldLabel(key)}</Label>
+              <Label className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{fieldLabel(key)}</Label>
               <textarea
                 value={value.map((x) => String(x)).join('\n')}
                 onChange={(e) => set(key, e.target.value.split('\n'))}
-                rows={Math.max(3, value.length)}
-                className="mt-1.5 w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/60 focus:border-amber-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                rows={Math.max(4, value.length)}
+                className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
               />
-              <p className="mt-1 text-xs text-zinc-400">Satu item per baris.</p>
+              <p className="mt-1.5 text-xs text-zinc-500">Satu item per baris.</p>
             </div>
           );
         }
 
         return (
-          <FieldEditor
-            key={key}
-            label={fieldLabel(key)}
-            value={value}
-            isImage={IMAGE_FIELD.test(key)}
-            isTextarea={TEXTAREA_FIELD.test(key)}
-            onChange={(next) => set(key, next)}
-          />
+          <div key={key} className="pb-1">
+            <FieldEditor
+              label={fieldLabel(key)}
+              value={value}
+              isImage={IMAGE_FIELD.test(key)}
+              isTextarea={TEXTAREA_FIELD.test(key)}
+              onChange={(next) => set(key, next)}
+            />
+          </div>
         );
       })}
     </div>
@@ -411,109 +429,125 @@ export default function LandingCmsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="mx-auto max-w-7xl space-y-8 pb-12">
+      {/* Header Area */}
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 border-b border-zinc-200 pb-6 dark:border-zinc-800">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
             Landing Page CMS
           </h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-2 text-base text-zinc-500 dark:text-zinc-400 max-w-2xl">
             Kelola seluruh teks, tautan, dan gambar situs publik{' '}
-            <a href="/landing" target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:underline dark:text-amber-300">
+            <a href="/landing" target="_blank" rel="noopener noreferrer" className="text-amber-600 font-medium hover:underline dark:text-amber-400">
               /landing
             </a>{' '}
-            — perubahan langsung tampil tanpa perlu deploy.
+            — perubahan langsung tampil tanpa perlu deploy ulang.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['landing-admin'] })}>
+        <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['landing-admin'] })} className="shrink-0 bg-white shadow-sm dark:bg-zinc-900">
           <RefreshCw className="size-4 mr-2" /> Muat Ulang
         </Button>
       </div>
 
       {notice && (
         <div
-          className={`flex items-center gap-2.5 rounded-xl border px-4 py-3 text-sm ${
+          className={`flex items-center gap-3 rounded-xl border p-4 text-sm shadow-sm transition-all animate-in fade-in slide-in-from-top-2 ${
             notice.type === 'ok'
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300'
-              : 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300'
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300'
+              : 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300'
           }`}
         >
-          {notice.type === 'ok' ? <CheckCircle2 className="size-4 shrink-0" /> : <AlertTriangle className="size-4 shrink-0" />}
-          {notice.text}
+          {notice.type === 'ok' ? <CheckCircle2 className="size-5 shrink-0 text-emerald-600 dark:text-emerald-500" /> : <AlertTriangle className="size-5 shrink-0 text-red-600 dark:text-red-500" />}
+          <span className="font-medium">{notice.text}</span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        {/* Section tabs */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="text-sm">Section Konten</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Nav */}
+        <div className="lg:col-span-3 lg:sticky lg:top-6 space-y-1">
+          <h2 className="px-3 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-3">
+            Section Konten
+          </h2>
+          <nav className="space-y-1">
             {LANDING_SECTIONS.map((section) => {
               const isCustom = !!contentQuery.data?.meta?.[section];
+              const isActive = active === section;
               return (
                 <button
                   key={section}
                   onClick={() => setActive(section)}
-                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-left transition-colors ${
-                    active === section
-                      ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
-                      : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-white'
+                  className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'bg-amber-50 text-amber-900 shadow-sm ring-1 ring-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30'
+                      : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-100'
                   }`}
                 >
                   <span>{SECTION_LABELS[section]}</span>
                   {isCustom && (
-                    <Badge className="bg-amber-500 text-white border-transparent text-[9px]">Diubah</Badge>
+                    <span 
+                      className={`h-2 w-2 rounded-full ${isActive ? 'bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-600'}`} 
+                      title="Telah dimodifikasi" 
+                    />
                   )}
                 </button>
               );
             })}
-          </CardContent>
-        </Card>
+          </nav>
+        </div>
 
-        {/* Editor */}
-        <Card className="lg:col-span-3">
-          <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-base">{SECTION_LABELS[active]}</CardTitle>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (confirm(`Kembalikan section "${SECTION_LABELS[active]}" ke konten default?`)) {
-                    resetMutation.mutate(active);
-                  }
-                }}
-                disabled={resetMutation.isPending}
-              >
-                <RotateCcw className="size-4 mr-1.5" /> Reset ke Default
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => saveMutation.mutate(active)}
-                disabled={saveMutation.isPending}
-                className="bg-amber-600 hover:bg-amber-700"
-              >
-                {saveMutation.isPending ? (
-                  <Loader2 className="size-4 mr-1.5 animate-spin" />
-                ) : (
-                  <Save className="size-4 mr-1.5" />
-                )}
-                Simpan Section
-              </Button>
+        {/* Editor Area */}
+        <div className="lg:col-span-9">
+          <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden dark:border-zinc-800 dark:bg-zinc-950">
+            {/* Sticky Editor Header */}
+            <div className="sticky top-0 z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100 bg-white/80 p-5 sm:px-8 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/80">
+              <div>
+                <h3 className="text-xl font-black tracking-tight text-zinc-900 dark:text-white">
+                  {SECTION_LABELS[active]}
+                </h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  Sesuaikan konten untuk bagian ini.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (confirm(`Kembalikan section "${SECTION_LABELS[active]}" ke konten default?`)) {
+                      resetMutation.mutate(active);
+                    }
+                  }}
+                  disabled={resetMutation.isPending}
+                  className="bg-white shadow-sm hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  <RotateCcw className="size-4 sm:mr-2" /> <span className="hidden sm:inline">Reset Default</span>
+                </Button>
+                <Button
+                  onClick={() => saveMutation.mutate(active)}
+                  disabled={saveMutation.isPending}
+                  className="bg-amber-600 shadow-sm hover:bg-amber-700 text-white transition-colors"
+                >
+                  {saveMutation.isPending ? (
+                    <Loader2 className="size-4 sm:mr-2 animate-spin" />
+                  ) : (
+                    <Save className="size-4 sm:mr-2" />
+                  )}
+                  <span className="hidden sm:inline">Simpan Perubahan</span>
+                  <span className="sm:hidden">Simpan</span>
+                </Button>
+              </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <SectionEditor
-              data={loadedDraft[active]}
-              onChange={(next) =>
-                setDraft((d) => ({ ...(d ?? toDraft(contentQuery.data!.content)), [active]: next }))
-              }
-            />
-          </CardContent>
-        </Card>
+
+            {/* Editor Content */}
+            <div className="p-5 sm:p-8">
+              <SectionEditor
+                data={loadedDraft[active]}
+                onChange={(next) =>
+                  setDraft((d) => ({ ...(d ?? toDraft(contentQuery.data!.content)), [active]: next }))
+                }
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
