@@ -12,25 +12,29 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Mail, Phone, MapPin, Instagram, Facebook, ArrowRight } from 'lucide-react';
 import { SiTiktok } from 'react-icons/si';
+import { useLandingContent } from './LandingContentProvider';
 
 export function LandingFooter() {
+  const { content } = useLandingContent();
+  const footer = content.footer;
   const pathname = usePathname();
   const isLandingPage = pathname === '/landing';
   const year = new Date().getFullYear();
 
   const getAnchorHref = (anchor: string) => (isLandingPage ? anchor : `/landing${anchor}`);
+  const getHref = (href: string) => (href.startsWith('#') ? getAnchorHref(href) : href);
 
   return (
     <footer
       className="relative bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200/80 dark:border-white/[0.06] pt-20 pb-8 px-6 md:px-12 lg:px-24 overflow-hidden"
       role="contentinfo"
     >
-      {/* Giant watermark */}
+        {/* Giant watermark */}
       <div
         className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 font-display font-black leading-none text-zinc-900/[0.035] text-[24vw] tracking-[0.05em] whitespace-nowrap select-none dark:text-white/[0.02]"
         aria-hidden
       >
-        GASELA
+        {footer.brandName.replace(/[^A-Z]/g, '')}
       </div>
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16 relative z-10">
@@ -42,14 +46,11 @@ export function LandingFooter() {
             </div>
             <div>
               <span className="text-zinc-900 dark:text-white font-black text-sm tracking-[0.25em] uppercase leading-none block">
-                CV. GASELA GROUP
+                {footer.brandName}
               </span>
             </div>
           </div>
-          <p className="text-sm text-zinc-500 leading-relaxed pr-4">
-            Ekosistem bisnis terpadu yang menaungi sektor otomotif, ritel, arena olahraga, dan manufaktur pangan dengan
-            standar profesionalisme tinggi di Jawa Barat.
-          </p>
+          <p className="text-sm text-zinc-500 leading-relaxed pr-4">{footer.description}</p>
           <div className="flex items-center gap-3">
             <a
               href="https://www.instagram.com/makaroni.ikantawes?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
@@ -81,107 +82,68 @@ export function LandingFooter() {
           </div>
         </div>
 
-        {/* 2. Lini Perusahaan */}
-        <div>
-          <h3 className="text-zinc-900 dark:text-white font-bold text-sm tracking-[0.2em] uppercase mb-6">
-            Lini Perusahaan
-          </h3>
-          <ul className="space-y-4">
-            {[
-              { href: '/landing/unit/motor', label: 'Gasela Motor' },
-              { href: '/landing/unit/sellular', label: 'Gasela Sellular & Plastik' },
-              { href: '/landing/unit/futsal', label: 'Gasela Futsal Stadium' },
-              { href: '/landing/unit/makaronikantawes', label: 'Makaroni Cap Ikan Tawes' },
-            ].map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="text-sm font-medium text-zinc-500 hover:text-amber-600 dark:hover:text-amber-200 flex items-center gap-2 group transition-colors"
-                >
-                  <ArrowRight className="w-3.5 h-3.5 text-amber-600/70 dark:text-amber-300/60 transition-transform group-hover:translate-x-1" />
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* 3. Akses Cepat */}
-        <div>
-          <h3 className="text-zinc-900 dark:text-white font-bold text-sm tracking-[0.2em] uppercase mb-6">
-            Akses Cepat
-          </h3>
-          <ul className="space-y-4">
-            <li>
-              <Link
-                href={getAnchorHref('#hero')}
-                className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
-              >
-                Beranda
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={getAnchorHref('#about')}
-                className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
-              >
-                Biografi Perusahaan
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={getAnchorHref('#portfolio')}
-                className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
-              >
-                Portofolio Bisnis
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/login"
-                className="text-sm font-bold text-amber-600 hover:text-amber-700 dark:text-amber-300 dark:hover:text-amber-200 transition-colors"
-              >
-                Portal HRIS Karyawan
-              </Link>
-            </li>
-          </ul>
-        </div>
+        {/* 2+3. Link Columns */}
+        {footer.columns.map((col) => (
+          <div key={col.id}>
+            <h3 className="text-zinc-900 dark:text-white font-bold text-sm tracking-[0.2em] uppercase mb-6">
+              {col.title}
+            </h3>
+            <ul className="space-y-4">
+              {col.links.map((link) => (
+                <li key={link.id}>
+                  <Link
+                    href={getHref(link.href)}
+                    className={`text-sm font-medium text-zinc-500 transition-colors flex items-center gap-2 group ${link.href.startsWith('#') ? 'hover:text-zinc-900 dark:hover:text-white' : 'hover:text-amber-600 dark:hover:text-amber-200'}`}
+                  >
+                    {!link.href.startsWith('#') && (
+                      <ArrowRight className="w-3.5 h-3.5 text-amber-600/70 dark:text-amber-300/60 transition-transform group-hover:translate-x-1" />
+                    )}
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
 
         {/* 4. Hubungi Kami */}
         <div>
           <h3 className="text-zinc-900 dark:text-white font-bold text-sm tracking-[0.2em] uppercase mb-6">
-            Hubungi Kami
+            {footer.contactTitle}
           </h3>
           <ul className="space-y-4">
             <li className="flex items-start gap-3">
               <MapPin className="w-5 h-5 text-amber-600/70 dark:text-amber-300/70 shrink-0 mt-0.5" />
               <a
-                href="https://www.google.com/maps/search/?api=1&query=Jl.+Tentara+Pelajar+No.165+Cikoneng+Ciamis"
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(footer.contactAddress.replace(/\n/g, ' '))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm font-medium text-zinc-500 hover:text-amber-600 dark:hover:text-amber-300 transition-colors leading-relaxed"
               >
-                JL. Raya Cikoneng - Ciamis,
-                <br />
-                Jawa Barat, Indonesia
+                {footer.contactAddress.split('\n').map((line, i) => (
+                  <span key={i}>
+                    {line}
+                    {i < footer.contactAddress.split('\n').length - 1 && <br />}
+                  </span>
+                ))}
               </a>
             </li>
             <li className="flex items-center gap-3">
               <Phone className="w-5 h-5 text-amber-600/70 dark:text-amber-300/70 shrink-0" />
               <a
-                href="tel:0265776103"
+                href={`tel:${footer.contactPhone.replace(/[^0-9+]/g, '')}`}
                 className="text-sm font-medium text-zinc-500 hover:text-amber-600 dark:hover:text-amber-300 transition-colors"
               >
-                (0265) 776103
+                {footer.contactPhone}
               </a>
             </li>
             <li className="flex items-center gap-3">
               <Mail className="w-5 h-5 text-amber-600/70 dark:text-amber-300/70 shrink-0" />
               <a
-                href="mailto:info@gaselagrup.com"
+                href={`mailto:${footer.contactEmail}`}
                 className="text-sm font-medium text-zinc-500 hover:text-amber-600 dark:hover:text-amber-300 transition-colors"
               >
-                info@gaselagrup.com
+                {footer.contactEmail}
               </a>
             </li>
           </ul>
@@ -191,14 +153,14 @@ export function LandingFooter() {
       {/* Bottom Bar */}
       <div className="max-w-7xl mx-auto pt-8 border-t border-zinc-200/80 flex flex-col md:flex-row items-center justify-between gap-4 relative z-10 dark:border-white/[0.07]">
         <p className="text-xs text-zinc-400 dark:text-zinc-600 font-medium">
-          © {year} CV GASELA GROUP. Hak cipta dilindungi undang-undang.
+          © {year} {footer.copyright}
         </p>
         <div className="flex items-center gap-6 text-xs font-medium text-zinc-400 dark:text-zinc-600">
           <Link href={getAnchorHref('#about')} className="hover:text-amber-600 dark:hover:text-amber-200 transition-colors">
-            Kebijakan Privasi
+            {footer.privacyLabel}
           </Link>
           <Link href={getAnchorHref('#about')} className="hover:text-amber-600 dark:hover:text-amber-200 transition-colors">
-            Syarat &amp; Ketentuan
+            {footer.termsLabel}
           </Link>
         </div>
       </div>

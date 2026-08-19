@@ -13,41 +13,15 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { MapPin, Phone, Mail, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
+import { useLandingContent } from './LandingContentProvider';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const OFFICES = [
-  {
-    name: 'Gasela Motor',
-    address: 'Jl. Raya Cikoneng No.135, Cikoneng, Ciamis',
-    phone: '(0265) 776103',
-    services: 'Car Service, Wash, Saloon & Spareparts',
-    dot: 'bg-blue-500 dark:bg-blue-400',
-  },
-  {
-    name: 'Gasela Sellular & Plastik',
-    address: 'Jalan Raya, Cikoneng, Ciamis',
-    phone: '(0265) 2752592',
-    services: 'Voucher, Percetakan, ATK & Plastik',
-    dot: 'bg-red-500 dark:bg-red-400',
-  },
-  {
-    name: 'Gasela Futsal Stadium',
-    address: 'Jl. Raya Cikoneng, Cikoneng, Ciamis',
-    phone: '(0265) 777000',
-    services: 'Rumput Sintetis, Cafe & Karaoke',
-    dot: 'bg-blue-500 dark:bg-blue-400',
-  },
-  {
-    name: 'Makaroni Cap Ikan Tawes',
-    address: 'Jl. Tentara Pelajar No.165, Cikoneng, Ciamis',
-    phone: '(0265) 2751184',
-    services: 'Industri Pangan & Makaroni Goreng',
-    dot: 'bg-red-500 dark:bg-red-400',
-  },
-];
+const OFFICE_DOTS = ['bg-blue-500 dark:bg-blue-400', 'bg-red-500 dark:bg-red-400'];
 
 export function ContactSection() {
+  const { content } = useLandingContent();
+  const contact = content.contact;
   const sectionRef = useRef<HTMLElement>(null);
 
   useGSAP(
@@ -101,24 +75,24 @@ export function ContactSection() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500 dark:bg-amber-300" />
               </span>
               <span className="text-amber-600 dark:text-amber-300 text-xs font-bold tracking-[0.3em] uppercase">
-                Direktori Sekretariat
+                {contact.eyebrow}
               </span>
             </div>
             <h2
               id="contact-heading"
               className="font-display text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight"
             >
-              Hubungi Cabang Perusahaan.
+              {contact.title}
             </h2>
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
             <a
-              href="mailto:gaselafutsal@gmail.com"
+              href={`mailto:${contact.emailAddress}`}
               className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-full bg-linear-to-r from-amber-500 to-amber-600 text-white font-black text-sm uppercase tracking-[0.15em] shadow-xl shadow-amber-500/25 hover:shadow-2xl hover:shadow-amber-500/35 hover:-translate-y-0.5 transition-all duration-300 dark:from-amber-300 dark:via-amber-400 dark:to-amber-300 dark:text-zinc-950 dark:shadow-[0_10px_40px_-10px_rgba(251,191,36,0.6)] dark:hover:shadow-[0_12px_55px_-8px_rgba(251,191,36,0.8)]"
             >
               <Mail className="w-4 h-4" />
-              <span>Email Resmi</span>
+              <span>{contact.emailLabel}</span>
               <ArrowUpRight className="w-4 h-4" />
             </a>
             <Link
@@ -132,9 +106,9 @@ export function ContactSection() {
 
         {/* ── Office Grid ── */}
         <div className="contact-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {OFFICES.map((office) => (
+          {contact.offices.map((office, i) => (
             <div
-              key={office.name}
+              key={office.id}
               className="contact-card group relative p-7 rounded-2xl bg-white/80 border border-zinc-200/80 backdrop-blur-xl overflow-hidden transition-all duration-500 hover:border-amber-500/30 hover:bg-white hover:-translate-y-1 shadow-lg shadow-zinc-900/5 dark:bg-white/[0.03] dark:border-white/[0.08] dark:hover:border-amber-300/25 dark:hover:bg-white/[0.05] dark:shadow-xl dark:shadow-black/30"
             >
               <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-amber-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity dark:via-amber-300/40" />
@@ -143,7 +117,7 @@ export function ContactSection() {
                 <h3 className="font-display text-lg font-black text-zinc-900 dark:text-white tracking-tight">
                   {office.name}
                 </h3>
-                <span className={`w-2 h-2 rounded-full ${office.dot} shadow-[0_0_12px_rgba(217,119,6,0.4)] dark:shadow-[0_0_12px_rgba(251,191,36,0.4)]`} />
+                <span className={`w-2 h-2 rounded-full ${OFFICE_DOTS[i % OFFICE_DOTS.length]} shadow-[0_0_12px_rgba(217,119,6,0.4)] dark:shadow-[0_0_12px_rgba(251,191,36,0.4)]`} />
               </div>
 
               <p className="text-xs text-zinc-500 font-normal leading-relaxed mb-5">{office.services}</p>
@@ -174,28 +148,28 @@ export function ContactSection() {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-600 mb-1.5 dark:text-amber-300">
-                Sekretariat Utama Grup
+                {contact.addressLabel}
               </p>
               <p className="text-zinc-900 dark:text-white font-bold text-lg tracking-tight">
-                JL. Raya Cikoneng - Ciamis, Jawa Barat
+                {contact.addressTitle}
               </p>
-              <p className="text-zinc-500 text-sm mt-1">Kecamatan Cikoneng, Kabupaten Ciamis — Indonesia</p>
+              <p className="text-zinc-500 text-sm mt-1">{contact.addressSubtitle}</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4 md:justify-end">
             <a
-              href="tel:+62265776103"
+              href={`tel:${contact.addressPhone.replace(/[^0-9+]/g, '')}`}
               className="inline-flex items-center gap-2 text-sm font-bold text-zinc-700 border border-zinc-300 bg-white px-5 py-3 rounded-full hover:border-amber-500/50 hover:text-amber-600 transition-all duration-300 dark:text-white dark:border-white/15 dark:bg-white/[0.04] dark:hover:border-amber-300/40 dark:hover:text-amber-200"
             >
               <Phone className="w-4 h-4 text-amber-500 dark:text-amber-300" />
-              (0265) 776103
+              {contact.addressPhone}
             </a>
             <a
-              href="mailto:gaselafutsal@gmail.com"
+              href={`mailto:${contact.emailAddress}`}
               className="inline-flex items-center gap-2 text-sm font-bold text-zinc-700 border border-zinc-300 bg-white px-5 py-3 rounded-full hover:border-amber-500/50 hover:text-amber-600 transition-all duration-300 dark:text-white dark:border-white/15 dark:bg-white/[0.04] dark:hover:border-amber-300/40 dark:hover:text-amber-200"
             >
               <Mail className="w-4 h-4 text-amber-500 dark:text-amber-300" />
-              gaselafutsal@gmail.com
+              {contact.emailAddress}
             </a>
           </div>
         </div>

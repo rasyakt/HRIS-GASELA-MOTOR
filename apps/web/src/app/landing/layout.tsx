@@ -9,6 +9,7 @@
 
 import { Playfair_Display } from 'next/font/google';
 import { HashScroll } from '@/components/landing/HashScroll';
+import { LandingContentProvider } from '@/components/landing/LandingContentProvider';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 
@@ -31,11 +32,13 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
         Langsung ke konten
       </a>
 
-      <LandingNav />
+      <LandingContentProvider>
+        <LandingNav />
 
-      <main id="main-content">{children}</main>
+        <main id="main-content">{children}</main>
 
-      <LandingFooter />
+        <LandingFooter />
+      </LandingContentProvider>
     </div>
   );
 }

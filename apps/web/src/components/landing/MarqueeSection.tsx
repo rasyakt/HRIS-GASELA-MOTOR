@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * MarqueeSection.tsx
  * ──────────────────
@@ -5,14 +7,12 @@
  * Pure CSS animation — pauses on hover. Theme-aware (light & dark).
  */
 
-const ITEMS = [
-  { name: 'Gasela Motor', tag: 'Otomotif & Servis' },
-  { name: 'Gasela Sellular & Plastik', tag: 'Ritel & Percetakan' },
-  { name: 'Gasela Futsal Stadium', tag: 'Arena Olahraga' },
-  { name: 'Makaroni Cap Ikan Tawes', tag: 'Industri Pangan' },
-];
+import { useLandingContent } from './LandingContentProvider';
 
 export function MarqueeSection() {
+  const { content } = useLandingContent();
+  const items = content.marquee.items;
+
   return (
     <section
       aria-hidden
@@ -21,8 +21,8 @@ export function MarqueeSection() {
       <div className="flex w-max animate-marquee">
         {[0, 1].map((dup) => (
           <div key={dup} className="flex shrink-0 items-center" aria-hidden={dup === 1}>
-            {ITEMS.map((item) => (
-              <div key={`${dup}-${item.name}`} className="flex items-center gap-6 md:gap-10 px-6 md:px-10">
+            {items.map((item) => (
+              <div key={`${dup}-${item.id}`} className="flex items-center gap-6 md:gap-10 px-6 md:px-10">
                 <span className="text-sm md:text-base font-black uppercase tracking-[0.25em] text-zinc-700 whitespace-nowrap dark:text-white/85">
                   {item.name}
                 </span>

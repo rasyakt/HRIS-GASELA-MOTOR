@@ -19,6 +19,7 @@ import {
   User,
   ShieldAlert,
   ShieldCheck,
+  Globe,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -43,7 +44,9 @@ interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  minRole: UserRole;
+  minRole?: UserRole;
+  /** Role TEPAT (bukan hierarki) — untuk peran terisolasi seperti landing_admin */
+  exactRole?: UserRole;
 }
 
 interface NavGroup {
@@ -81,6 +84,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Sistem Admin',
     items: [
       { href: '/employees', label: 'Karyawan', icon: Users, minRole: 'admin' },
+      { href: '/landing-cms', label: 'Landing Page CMS', icon: Globe, exactRole: 'landing_admin' },
       { href: '/audit-logs', label: 'Audit Log', icon: ShieldCheck, minRole: 'admin' },
       { href: '/settings', label: 'Pengaturan', icon: Settings, minRole: 'admin' },
     ],
@@ -101,6 +105,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/employees': 'Manajemen Karyawan',
   '/audit-logs': 'Audit Log & Rekam Jejak',
   '/settings': 'Pengaturan Sistem',
+  '/landing-cms': 'Landing Page CMS',
 };
 
 export default function PortalLayout({
@@ -153,7 +158,10 @@ export default function PortalLayout({
     if (!user) return [];
     return NAV_GROUPS.map((group) => ({
       ...group,
-      items: group.items.filter((item) => roleAtLeast(user.role, item.minRole)),
+      items: group.items.filter(
+        (item) =>
+          item.exactRole ? user.role === item.exactRole : roleAtLeast(user.role, item.minRole ?? 'employee'),
+      ),
     })).filter((group) => group.items.length > 0);
   }, [user]);
 

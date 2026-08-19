@@ -26,6 +26,7 @@ import { TrainingRecordsModule } from './modules/training-records/training-recor
 import { AssetAssignmentsModule } from './modules/asset-assignments/asset-assignments.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { WarningLettersModule } from './modules/warning-letters/warning-letters.module';
+import { LandingModule } from './modules/landing/landing.module';
 import { validateEnv } from './config/configuration';
 import configuration from './config/configuration';
 
@@ -39,8 +40,8 @@ import configuration from './config/configuration';
     ThrottlerModule.forRoot([
       {
         name: 'global',
-        ttl: 60_000,   // 1 menit
-        limit: 120,    // 120 req/menit per IP (endpoint biasa)
+        ttl: 60_000, // 1 menit
+        limit: 120, // 120 req/menit per IP (endpoint biasa)
       },
     ]),
     PrismaModule,
@@ -66,6 +67,7 @@ import configuration from './config/configuration';
     AssetAssignmentsModule,
     AuditLogsModule,
     WarningLettersModule,
+    LandingModule,
   ],
   providers: [
     // Rate limiting global — override per-controller/handler pakai @Throttle()

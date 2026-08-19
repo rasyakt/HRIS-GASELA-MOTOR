@@ -13,23 +13,19 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Menu, X, ArrowUpRight } from 'lucide-react';
 import { ThemeToggle } from '../ThemeToggle';
-
-const NAV_LINKS = [
-  { label: 'Beranda', anchor: '#hero' },
-  { label: 'Biografi', anchor: '#about' },
-  { label: 'Portofolio', anchor: '#portfolio' },
-  { label: 'Kontak', anchor: '#contact' },
-];
+import { useLandingContent } from './LandingContentProvider';
 
 export function LandingNav() {
+  const { content } = useLandingContent();
+  const nav = content.nav;
   const pathname = usePathname();
   const isLandingPage = pathname === '/landing';
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const links = useMemo(
-    () => NAV_LINKS.map((l) => ({ ...l, href: isLandingPage ? l.anchor : `/landing${l.anchor}` })),
-    [isLandingPage],
+    () => nav.links.map((l) => ({ ...l, href: isLandingPage ? l.anchor : `/landing${l.anchor}` })),
+    [nav.links, isLandingPage],
   );
   const brandHref = isLandingPage ? '#hero' : '/landing#hero';
 
@@ -54,16 +50,16 @@ export function LandingNav() {
         aria-label="Navigasi utama"
       >
         {/* Brand */}
-        <a href={brandHref} className="group flex items-center gap-3" aria-label="CV GASELA GROUP — Beranda">
+        <a href={brandHref} className="group flex items-center gap-3" aria-label={`${nav.brandName} — Beranda`}>
           <div className="relative w-9 h-9 rounded-full overflow-hidden ring-1 ring-zinc-200 group-hover:ring-amber-500/60 transition-all duration-300 bg-white flex items-center justify-center shadow-lg shadow-zinc-900/10 dark:ring-white/15 dark:group-hover:ring-amber-300/70 dark:bg-zinc-900 dark:shadow-black/40">
-            <Image src="/cvgasela.png" alt="CV Gasela Logo" width={36} height={36} className="object-contain" />
+            <Image src={nav.logo} alt={`${nav.brandName} Logo`} width={36} height={36} className="object-contain" />
           </div>
           <div className="leading-none">
             <span className="block text-zinc-900 dark:text-white font-black text-sm tracking-[0.25em] uppercase">
-              CV. GASELA
+              {nav.brandName}
             </span>
             <span className="block mt-1.5 bg-linear-to-r from-amber-600 to-amber-500 dark:from-amber-200 dark:via-amber-300 dark:to-amber-400 bg-clip-text text-transparent text-[10px] font-extrabold tracking-[0.45em] uppercase">
-              Group
+              {nav.brandTagline}
             </span>
           </div>
         </a>
@@ -87,10 +83,10 @@ export function LandingNav() {
         <div className="hidden md:flex items-center gap-4">
           <ThemeToggle />
           <Link
-            href="/login"
+            href={nav.ctaHref}
             className="group inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-linear-to-r from-amber-500 to-amber-600 text-white text-xs font-black uppercase tracking-[0.18em] shadow-lg shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/35 hover:-translate-y-0.5 transition-all duration-300 dark:from-amber-300 dark:via-amber-400 dark:to-amber-300 dark:text-zinc-950 dark:shadow-[0_8px_30px_-8px_rgba(251,191,36,0.55)] dark:hover:shadow-[0_8px_44px_-6px_rgba(251,191,36,0.75)]"
           >
-            <span>Portal HRIS</span>
+            <span>{nav.ctaLabel}</span>
             <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>
@@ -127,11 +123,11 @@ export function LandingNav() {
             ))}
           </ul>
           <Link
-            href="/login"
+            href={nav.ctaHref}
             onClick={() => setMobileOpen(false)}
             className="mt-6 flex items-center justify-center gap-2 w-full py-4 rounded-full bg-linear-to-r from-amber-500 to-amber-600 text-white text-xs font-black uppercase tracking-[0.2em] dark:from-amber-300 dark:to-amber-400 dark:text-zinc-950"
           >
-            Portal HRIS Karyawan
+            {nav.ctaLabel}
             <ArrowUpRight className="w-4 h-4" />
           </Link>
         </div>

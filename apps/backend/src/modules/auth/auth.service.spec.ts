@@ -138,7 +138,9 @@ describe('AuthService', () => {
         service.refresh({ refreshToken: 'stale.rotated' }),
       ).rejects.toThrow(UnauthorizedException);
       expect(prisma.user.update).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ refreshTokenHash: null }) }),
+        expect.objectContaining({
+          data: expect.objectContaining({ refreshTokenHash: null }),
+        }),
       );
     });
   });
@@ -148,7 +150,9 @@ describe('AuthService', () => {
       prisma.user.update.mockResolvedValue({ id: 1 });
       await service.logout(1);
       expect(prisma.user.update).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ refreshTokenHash: null }) }),
+        expect.objectContaining({
+          data: expect.objectContaining({ refreshTokenHash: null }),
+        }),
       );
     });
 

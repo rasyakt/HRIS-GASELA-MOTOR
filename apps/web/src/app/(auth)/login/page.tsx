@@ -16,8 +16,11 @@ import { GaselaLogo } from '@/components/ui/logo';
 export default function LoginPage() {
   const router = useRouter();
   const accessToken = useAuthStore((s) => s.accessToken);
+  const user = useAuthStore((s) => s.user);
   const setSession = useAuthStore((s) => s.setSession);
   const [error, setError] = useState<string | null>(null);
+
+  const homePath = user?.role === 'landing_admin' ? '/landing-cms' : '/dashboard';
 
   const {
     register,
@@ -29,8 +32,8 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    if (accessToken) router.replace('/dashboard');
-  }, [accessToken, router]);
+    if (accessToken) router.replace(homePath);
+  }, [accessToken, router, homePath]);
 
   async function onSubmit(values: { username: string; password: string }) {
     setError(null);
@@ -40,7 +43,7 @@ export default function LoginPage() {
         body: JSON.stringify(values),
       });
       setSession(session);
-      router.replace('/dashboard');
+      router.replace(session.user.role === 'landing_admin' ? '/landing-cms' : '/dashboard');
     } catch (err) {
       setError(
         err instanceof ApiError

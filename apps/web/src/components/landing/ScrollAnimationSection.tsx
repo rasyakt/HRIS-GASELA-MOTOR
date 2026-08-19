@@ -8,7 +8,7 @@
  * a scrubbed progress rail. Fully theme-aware (light & dark).
  */
 
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -24,6 +24,8 @@ import {
   Phone,
   CheckCircle2,
 } from 'lucide-react';
+import type { BusinessUnit as BusinessUnitContent } from '@gasela/shared-types';
+import { useLandingContent } from './LandingContentProvider';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -45,64 +47,27 @@ interface BusinessUnit {
   textColor: string;
 }
 
-const BUSINESS_UNITS: BusinessUnit[] = [
-  {
-    id: 'motor',
-    number: '01',
-    name: 'Gasela Motor',
-    category: 'Otomotif & Servis',
-    icon: Car,
-    description:
-      'Pusat perawatan kendaraan komprehensif — car service, car wash hidrolik, car saloon, dan suku cadang resmi terlengkap.',
-    location: 'Jl. Raya Cikoneng No.135, Cikoneng, Ciamis',
-    phone: '(0265) 776103',
-    services: ['Car Service', 'Car Wash & Salon', 'Genuine Spareparts', 'Layanan Otomotif'],
-    image: '/gasela_hd_motor.png',
-    textColor: 'text-blue-600 dark:text-blue-400',
-  },
-  {
-    id: 'sellular',
-    number: '02',
-    name: 'Gasela Sellular & Plastik',
-    category: 'Ritel & Percetakan',
-    icon: Smartphone,
-    description:
-      'Ritel terpadu: voucher perdana & isi ulang, ATK, cetak photo, fotocopy, laminating, plastik industri, dan bumbu pangan.',
-    location: 'Jalan Raya, Cikoneng, Ciamis',
-    phone: '(0265) 2752592',
-    services: ['Voucher & Telekomunikasi', 'Cetak Photo & Offset', 'Macam Ukuran Plastik', 'Bumbu Industri Pangan'],
-    image: '/gasela_hd_sellular.png',
-    textColor: 'text-red-600 dark:text-red-400',
-  },
-  {
-    id: 'futsal',
-    number: '03',
-    name: 'Gasela Futsal Stadium',
-    category: 'Olahraga & Complex',
-    icon: Trophy,
-    description:
-      'Stadion futsal premium rumput sintetis super grass 18×30 m², mushola, kamar mandi air hangat, kantin & cafe, parkir luas.',
-    location: 'Jl. Raya Cikoneng, Cikoneng, Ciamis',
-    phone: '(0265) 777000',
-    services: ['Rumput Sintetis 18×30 m²', 'Kantin & Cafe Stadium', 'Kamar Mandi Air Hangat', 'Karaoke Keluarga'],
-    image: '/gasela_hd_futsal.png',
-    textColor: 'text-blue-600 dark:text-blue-400',
-  },
-  {
-    id: 'makaronikantawes',
-    number: '04',
-    name: 'Makaroni Cap Ikan Tawes',
-    category: 'Industri Pangan',
-    icon: Cookie,
-    description:
-      'Industri olahan pangan spesialis makaroni goreng dan maksor higienis. Varian original, balado, keju, jagung bakar, dan super pedas.',
-    location: 'Jl. Tentara Pelajar No.165, Cikoneng, Ciamis',
-    phone: '(0265) 2751184',
-    services: ['Makaroni Special Ikan Tawes', 'Maksor Extra Pedas', 'Varian Bumbu Spesial', 'Distribusi Skala Besar'],
-    image: '/gasela_hd_makaroni.png',
-    textColor: 'text-red-600 dark:text-red-400',
-  },
-];
+const UNIT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  motor: Car,
+  sellular: Smartphone,
+  futsal: Trophy,
+  makaroni: Cookie,
+};
+
+const UNIT_COLORS: Record<string, string> = {
+  motor: 'text-blue-600 dark:text-blue-400',
+  sellular: 'text-red-600 dark:text-red-400',
+  futsal: 'text-blue-600 dark:text-blue-400',
+  makaroni: 'text-red-600 dark:text-red-400',
+};
+
+function toBusinessUnits(units: BusinessUnitContent[]): BusinessUnit[] {
+  return units.map((u) => ({
+    ...u,
+    icon: UNIT_ICONS[u.id] ?? Car,
+    textColor: UNIT_COLORS[u.id] ?? 'text-blue-600 dark:text-blue-400',
+  }));
+}
 
 // ─────────────────────────────────────────────────────────────
 // Sub-component: Unit Card
@@ -187,6 +152,9 @@ function UnitCard({ unit }: { unit: BusinessUnit }) {
 // ─────────────────────────────────────────────────────────────
 
 export function ScrollAnimationSection() {
+  const { content } = useLandingContent();
+  const portfolio = content.portfolio;
+  const units = useMemo(() => toBusinessUnits(portfolio.units), [portfolio.units]);
   const triggerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -296,14 +264,14 @@ export function ScrollAnimationSection() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500 dark:bg-amber-300" />
             </span>
             <span className="text-amber-600 dark:text-amber-300 text-xs font-bold tracking-[0.3em] uppercase">
-              Portofolio Bisnis Terpadu
+              {portfolio.eyebrow}
             </span>
           </div>
 
           <h2 className="sa-intro-label font-display text-3xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight leading-tight max-w-3xl">
-            Lini Perusahaan{' '}
+            {portfolio.title}{' '}
             <span className="text-transparent bg-clip-text bg-linear-to-r from-amber-600 to-amber-500 dark:from-amber-200 dark:to-amber-500">
-              CV GASELA
+              {portfolio.highlight}
             </span>
           </h2>
         </div>
@@ -311,7 +279,7 @@ export function ScrollAnimationSection() {
         {/* Horizontal Card Strip */}
         <div className="flex-1 flex items-center overflow-visible relative z-10">
           <div ref={stripRef} className="flex gap-8 w-max" style={{ willChange: 'transform' }}>
-            {BUSINESS_UNITS.map((unit) => (
+            {units.map((unit) => (
               <UnitCard key={unit.id} unit={unit} />
             ))}
 
@@ -321,11 +289,11 @@ export function ScrollAnimationSection() {
                 <ArrowRight className="w-7 h-7" />
               </div>
               <p className="font-display text-2xl font-black text-zinc-900 tracking-tight dark:text-white">
-                Terintegrasi Sempurna
+                {portfolio.outroTitle}
               </p>
-              <p className="text-xs text-zinc-500 mt-3">Kecamatan Cikoneng, Kabupaten Ciamis</p>
+              <p className="text-xs text-zinc-500 mt-3">{portfolio.outroSubtitle}</p>
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-600 mt-6 dark:text-amber-300/80">
-                Sejak 1996
+                {portfolio.outroBadge}
               </p>
             </div>
           </div>

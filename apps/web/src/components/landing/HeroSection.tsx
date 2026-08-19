@@ -13,43 +13,13 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ArrowRight, Building2, CalendarDays, Users2, LayoutGrid } from 'lucide-react';
 import Link from 'next/link';
+import { useLandingContent } from './LandingContentProvider';
 
-const STATS = [
-  {
-    value: 4,
-    suffix: '',
-    label: 'Unit Bisnis',
-    desc: 'Otomotif · Ritel · Futsal · Pangan',
-    icon: Building2,
-    color: 'text-blue-600 dark:text-blue-400',
-  },
-  {
-    value: 30,
-    suffix: '+',
-    label: 'Tahun Berdiri',
-    desc: 'Kiprah teruji sejak 1996',
-    icon: CalendarDays,
-    color: 'text-amber-500 dark:text-amber-300',
-  },
-  {
-    value: 100,
-    suffix: '+',
-    label: 'Tenaga Kerja',
-    desc: 'Roda ekonomi lokal berputar',
-    icon: Users2,
-    color: 'text-red-600 dark:text-red-400',
-  },
-  {
-    value: 1,
-    suffix: '',
-    label: 'Ekosistem Terpadu',
-    desc: 'Tata kelola HRIS modern',
-    icon: LayoutGrid,
-    color: 'text-blue-600 dark:text-blue-400',
-  },
-];
+const STAT_ICONS = [Building2, CalendarDays, Users2, LayoutGrid];
 
 export function HeroSection() {
+  const { content } = useLandingContent();
+  const hero = content.hero;
   const heroRef = useRef<HTMLElement>(null);
   const counterRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
@@ -85,7 +55,7 @@ export function HeroSection() {
         );
 
       // Animated counters
-      STATS.forEach((stat, i) => {
+      hero.stats.forEach((stat, i) => {
         const el = counterRefs.current[i];
         if (!el) return;
         const obj = { val: 0 };
@@ -118,7 +88,7 @@ export function HeroSection() {
       {/* ── Ultra-HD Background ── */}
       <div
         className="hero-bg absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/gasela_hd_hero.png')" }}
+        style={{ backgroundImage: `url('${hero.backgroundImage}')` }}
         role="img"
         aria-label="Fasad korporat Gasela Group"
       />
@@ -144,41 +114,40 @@ export function HeroSection() {
         {/* Headline */}
         <h1 className="mb-6 md:mb-8">
           <span className="hero-word block font-display text-6xl sm:text-7xl md:text-8xl lg:text-[8.5rem] font-black leading-[0.95] tracking-[-0.02em] text-zinc-900 dark:text-white drop-shadow-sm dark:drop-shadow-2xl">
-            CV GASELA
+            {hero.title}
           </span>
           <span className="hero-word block font-display text-6xl sm:text-7xl md:text-8xl lg:text-[8.5rem] font-black leading-[0.95] tracking-[-0.02em] text-transparent bg-clip-text bg-linear-to-r from-amber-600 via-amber-500 to-amber-600 dark:from-amber-200 dark:via-amber-300 dark:to-amber-500 drop-shadow-sm dark:drop-shadow-2xl">
-            GROUP.
+            {hero.accent}
           </span>
         </h1>
 
         {/* Subtitle */}
         <p className="hero-sub max-w-2xl text-base md:text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed mb-10 md:mb-12">
-          Empat lini bisnis unggulan — otomotif, ritel &amp; percetakan, arena olahraga, hingga industri pangan —
-          dalam satu ekosistem terpadu dengan standar profesionalisme tinggi di Jawa Barat.
+          {hero.subtitle}
         </p>
 
         {/* CTA buttons */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-14 md:mb-20">
           <a
-            href="#portfolio"
+            href={hero.primaryCtaHref}
             className="hero-cta group inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-linear-to-r from-amber-500 to-amber-600 text-white font-black text-sm uppercase tracking-[0.15em] shadow-xl shadow-amber-500/25 hover:shadow-2xl hover:shadow-amber-500/35 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 w-full sm:w-auto dark:from-amber-300 dark:via-amber-400 dark:to-amber-300 dark:text-zinc-950 dark:shadow-[0_10px_40px_-10px_rgba(251,191,36,0.6)] dark:hover:shadow-[0_12px_55px_-8px_rgba(251,191,36,0.8)]"
           >
             <LayoutGrid className="w-4 h-4 shrink-0" />
-            <span>Jelajahi Lini Bisnis</span>
+            <span>{hero.primaryCtaLabel}</span>
             <ArrowRight className="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
           </a>
           <Link
-            href="/login"
+            href={hero.secondaryCtaHref}
             className="hero-cta inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full border border-zinc-300 bg-white/90 text-zinc-700 font-bold text-sm uppercase tracking-[0.15em] backdrop-blur-md hover:border-zinc-400 hover:bg-white hover:text-zinc-900 transition-all duration-300 w-full sm:w-auto dark:border-white/15 dark:bg-white/[0.03] dark:text-zinc-200 dark:hover:border-white/30 dark:hover:bg-white/[0.07] dark:hover:text-white"
           >
-            Portal HRIS Karyawan
+            {hero.secondaryCtaLabel}
           </Link>
         </div>
 
         {/* ── Glass Stat Cards ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
-          {STATS.map((stat, i) => {
-            const Icon = stat.icon;
+          {hero.stats.map((stat, i) => {
+            const Icon = STAT_ICONS[i % STAT_ICONS.length];
             return (
               <div
                 key={stat.label}
