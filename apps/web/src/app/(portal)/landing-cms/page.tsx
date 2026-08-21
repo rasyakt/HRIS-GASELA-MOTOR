@@ -197,11 +197,10 @@ function ImageFieldEditor({
         method: 'POST',
         body: fd,
         token,
-        headers: {}, // biarkan browser set multipart boundary
       });
       onChange(res.data.url);
-    } catch {
-      setError('Upload gagal. Pastikan file < 5MB dan format jpg/png/webp/svg.');
+    } catch (err: any) {
+      setError(err?.message ?? 'Upload gagal. Pastikan file < 10MB dan format jpg/png/webp/svg.');
     } finally {
       setUploading(false);
     }

@@ -22,18 +22,24 @@ export class ApiError extends Error {
 }
 
 export async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
-  const { token, headers, timeoutMs = 30000, signal, ...rest } = options;
+  const { token, headers = {}, timeoutMs = 30000, signal, ...rest } = options;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  const isFormData = typeof FormData !== 'undefined' && rest.body instanceof FormData;
+
+  const defaultHeaders: Record<string, string> = {
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
 
   try {
     const res = await fetch(`${API_URL}${path}`, {
       ...rest,
       signal: signal || controller.signal,
       headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...defaultHeaders,
         ...headers,
       },
     });
