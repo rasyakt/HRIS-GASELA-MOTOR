@@ -11,10 +11,12 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Lokasi digunakan untuk validasi check-in/check-out kantor",
-        "NSCameraUsageDescription": "Kamera digunakan untuk foto check-in/check-out"
+        "NSCameraUsageDescription": "Kamera digunakan untuk foto check-in/check-out",
+        "NSFaceIDUsageDescription": "Face ID digunakan untuk verifikasi identitas saat melakukan presensi check-in dan check-out."
       }
     },
     "android": {
+      "package": "com.gasela.hris",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -24,7 +26,9 @@
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
-        "CAMERA"
+        "CAMERA",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT"
       ],
       "predictiveBackGestureEnabled": false
     },
@@ -34,7 +38,13 @@
     "plugins": [
       "expo-location",
       "@react-native-community/datetimepicker",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Izinkan Gasela HRIS menggunakan Face ID untuk verifikasi kehadiran."
+        }
+      ]
     ]
   }
 }

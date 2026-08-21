@@ -1,6 +1,6 @@
 import type { UserRole } from '@gasela/shared-types';
 
-export const ROLE_ORDER: Record<UserRole, number> = {
+export const ROLE_ORDER: Partial<Record<UserRole, number>> = {
   employee: 0,
   manager: 1,
   hrd: 2,
@@ -9,7 +9,10 @@ export const ROLE_ORDER: Record<UserRole, number> = {
 };
 
 export function roleAtLeast(role: UserRole, min: UserRole): boolean {
-  return ROLE_ORDER[role] >= ROLE_ORDER[min];
+  const r = ROLE_ORDER[role];
+  const m = ROLE_ORDER[min];
+  if (r === undefined || m === undefined) return false;
+  return r >= m;
 }
 
 export const ROLE_LABEL: Record<UserRole, string> = {
@@ -18,6 +21,7 @@ export const ROLE_LABEL: Record<UserRole, string> = {
   hrd: 'HRD',
   admin: 'Admin',
   owner: 'Owner',
+  landing_admin: 'Admin Landing',
 };
 
 export function fmtTime(value: string | null | undefined): string {

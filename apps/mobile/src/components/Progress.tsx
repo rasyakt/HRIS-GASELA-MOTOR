@@ -81,7 +81,7 @@ export function Progress({
             strokeWidth={strokeWidth}
             strokeDasharray={`${circumference} ${circumference}`}
             strokeLinecap="round"
-            animatedProps={animatedCircleProps}
+            animatedProps={animatedCircleProps as any}
             transform={`rotate(-90 ${size / 2} ${size / 2})`}
           />
         </Svg>
