@@ -38,6 +38,7 @@ import { ROLE_LABEL, roleAtLeast } from '@/lib/format';
 import { useAuthStore } from '@/store/auth-store';
 import { GaselaLogo } from '@/components/ui/logo';
 import { CommandPalette } from '@/components/command-palette';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import type { UserRole } from '@gasela/shared-types';
 
 interface NavItem {
@@ -206,15 +207,15 @@ export default function PortalLayout({
   const sidebar = (isMobile = false) => {
     const collapsed = !isMobile && isCollapsed;
     return (
-      <aside className={`flex h-full flex-col border-r border-zinc-200 bg-white transition-all duration-300 ${
+      <aside className={`flex h-full flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 transition-all duration-300 ${
         collapsed ? 'w-16' : 'w-64'
       }`}>
-        <div className="flex h-14 items-center border-b border-zinc-100 px-4 justify-between">
+        <div className="flex h-14 items-center border-b border-zinc-100 dark:border-zinc-800/80 px-4 justify-between">
           <GaselaLogo variant="full-dark" size="sm" showText={!collapsed} />
           {!isMobile && (
             <button
               onClick={toggleCollapse}
-              className="rounded-lg p-1.5 hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition-colors focus:outline-none"
+              className="rounded-lg p-1.5 hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-850 dark:hover:text-white transition-colors focus:outline-none"
             >
               {collapsed ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
             </button>
@@ -228,7 +229,7 @@ export default function PortalLayout({
                 {!collapsed ? (
                   <button
                     onClick={() => toggleGroup(group.label)}
-                    className="flex w-full items-center justify-between px-3 py-1 text-[10px] font-bold tracking-wider text-zinc-400 uppercase select-none hover:text-zinc-900 transition-colors focus:outline-none"
+                    className="flex w-full items-center justify-between px-3 py-1 text-[10px] font-bold tracking-wider text-zinc-400 dark:text-zinc-500 uppercase select-none hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors focus:outline-none"
                   >
                     <span>{group.label}</span>
                     {isGroupCollapsed ? (
@@ -238,7 +239,7 @@ export default function PortalLayout({
                     )}
                   </button>
                 ) : (
-                  <div className="h-px bg-zinc-100 my-2 mx-1" />
+                  <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2 mx-1" />
                 )}
                 {(!collapsed && isGroupCollapsed) ? null : (
                   <div className="space-y-0.5">
@@ -253,15 +254,15 @@ export default function PortalLayout({
                           onClick={() => setMobileOpen(false)}
                           className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                             active
-                              ? 'bg-zinc-900 text-white font-semibold'
-                              : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
+                              ? 'bg-zinc-900 text-white font-semibold dark:bg-amber-500 dark:text-zinc-950'
+                              : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100'
                           } ${collapsed ? 'justify-center px-2' : ''}`}
                         >
                           <item.icon className="size-4 shrink-0" />
                           {!collapsed && <span className="flex-1 transition-opacity duration-300">{item.label}</span>}
                           {!collapsed && item.href === '/announcements' && unreadCount > 0 && (
                             <span className={`inline-flex items-center justify-center min-w-4.5 h-4.5 rounded-full px-1 text-[10px] font-bold ${
-                              active ? 'bg-white text-zinc-900' : 'bg-red-500 text-white'
+                              active ? 'bg-white text-zinc-900 dark:bg-zinc-950 dark:text-amber-400' : 'bg-red-500 text-white'
                             }`}>
                               {unreadCount > 99 ? '99+' : unreadCount}
                             </span>
@@ -280,14 +281,14 @@ export default function PortalLayout({
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
+    <div className="flex h-screen w-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
       <CommandPalette />
       <OfflineBanner />
       {totalItemsCount > 1 && <div className="hidden lg:block h-full">{sidebar(false)}</div>}
       {totalItemsCount > 1 && mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-black/60 backdrop-blur-xs"
             onClick={() => setMobileOpen(false)}
           />
           <div className="absolute inset-y-0 left-0">{sidebar(true)}</div>
@@ -302,7 +303,7 @@ export default function PortalLayout({
         </div>
       )}
       <div className="flex min-w-0 flex-1 flex-col h-full overflow-hidden">
-        <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 lg:px-6">
+        <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 lg:px-6 dark:border-zinc-800 dark:bg-zinc-950">
           <div className="flex items-center gap-3">
             {totalItemsCount > 1 && (
               <Button
@@ -314,69 +315,75 @@ export default function PortalLayout({
                 <Menu />
               </Button>
             )}
-            <h1 className="text-base font-semibold text-zinc-900">{pageTitle}</h1>
+            <h1 className="text-base font-semibold text-zinc-900 dark:text-white">{pageTitle}</h1>
           </div>
-          {/* Ctrl+K search trigger */}
-          {totalItemsCount > 1 && (
-            <button
-              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
-              className="hidden sm:flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
-            >
-              <Search className="size-3.5" />
-              <span>Cari fitur…</span>
-              <kbd className="rounded border border-zinc-200 bg-white px-1 py-0.5 text-[10px] font-semibold">⌘K</kbd>
-            </button>
-          )}
-          <div className="relative">
-            <button
-              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-              className="flex items-center gap-2.5 rounded-full p-1.5 hover:bg-zinc-100 transition-colors focus:outline-none"
-            >
-              <div className="flex size-7 items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white uppercase">
-                {user.fullName.split(' ').map((n) => n[0]).slice(0, 2).join('')}
-              </div>
-              <span className="hidden sm:inline text-sm font-semibold text-zinc-700 mr-1">
-                {user.fullName}
-              </span>
-            </button>
-
-            {profileMenuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-30"
-                  onClick={() => setProfileMenuOpen(false)}
-                />
-                <div className="absolute right-0 top-11 z-40 w-56 rounded-lg border border-zinc-200 bg-white p-2 shadow-lg">
-                  <div className="px-3 py-2 border-b border-zinc-100 mb-1">
-                    <p className="text-sm font-bold text-zinc-900 truncate">
-                      {user.fullName}
-                    </p>
-                    <p className="text-xs text-zinc-500 truncate">
-                      {ROLE_LABEL[user.role]}
-                    </p>
-                  </div>
-                  <Link
-                    href="/profile"
-                    onClick={() => setProfileMenuOpen(false)}
-                    className="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
-                  >
-                    <User className="size-4" />
-                    Profil Saya
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    disabled={loggingOut}
-                    className="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    <LogOut className="size-4" />
-                    {loggingOut ? 'Keluar…' : 'Keluar'}
-                  </button>
-                </div>
-              </>
+          <div className="flex items-center gap-2">
+            {/* Ctrl+K search trigger */}
+            {totalItemsCount > 1 && (
+              <button
+                onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
+                className="hidden sm:flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              >
+                <Search className="size-3.5" />
+                <span>Cari fitur…</span>
+                <kbd className="rounded border border-zinc-200 bg-white px-1 py-0.5 text-[10px] font-semibold dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">⌘K</kbd>
+              </button>
             )}
+
+            {/* Dark / Light Theme Toggle */}
+            <ThemeToggle />
+
+            <div className="relative">
+              <button
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                className="flex items-center gap-2.5 rounded-full p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none"
+              >
+                <div className="flex size-7 items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white uppercase dark:bg-amber-500 dark:text-zinc-950">
+                  {user.fullName.split(' ').map((n) => n[0]).slice(0, 2).join('')}
+                </div>
+                <span className="hidden sm:inline text-sm font-semibold text-zinc-700 dark:text-zinc-200 mr-1">
+                  {user.fullName}
+                </span>
+              </button>
+
+              {profileMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setProfileMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 top-11 z-40 w-56 rounded-xl border border-zinc-200 bg-white p-2 shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
+                    <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-800 mb-1">
+                      <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">
+                        {user.fullName}
+                      </p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                        {ROLE_LABEL[user.role]}
+                      </p>
+                    </div>
+                    <Link
+                      href="/profile"
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors"
+                    >
+                      <User className="size-4" />
+                      Profil Saya
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      disabled={loggingOut}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors"
+                    >
+                      <LogOut className="size-4" />
+                      {loggingOut ? 'Keluar…' : 'Keluar'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto bg-zinc-50 p-4 lg:p-6">
+        <main className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-900 p-4 lg:p-6">
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>
