@@ -27,16 +27,16 @@ const ALLOWED: Record<UploadCategory, string[]> = {
   landing: ['.jpg', '.jpeg', '.png', '.webp', '.svg'],
 };
 
-const MIME_BY_EXT: Record<string, string> = {
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.png': 'image/png',
-  '.webp': 'image/webp',
-  '.svg': 'image/svg+xml',
-  '.pdf': 'application/pdf',
+const MIME_BY_EXT: Record<string, string[]> = {
+  '.jpg': ['image/jpeg', 'image/jpg', 'image/pjpeg'],
+  '.jpeg': ['image/jpeg', 'image/jpg', 'image/pjpeg'],
+  '.png': ['image/png', 'image/x-png'],
+  '.webp': ['image/webp'],
+  '.svg': ['image/svg+xml', 'image/svg'],
+  '.pdf': ['application/pdf'],
 };
 
-const MAX_SIZE_MB = 5;
+const MAX_SIZE_MB = 10;
 
 export interface SavedUpload {
   fileName: string;
@@ -74,10 +74,10 @@ export class UploadsService {
         `Tipe file tidak diizinkan untuk kategori ${category} (izin: ${allowedExts.join(', ')})`,
       );
     }
-    const expectedMime = MIME_BY_EXT[ext];
-    if (file.mimetype !== expectedMime) {
+    const expectedMimes = MIME_BY_EXT[ext] ?? [];
+    if (expectedMimes.length > 0 && !expectedMimes.includes(file.mimetype) && !file.mimetype.startsWith('image/')) {
       throw new BadRequestException(
-        `MIME tidak cocok dengan ekstensi (diterima: ${expectedMime})`,
+        `MIME (${file.mimetype}) tidak cocok dengan ekstensi ${ext}`,
       );
     }
     const maxBytes = MAX_SIZE_MB * 1024 * 1024;
