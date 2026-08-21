@@ -39,6 +39,8 @@ services:
     env_file: ../apps/web/.env
     environment:
       NEXT_PUBLIC_API_URL: http://backend:3001
+      PORT: 3000
+      HOSTNAME: '0.0.0.0'
     ports:
       - '3000:3000'
     depends_on:
