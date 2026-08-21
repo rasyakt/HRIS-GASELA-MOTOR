@@ -96,6 +96,9 @@ export const metadata: Metadata = {
     shortcut: "/icon.svg",
     apple: "/cvgasela.png",
   },
+  verification: {
+    google: "google0eda516565717526",
+  },
 };
 
 export default function RootLayout({
