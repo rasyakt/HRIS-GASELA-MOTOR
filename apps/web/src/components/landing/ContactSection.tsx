@@ -86,7 +86,7 @@ export function ContactSection() {
             </a>
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 font-bold text-xs tracking-wide hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-700 dark:hover:text-white shadow-2xs"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 font-bold text-xs tracking-wide hover:bg-slate-50 hover:border-slate-400 hover:text-slate-950 transition-all duration-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:text-white shadow-2xs"
             >
               Portal HRIS Karyawan
             </Link>
@@ -98,7 +98,7 @@ export function ContactSection() {
           {contact.offices.map((office) => (
             <div
               key={office.id}
-              className="contact-card p-6 rounded-2xl bg-white/90 border border-slate-200/90 dark:bg-zinc-900/70 dark:border-zinc-800 shadow-2xs hover:border-slate-300 dark:hover:border-zinc-700 transition-all duration-200 flex flex-col justify-between"
+              className="contact-card p-6 rounded-2xl bg-white border border-slate-200/90 dark:bg-zinc-900 dark:border-zinc-800 shadow-2xs hover:border-slate-300 dark:hover:border-zinc-700 transition-all duration-200 flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -108,7 +108,7 @@ export function ContactSection() {
                   <span className="w-2 h-2 rounded-full bg-amber-500" />
                 </div>
 
-                <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed mb-4">
+                <p className="text-xs text-slate-600 dark:text-zinc-400 leading-relaxed mb-4">
                   {office.services}
                 </p>
               </div>
@@ -133,7 +133,7 @@ export function ContactSection() {
         </div>
 
         {/* ── Headquarters Secretariat Card ── */}
-        <div className="contact-card p-6 sm:p-8 rounded-2xl border border-slate-200/90 bg-white/90 dark:border-zinc-800 dark:bg-zinc-900/70 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="contact-card p-6 sm:p-8 rounded-2xl border border-slate-200/90 bg-white dark:border-zinc-800 dark:bg-zinc-900 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 shrink-0 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
               <MapPin className="w-5 h-5" />
@@ -145,7 +145,7 @@ export function ContactSection() {
               <h3 className="text-slate-950 dark:text-white font-extrabold text-lg tracking-tight">
                 {contact.addressTitle}
               </h3>
-              <p className="text-slate-500 dark:text-zinc-400 text-xs sm:text-sm mt-0.5">
+              <p className="text-slate-600 dark:text-zinc-400 text-xs sm:text-sm mt-0.5">
                 {contact.addressSubtitle}
               </p>
             </div>
@@ -153,14 +153,14 @@ export function ContactSection() {
           <div className="flex flex-wrap items-center gap-3">
             <a
               href={`tel:${contact.addressPhone.replace(/[^0-9+]/g, '')}`}
-              className="inline-flex items-center gap-2 text-xs font-bold text-slate-800 border border-slate-300 bg-white px-4 py-2.5 rounded-xl hover:border-slate-400 transition-all dark:text-white dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600 shadow-2xs"
+              className="inline-flex items-center gap-2 text-xs font-bold text-slate-800 border border-slate-300 bg-slate-50 hover:bg-white px-4 py-2.5 rounded-xl hover:border-slate-400 transition-all dark:text-white dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:hover:border-zinc-600 shadow-2xs"
             >
               <Phone className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               {contact.addressPhone}
             </a>
             <a
               href={`mailto:${contact.emailAddress}`}
-              className="inline-flex items-center gap-2 text-xs font-bold text-slate-800 border border-slate-300 bg-white px-4 py-2.5 rounded-xl hover:border-slate-400 transition-all dark:text-white dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600 shadow-2xs"
+              className="inline-flex items-center gap-2 text-xs font-bold text-slate-800 border border-slate-300 bg-slate-50 hover:bg-white px-4 py-2.5 rounded-xl hover:border-slate-400 transition-all dark:text-white dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:hover:border-zinc-600 shadow-2xs"
             >
               <Mail className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               {contact.emailAddress}

@@ -129,7 +129,15 @@ export function HeroSection() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-12 md:mb-14">
           <a
             href={hero.primaryCtaHref}
-            className="hero-cta inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-slate-900 text-white font-bold text-xs sm:text-sm tracking-wide shadow-xs hover:bg-slate-800 transition-all duration-200 w-full sm:w-auto dark:bg-amber-500 dark:text-zinc-950 dark:hover:bg-amber-400"
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.getElementById('portfolio');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                window.history.pushState(null, '', '/landing#portfolio');
+              }
+            }}
+            className="hero-cta inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm tracking-wide shadow-xs transition-all duration-200 w-full sm:w-auto dark:bg-amber-500 dark:text-zinc-950 dark:hover:bg-amber-400 cursor-pointer"
           >
             <LayoutGrid className="w-4 h-4 shrink-0" />
             <span>{hero.primaryCtaLabel}</span>
@@ -137,7 +145,7 @@ export function HeroSection() {
           </a>
           <Link
             href={hero.secondaryCtaHref}
-            className="hero-cta inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-300 bg-white text-slate-800 font-bold text-xs sm:text-sm tracking-wide hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 w-full sm:w-auto dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-700 dark:hover:text-white shadow-2xs"
+            className="hero-cta inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-300 bg-white text-slate-800 font-bold text-xs sm:text-sm tracking-wide hover:bg-slate-100 hover:text-slate-950 hover:border-slate-400 transition-all duration-200 w-full sm:w-auto dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:hover:border-zinc-600 dark:hover:text-white shadow-2xs"
           >
             {hero.secondaryCtaLabel}
           </Link>

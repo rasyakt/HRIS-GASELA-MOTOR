@@ -25,9 +25,28 @@ export function LandingFooter() {
   const getAnchorHref = (anchor: string) => (isLandingPage ? anchor : `/landing${anchor}`);
   const getHref = (href: string) => (href.startsWith('#') ? getAnchorHref(href) : href);
 
+  const handleFooterLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('#') || (isLandingPage && href.startsWith('/landing#'))) {
+      const anchor = href.includes('#') ? href.split('#')[1] : '';
+      if (anchor) {
+        e.preventDefault();
+        if (anchor === 'hero') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.history.pushState(null, '', '/landing');
+          return;
+        }
+        const targetEl = document.getElementById(anchor);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          window.history.pushState(null, '', `/landing#${anchor}`);
+        }
+      }
+    }
+  };
+
   return (
     <footer
-      className="bg-white dark:bg-zinc-950 border-t border-slate-200/80 dark:border-zinc-800/80 pt-16 pb-10 px-5 sm:px-8 lg:px-12 text-slate-600 dark:text-zinc-400"
+      className="bg-white dark:bg-zinc-950 border-t border-slate-200/90 dark:border-zinc-800/90 pt-16 pb-10 px-5 sm:px-8 lg:px-12 text-slate-600 dark:text-zinc-400"
       role="contentinfo"
     >
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 mb-12">
@@ -41,12 +60,12 @@ export function LandingFooter() {
               <span className="text-slate-950 dark:text-white font-extrabold text-sm tracking-tight block">
                 {footer.brandName}
               </span>
-              <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 tracking-wide uppercase block">
+              <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 tracking-wide uppercase block">
                 {footer.brandTagline}
               </span>
             </div>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed pr-2">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 leading-relaxed pr-2">
             {footer.description}
           </p>
           <div className="flex items-center gap-2 pt-1">
@@ -87,19 +106,23 @@ export function LandingFooter() {
               {col.title}
             </h3>
             <ul className="space-y-2.5">
-              {col.links.map((link) => (
-                <li key={link.id}>
-                  <Link
-                    href={getHref(link.href)}
-                    className="text-xs sm:text-sm font-medium text-slate-600 dark:text-zinc-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors flex items-center gap-1.5 group"
-                  >
-                    {!link.href.startsWith('#') && (
-                      <ArrowRight className="w-3 h-3 text-slate-400 dark:text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-amber-600" />
-                    )}
-                    <span>{link.label}</span>
-                  </Link>
-                </li>
-              ))}
+              {col.links.map((link) => {
+                const targetHref = getHref(link.href);
+                return (
+                  <li key={link.id}>
+                    <a
+                      href={targetHref}
+                      onClick={(e) => handleFooterLinkClick(e, targetHref)}
+                      className="text-xs sm:text-sm font-medium text-slate-600 dark:text-zinc-400 hover:text-amber-800 dark:hover:text-amber-300 transition-colors flex items-center gap-1.5 group cursor-pointer"
+                    >
+                      {!link.href.startsWith('#') && (
+                        <ArrowRight className="w-3 h-3 text-slate-400 dark:text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-amber-600" />
+                      )}
+                      <span>{link.label}</span>
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}
@@ -116,7 +139,7 @@ export function LandingFooter() {
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(footer.contactAddress.replace(/\n/g, ' '))}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-amber-700 dark:hover:text-amber-300 transition-colors leading-relaxed"
+                className="hover:text-amber-800 dark:hover:text-amber-300 transition-colors leading-relaxed"
               >
                 {footer.contactAddress.split('\n').map((line, i) => (
                   <span key={i}>
@@ -130,7 +153,7 @@ export function LandingFooter() {
               <Phone className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
               <a
                 href={`tel:${footer.contactPhone.replace(/[^0-9+]/g, '')}`}
-                className="font-semibold text-slate-800 dark:text-zinc-200 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
+                className="font-bold text-slate-900 dark:text-zinc-200 hover:text-amber-800 dark:hover:text-amber-300 transition-colors"
               >
                 {footer.contactPhone}
               </a>
@@ -139,7 +162,7 @@ export function LandingFooter() {
               <Mail className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
               <a
                 href={`mailto:${footer.contactEmail}`}
-                className="hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
+                className="hover:text-amber-800 dark:hover:text-amber-300 transition-colors"
               >
                 {footer.contactEmail}
               </a>
@@ -152,12 +175,20 @@ export function LandingFooter() {
       <div className="max-w-7xl mx-auto pt-6 border-t border-slate-200/80 dark:border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-zinc-500">
         <p>© {year} {footer.copyright}</p>
         <div className="flex items-center gap-5">
-          <Link href={getAnchorHref('#about')} className="hover:text-slate-900 dark:hover:text-zinc-300 transition-colors">
+          <a
+            href={getAnchorHref('#about')}
+            onClick={(e) => handleFooterLinkClick(e, getAnchorHref('#about'))}
+            className="hover:text-slate-900 dark:hover:text-zinc-300 transition-colors cursor-pointer"
+          >
             {footer.privacyLabel}
-          </Link>
-          <Link href={getAnchorHref('#about')} className="hover:text-slate-900 dark:hover:text-zinc-300 transition-colors">
+          </a>
+          <a
+            href={getAnchorHref('#about')}
+            onClick={(e) => handleFooterLinkClick(e, getAnchorHref('#about'))}
+            className="hover:text-slate-900 dark:hover:text-zinc-300 transition-colors cursor-pointer"
+          >
             {footer.termsLabel}
-          </Link>
+          </a>
         </div>
       </div>
     </footer>
