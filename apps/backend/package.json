@@ -6,7 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "nest build && tsc prisma/seed.ts --outDir dist/prisma --target ES2022 --module NodeNext --moduleResolution NodeNext --esModuleInterop",
+    "seed:prod": "node dist/prisma/seed.js",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "dev": "nest start --watch",
