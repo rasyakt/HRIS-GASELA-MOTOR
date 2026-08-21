@@ -16,8 +16,8 @@ RUN pnpm --filter @gasela/backend build
 
 # Folder produksi mandiri: node_modules prod + package.json
 RUN pnpm --filter @gasela/backend deploy --prod /prod/backend
-COPY apps/backend/dist /prod/backend/dist
-COPY apps/backend/prisma /prod/backend/prisma
+RUN cp -r /app/apps/backend/dist /prod/backend/dist && \
+    cp -r /app/apps/backend/prisma /prod/backend/prisma
 
 FROM node:22-alpine AS runner
 RUN corepack enable
