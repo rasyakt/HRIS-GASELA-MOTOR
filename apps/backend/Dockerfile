@@ -20,7 +20,7 @@ RUN pnpm --filter @gasela/backend prisma:generate
 RUN pnpm --filter @gasela/backend build
 
 # Folder produksi mandiri: node_modules prod + package.json
-RUN pnpm --filter @gasela/backend deploy --prod /prod/backend
+RUN pnpm --filter @gasela/backend deploy --legacy --prod /prod/backend
 RUN cp -r /app/apps/backend/dist /prod/backend/dist && \
     cp -r /app/apps/backend/prisma /prod/backend/prisma
 
