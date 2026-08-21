@@ -9,9 +9,14 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY packages/ packages/
 COPY apps/backend/ apps/backend/
 
-RUN pnpm install --frozen-lockfile
+# Optimasi timeout koneksi & hanya install dependensi backend (abaikan mobile/web)
+RUN pnpm config set fetch-timeout 600000 && \
+    pnpm config set fetch-retries 5 && \
+    pnpm install --frozen-lockfile --filter @gasela/backend...
+
 RUN pnpm --filter @gasela/shared-types build
 RUN pnpm --filter @gasela/shared-utils build
+RUN pnpm --filter @gasela/backend prisma:generate
 RUN pnpm --filter @gasela/backend build
 
 # Folder produksi mandiri: node_modules prod + package.json
