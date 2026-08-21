@@ -3,8 +3,8 @@
 /**
  * MarqueeSection.tsx
  * ──────────────────
- * Infinite scrolling ticker of the CV GASELA GROUP business lines.
- * Pure CSS animation — pauses on hover. Theme-aware (light & dark).
+ * Corporate ticker ribbon showcasing CV GASELA GROUP business lines.
+ * Clean, subtle, theme-aware with pause-on-hover.
  */
 
 import { useLandingContent } from './LandingContentProvider';
@@ -16,31 +16,30 @@ export function MarqueeSection() {
   return (
     <section
       aria-hidden
-      className="relative border-y border-zinc-200/70 bg-zinc-100/60 dark:border-white/[0.06] dark:bg-zinc-950 overflow-hidden py-6"
+      className="relative border-y border-slate-200/80 bg-slate-100/70 dark:border-zinc-800/80 dark:bg-zinc-900/40 overflow-hidden py-3.5"
     >
       <div className="flex w-max animate-marquee">
         {[0, 1].map((dup) => (
           <div key={dup} className="flex shrink-0 items-center" aria-hidden={dup === 1}>
             {items.map((item) => (
-              <div key={`${dup}-${item.id}`} className="flex items-center gap-6 md:gap-10 px-6 md:px-10">
-                <span className="text-sm md:text-base font-black uppercase tracking-[0.25em] text-zinc-700 whitespace-nowrap dark:text-white/85">
+              <div key={`${dup}-${item.id}`} className="flex items-center gap-4 sm:gap-6 px-6 sm:px-8">
+                <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200 tracking-tight whitespace-nowrap">
                   {item.name}
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-600 whitespace-nowrap dark:text-amber-300/70">
+                <span className="text-[10px] font-semibold text-amber-800 dark:text-amber-300 bg-amber-500/10 border border-amber-600/20 px-2 py-0.5 rounded-md whitespace-nowrap uppercase tracking-wider">
                   {item.tag}
                 </span>
-                <span className="text-amber-500/60 select-none dark:text-amber-300/50" aria-hidden>
-                  ✦
-                </span>
+                <div className="h-3 w-px bg-slate-300 dark:bg-zinc-700 mx-2" aria-hidden="true" />
               </div>
             ))}
           </div>
         ))}
       </div>
 
-      {/* Edge fades */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-32 bg-linear-to-r from-zinc-50 to-transparent dark:from-zinc-950 dark:to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-32 bg-linear-to-l from-zinc-50 to-transparent dark:from-zinc-950 dark:to-transparent" />
+      {/* Edge gradient masks */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-linear-to-r from-slate-50 to-transparent dark:from-zinc-950 dark:to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-linear-to-l from-slate-50 to-transparent dark:from-zinc-950 dark:to-transparent" />
     </section>
   );
 }
+

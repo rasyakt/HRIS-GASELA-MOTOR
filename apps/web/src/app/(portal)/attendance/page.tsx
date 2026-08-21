@@ -117,8 +117,8 @@ export default function AttendancePage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-zinc-900">Kehadiran Saya</h2>
-        <p className="text-sm text-zinc-500">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Kehadiran Saya</h2>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
           Catat kehadiran dengan lokasi GPS dan pantau riwayat Anda.
         </p>
       </div>
@@ -126,8 +126,8 @@ export default function AttendancePage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Kehadiran Hari Ini</span>
-            <span className="text-sm font-normal text-zinc-500">
+            <span className="text-zinc-900 dark:text-white font-bold">Kehadiran Hari Ini</span>
+            <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">
               {new Date().toLocaleDateString('id-ID', {
                 weekday: 'long',
                 day: 'numeric',
@@ -145,27 +145,27 @@ export default function AttendancePage() {
               <div className="flex flex-wrap items-center gap-3">
                 <Badge className={badgeClass(today.status)}>{today.status}</Badge>
                 {today.shiftName && (
-                  <span className="text-sm text-zinc-500">Shift: {today.shiftName}</span>
+                  <span className="text-sm text-zinc-500 dark:text-zinc-400">Shift: {today.shiftName}</span>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <div className="rounded-lg bg-zinc-50 p-3">
-                  <div className="text-xs text-zinc-500">Check-in</div>
-                  <div className="text-lg font-semibold">{fmtTime(today.checkInTime)}</div>
+                <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900 p-3">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">Check-in</div>
+                  <div className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{fmtTime(today.checkInTime)}</div>
                 </div>
-                <div className="rounded-lg bg-zinc-50 p-3">
-                  <div className="text-xs text-zinc-500">Check-out</div>
-                  <div className="text-lg font-semibold">{fmtTime(today.checkOutTime)}</div>
+                <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900 p-3">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">Check-out</div>
+                  <div className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{fmtTime(today.checkOutTime)}</div>
                 </div>
-                <div className="rounded-lg bg-zinc-50 p-3">
-                  <div className="text-xs text-zinc-500">Keterlambatan</div>
-                  <div className="text-lg font-semibold">
+                <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900 p-3">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">Keterlambatan</div>
+                  <div className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                     {today.lateMinutes > 0 ? `${today.lateMinutes} mnt` : '—'}
                   </div>
                 </div>
-                <div className="rounded-lg bg-zinc-50 p-3">
-                  <div className="text-xs text-zinc-500">Jam Kerja</div>
-                  <div className="text-lg font-semibold">{fmtHours(today.workHours)}</div>
+                <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900 p-3">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">Jam Kerja</div>
+                  <div className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{fmtHours(today.workHours)}</div>
                 </div>
               </div>
               {!today.checkInTime && (
@@ -191,7 +191,7 @@ export default function AttendancePage() {
             </div>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 Belum ada catatan kehadiran hari ini.
               </p>
               <Button size="lg" onClick={() => checkIn.mutate()} disabled={busy}>
@@ -206,7 +206,7 @@ export default function AttendancePage() {
           )}
 
           {actionError && (
-            <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+            <p className="mt-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 px-3 py-2 text-xs text-red-700 dark:text-red-300">
               {actionError}
             </p>
           )}
@@ -225,27 +225,27 @@ export default function AttendancePage() {
               {/* Mobile View (Cards) */}
               <div className="grid grid-cols-1 gap-3 lg:hidden">
                 {history.data.items.map((r) => (
-                  <div key={r.id} className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3">
+                  <div key={r.id} className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 p-3">
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-zinc-900 text-sm">{fmtDate(r.attendanceDate)}</span>
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{fmtDate(r.attendanceDate)}</span>
                       <Badge className={badgeClass(r.status)}>{r.status}</Badge>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                       <div>
-                        <p className="text-zinc-500 mb-0.5">Masuk</p>
-                        <p className="font-medium text-zinc-900">{fmtTime(r.checkInTime)}</p>
+                        <p className="text-zinc-500 dark:text-zinc-400 mb-0.5">Masuk</p>
+                        <p className="font-medium text-zinc-900 dark:text-zinc-100">{fmtTime(r.checkInTime)}</p>
                       </div>
                       <div>
-                        <p className="text-zinc-500 mb-0.5">Keluar</p>
-                        <p className="font-medium text-zinc-900">{fmtTime(r.checkOutTime)}</p>
+                        <p className="text-zinc-500 dark:text-zinc-400 mb-0.5">Keluar</p>
+                        <p className="font-medium text-zinc-900 dark:text-zinc-100">{fmtTime(r.checkOutTime)}</p>
                       </div>
                       <div>
-                        <p className="text-zinc-500 mb-0.5">Terlambat</p>
-                        <p className="font-medium text-zinc-900">{r.lateMinutes && r.lateMinutes > 0 ? `${r.lateMinutes} mnt` : '—'}</p>
+                        <p className="text-zinc-500 dark:text-zinc-400 mb-0.5">Terlambat</p>
+                        <p className="font-medium text-zinc-900 dark:text-zinc-100">{r.lateMinutes && r.lateMinutes > 0 ? `${r.lateMinutes} mnt` : '—'}</p>
                       </div>
                       <div>
-                        <p className="text-zinc-500 mb-0.5">Jam Kerja</p>
-                        <p className="font-medium text-zinc-900">{fmtHours(r.workHours)}</p>
+                        <p className="text-zinc-500 dark:text-zinc-400 mb-0.5">Jam Kerja</p>
+                        <p className="font-medium text-zinc-900 dark:text-zinc-100">{fmtHours(r.workHours)}</p>
                       </div>
                     </div>
                   </div>
@@ -256,7 +256,7 @@ export default function AttendancePage() {
               <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-zinc-200 text-left text-xs text-zinc-500">
+                    <tr className="border-b border-zinc-200 dark:border-zinc-800 text-left text-xs text-zinc-500 dark:text-zinc-400">
                       <th className="pb-2 pr-3 font-medium">Tanggal</th>
                       <th className="pb-2 pr-3 font-medium">Status</th>
                       <th className="pb-2 pr-3 font-medium">Masuk</th>
@@ -266,36 +266,36 @@ export default function AttendancePage() {
                       <th className="pb-2 font-medium">Jam Kerja</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-100">
+                  <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/80">
                     {history.data.items.map((r) => (
-                      <tr key={r.id} className="hover:bg-zinc-50 transition-colors">
-                        <td className="py-2.5 pr-3 text-zinc-900 font-medium">{fmtDate(r.attendanceDate)}</td>
+                      <tr key={r.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/60 transition-colors">
+                        <td className="py-2.5 pr-3 text-zinc-900 dark:text-zinc-100 font-medium">{fmtDate(r.attendanceDate)}</td>
                         <td className="py-2.5 pr-3">
                           <Badge className={badgeClass(r.status)}>{r.status}</Badge>
                         </td>
-                        <td className="py-2.5 pr-3 text-zinc-600 font-mono">{fmtTime(r.checkInTime)}</td>
-                        <td className="py-2.5 pr-3 text-zinc-600 font-mono">{fmtTime(r.checkOutTime)}</td>
+                        <td className="py-2.5 pr-3 text-zinc-600 dark:text-zinc-300 font-mono">{fmtTime(r.checkInTime)}</td>
+                        <td className="py-2.5 pr-3 text-zinc-600 dark:text-zinc-300 font-mono">{fmtTime(r.checkOutTime)}</td>
                         <td className="py-2.5 pr-3 whitespace-nowrap">
                           {r.checkInLat && r.checkInLng ? (
                             <a
                               href={`https://www.google.com/maps?q=${r.checkInLat},${r.checkInLng}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-md hover:bg-emerald-100 transition-colors"
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 dark:text-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-900/50 px-2.5 py-1 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-950/70 transition-colors"
                               title="Buka titik koordinat presensi di Google Maps"
                             >
-                              <MapPin className="size-3.5 text-emerald-600 shrink-0" />
+                              <MapPin className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                               <span>{Number(r.checkInLat).toFixed(4)}, {Number(r.checkInLng).toFixed(4)}</span>
-                              <ExternalLink className="size-3 text-emerald-500 shrink-0 ml-0.5" />
+                              <ExternalLink className="size-3 text-emerald-500 dark:text-emerald-400 shrink-0 ml-0.5" />
                             </a>
                           ) : (
                             <span className="text-xs text-zinc-400 font-mono">—</span>
                           )}
                         </td>
-                        <td className="py-2.5 pr-3 text-zinc-600">
+                        <td className="py-2.5 pr-3 text-zinc-600 dark:text-zinc-300">
                           {r.lateMinutes && r.lateMinutes > 0 ? `${r.lateMinutes} mnt` : '—'}
                         </td>
-                        <td className="py-2.5 text-zinc-600 font-mono">{fmtHours(r.workHours)}</td>
+                        <td className="py-2.5 text-zinc-600 dark:text-zinc-300 font-mono">{fmtHours(r.workHours)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -303,7 +303,7 @@ export default function AttendancePage() {
               </div>
             </>
           ) : (
-            <p className="text-sm text-zinc-500">Belum ada riwayat kehadiran.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Belum ada riwayat kehadiran.</p>
           )}
         </CardContent>
       </Card>

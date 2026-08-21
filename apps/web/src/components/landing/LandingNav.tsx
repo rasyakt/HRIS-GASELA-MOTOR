@@ -3,8 +3,8 @@
 /**
  * LandingNav.tsx
  * ──────────────
- * Luxury glassmorphism header for the CV GASELA GROUP public site.
- * Fully theme-aware (light & dark) with an inline theme switcher.
+ * Executive header for the CV GASELA GROUP public site.
+ * Clean, high-contrast, theme-aware navigation with instant access to HRIS portal.
  */
 
 import { useEffect, useState, useMemo } from 'react';
@@ -30,94 +30,135 @@ export function LandingNav() {
   const brandHref = isLandingPage ? '#hero' : '/landing#hero';
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 24);
+    const handler = () => setScrolled(window.scrollY > 16);
     handler();
     window.addEventListener('scroll', handler, { passive: true });
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('#') || (isLandingPage && href.startsWith('/landing#'))) {
+      const anchor = href.includes('#') ? href.split('#')[1] : '';
+      if (anchor) {
+        e.preventDefault();
+        if (anchor === 'hero') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.history.pushState(null, '', '/landing');
+          setMobileOpen(false);
+          return;
+        }
+        const targetEl = document.getElementById(anchor);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          window.history.pushState(null, '', `/landing#${anchor}`);
+          setMobileOpen(false);
+        }
+      }
+    }
+  };
+
+  const handleBrandClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isLandingPage) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.history.pushState(null, '', '/landing');
+    }
+  };
+
   return (
     <header
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
+      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/85 backdrop-blur-xl border-b border-zinc-200/70 py-3.5 shadow-lg shadow-zinc-900/5 dark:bg-zinc-950/85 dark:border-white/[0.06] dark:shadow-black/40'
-          : 'bg-transparent border-b border-transparent py-6'
+          ? 'bg-white/95 backdrop-blur-md border-b border-slate-200/90 py-3 shadow-xs dark:bg-zinc-950/95 dark:border-zinc-800/90'
+          : 'bg-white/80 md:bg-transparent backdrop-blur-xs md:backdrop-blur-none border-b border-slate-200/50 md:border-transparent py-4 dark:bg-zinc-950/80 dark:md:bg-transparent dark:border-zinc-800/40 md:dark:border-transparent'
       }`}
       role="banner"
     >
       <nav
-        className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 flex items-center justify-between"
+        className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 flex items-center justify-between"
         aria-label="Navigasi utama"
       >
-        {/* Brand */}
-        <a href={brandHref} className="group flex items-center gap-3" aria-label={`${nav.brandName} — Beranda`}>
-          <div className="relative w-9 h-9 rounded-full overflow-hidden ring-1 ring-zinc-200 group-hover:ring-amber-500/60 transition-all duration-300 bg-white flex items-center justify-center shadow-lg shadow-zinc-900/10 dark:ring-white/15 dark:group-hover:ring-amber-300/70 dark:bg-zinc-900 dark:shadow-black/40">
-            <Image src={nav.logo} alt={`${nav.brandName} Logo`} width={36} height={36} className="object-contain" />
+        {/* Brand Lockup */}
+        <a
+          href={brandHref}
+          onClick={handleBrandClick}
+          className="group flex items-center gap-3.5 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-500 rounded-lg cursor-pointer"
+          aria-label={`${nav.brandName} — Beranda`}
+        >
+          <div className="relative w-9 h-9 rounded-xl border border-slate-200 bg-white dark:border-zinc-700/80 dark:bg-zinc-900 flex items-center justify-center shadow-xs group-hover:border-amber-500/60 transition-colors">
+            <Image
+              src={nav.logo}
+              alt={`${nav.brandName} Logo`}
+              width={28}
+              height={28}
+              className="object-contain"
+            />
           </div>
-          <div className="leading-none">
-            <span className="block text-zinc-900 dark:text-white font-black text-sm tracking-[0.25em] uppercase">
+          <div className="flex flex-col">
+            <span className="text-slate-950 dark:text-white font-extrabold text-sm tracking-tight leading-tight">
               {nav.brandName}
             </span>
-            <span className="block mt-1.5 bg-linear-to-r from-amber-600 to-amber-500 dark:from-amber-200 dark:via-amber-300 dark:to-amber-400 bg-clip-text text-transparent text-[10px] font-extrabold tracking-[0.45em] uppercase">
+            <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 tracking-wider uppercase">
               {nav.brandTagline}
             </span>
           </div>
         </a>
 
         {/* Desktop Links */}
-        <ul className="hidden md:flex items-center gap-9" role="list">
+        <ul className="hidden md:flex items-center gap-8" role="list">
           {links.map((link) => (
             <li key={link.label}>
               <a
                 href={link.href}
-                className="group relative text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors duration-300 pb-1.5"
+                onClick={(e) => handleNavClick(e, link.href)}
+                className="text-xs font-bold text-slate-700 hover:text-slate-950 dark:text-zinc-300 dark:hover:text-white transition-colors duration-200 py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-amber-600 dark:after:bg-amber-400 hover:after:w-full after:transition-all after:duration-200"
               >
                 {link.label}
-                <span className="absolute left-0 -bottom-px h-px w-0 bg-linear-to-r from-amber-500 to-amber-600 dark:from-amber-300 dark:to-amber-500 transition-all duration-300 group-hover:w-full" />
               </a>
             </li>
           ))}
         </ul>
 
-        {/* Desktop CTA */}
-        <div className="hidden md:flex items-center gap-4">
+        {/* Desktop CTA & Theme Toggle */}
+        <div className="hidden md:flex items-center gap-3">
           <ThemeToggle />
           <Link
             href={nav.ctaHref}
-            className="group inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-linear-to-r from-amber-500 to-amber-600 text-white text-xs font-black uppercase tracking-[0.18em] shadow-lg shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/35 hover:-translate-y-0.5 transition-all duration-300 dark:from-amber-300 dark:via-amber-400 dark:to-amber-300 dark:text-zinc-950 dark:shadow-[0_8px_30px_-8px_rgba(251,191,36,0.55)] dark:hover:shadow-[0_8px_44px_-6px_rgba(251,191,36,0.75)]"
+            className="inline-flex items-center gap-2 px-4.5 py-2 rounded-full bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold tracking-wide shadow-xs hover:shadow-sm transition-all duration-200 dark:bg-amber-500 dark:text-zinc-950 dark:hover:bg-amber-400"
           >
             <span>{nav.ctaLabel}</span>
-            <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        {/* Mobile Toggle */}
+        {/* Mobile Actions */}
         <div className="md:hidden flex items-center gap-2">
           <ThemeToggle />
           <button
-            className="w-10 h-10 rounded-xl border border-zinc-200 bg-white/80 text-zinc-600 hover:text-zinc-900 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:text-white transition-colors flex items-center justify-center"
+            type="button"
+            className="w-9 h-9 rounded-lg border border-slate-200 bg-white text-slate-700 hover:text-slate-950 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors flex items-center justify-center shadow-xs"
             onClick={() => setMobileOpen((o) => !o)}
             aria-label={mobileOpen ? 'Tutup menu' : 'Buka menu'}
             aria-expanded={mobileOpen}
           >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileOpen ? <X className="w-4.5 h-4.5" /> : <Menu className="w-4.5 h-4.5" />}
           </button>
         </div>
       </nav>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Menu Drawer */}
       {mobileOpen && (
-        <div className="md:hidden bg-white/95 backdrop-blur-2xl border-t border-zinc-200/70 px-6 pt-4 pb-8 shadow-2xl shadow-zinc-900/10 dark:bg-zinc-950/95 dark:border-white/[0.06] dark:shadow-black/50">
-          <ul className="space-y-1" role="list">
+        <div className="md:hidden bg-white/98 backdrop-blur-xl border-t border-slate-200/80 px-6 pt-4 pb-6 shadow-xl dark:bg-zinc-950/98 dark:border-zinc-800/80">
+          <ul className="space-y-1 divide-y divide-slate-100 dark:divide-zinc-800/60" role="list">
             {links.map((link) => (
-              <li key={link.label}>
+              <li key={link.label} className="pt-2 first:pt-0">
                 <a
                   href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between py-3.5 px-2 text-sm font-bold uppercase tracking-[0.2em] text-zinc-600 hover:text-zinc-900 border-b border-zinc-100 dark:text-zinc-300 dark:hover:text-white dark:border-white/[0.04] transition-colors"
+                  onClick={(e) => handleNavClick(e, link.href)}
+                  className="flex items-center justify-between py-2.5 text-sm font-bold text-slate-800 hover:text-slate-950 dark:text-zinc-200 dark:hover:text-white transition-colors"
                 >
-                  {link.label}
-                  <ArrowUpRight className="w-4 h-4 text-amber-600/70 dark:text-amber-300/70" />
+                  <span>{link.label}</span>
+                  <ArrowUpRight className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
                 </a>
               </li>
             ))}
@@ -125,9 +166,9 @@ export function LandingNav() {
           <Link
             href={nav.ctaHref}
             onClick={() => setMobileOpen(false)}
-            className="mt-6 flex items-center justify-center gap-2 w-full py-4 rounded-full bg-linear-to-r from-amber-500 to-amber-600 text-white text-xs font-black uppercase tracking-[0.2em] dark:from-amber-300 dark:to-amber-400 dark:text-zinc-950"
+            className="mt-5 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-slate-900 text-white text-xs font-bold tracking-wide shadow-xs dark:bg-amber-500 dark:text-zinc-950"
           >
-            {nav.ctaLabel}
+            <span>{nav.ctaLabel}</span>
             <ArrowUpRight className="w-4 h-4" />
           </Link>
         </div>
@@ -135,3 +176,4 @@ export function LandingNav() {
     </header>
   );
 }
+

@@ -3,15 +3,15 @@
 /**
  * SocialMediaSection.tsx
  * ──────────────────────
- * Clean, stream-lined Live Instagram Showcase for CV GASELA GROUP.
- * Directly embeds official live feed from @makaroni.ikantawes.
+ * Official Live Instagram Showcase for CV GASELA GROUP.
+ * Clean, structured enterprise widget embedding the official @makaroni.ikantawes feed.
  */
 
 import { useRef } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Instagram, ExternalLink, Sparkles, ArrowUpRight } from 'lucide-react';
+import { Instagram, ExternalLink, ArrowUpRight } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -24,114 +24,92 @@ export function SocialMediaSection() {
     () => {
       gsap.fromTo(
         '.social-head',
-        { opacity: 0, y: 24 },
+        { opacity: 0, y: 16 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.7,
+          duration: 0.6,
           ease: 'power3.out',
           scrollTrigger: { trigger: '.social-head', start: 'top 85%' },
-        }
+        },
       );
 
       gsap.fromTo(
         '.social-widget',
-        { opacity: 0, y: 28 },
+        { opacity: 0, y: 20 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.8,
+          duration: 0.6,
           ease: 'power3.out',
           scrollTrigger: { trigger: '.social-widget', start: 'top 85%' },
-        }
+        },
       );
     },
-    { scope: sectionRef }
+    { scope: sectionRef },
   );
 
   return (
     <section
       ref={sectionRef}
       id="social-media"
-      className="relative bg-zinc-50 dark:bg-zinc-950 py-24 px-6 md:px-12 lg:px-24 border-t border-zinc-200/80 dark:border-white/[0.06] overflow-hidden"
+      className="relative bg-white dark:bg-zinc-900/60 p-6 sm:p-8 rounded-2xl border border-slate-200/90 dark:border-zinc-800 shadow-2xs space-y-6"
       aria-labelledby="social-heading"
     >
-      {/* Ambient background glows */}
-      <div className="absolute top-1/4 right-1/3 w-140 h-140 bg-amber-400/10 rounded-full blur-[160px] pointer-events-none dark:bg-amber-400/5" />
-      <div className="absolute bottom-10 left-1/4 w-120 h-120 bg-blue-500/10 rounded-full blur-[140px] pointer-events-none dark:bg-blue-600/6" />
-
-      <div className="max-w-5xl mx-auto space-y-10 relative z-10">
-        {/* ── Header ── */}
-        <div className="social-head flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-zinc-200/80 pb-8 dark:border-white/[0.07]">
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75 dark:bg-amber-300" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500 dark:bg-amber-300" />
-              </span>
-              <span className="text-amber-600 dark:text-amber-300 text-xs font-bold tracking-[0.3em] uppercase flex items-center gap-1.5">
-                Media Sosial Resmi
-              </span>
-            </div>
-            <h2
-              id="social-heading"
-              className="font-display text-3xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight"
-            >
-              Instagram @makaroni.ikantawes
-            </h2>
-            <p className="text-sm text-zinc-500 max-w-xl">
-              Dokumentasi, aktivitas pabrik, dan pembaruan produk riil langsung dari akun Instagram resmi CV GASELA GROUP.
-            </p>
+      {/* ── Header ── */}
+      <div className="social-head flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-zinc-800">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Instagram className="w-4 h-4 text-pink-600" />
+            <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+              Dokumentasi &amp; Media Sosial
+            </span>
           </div>
-
-          <div>
-            <a
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-linear-to-r from-amber-500 to-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all dark:from-amber-300 dark:to-amber-400 dark:text-zinc-950"
-            >
-              <Instagram className="w-4 h-4" />
-              <span>Buka Instagram Resmi</span>
-              <ArrowUpRight className="w-4 h-4" />
-            </a>
-          </div>
+          <h2
+            id="social-heading"
+            className="font-sans text-xl sm:text-2xl font-black text-slate-950 dark:text-white tracking-tight"
+          >
+            Instagram @makaroni.ikantawes
+          </h2>
         </div>
 
-        {/* ── Streamlined Live Instagram Feed Widget ── */}
-        <div className="social-widget rounded-3xl border border-zinc-200/80 bg-white/80 backdrop-blur-xl overflow-hidden shadow-xl shadow-zinc-900/5 dark:bg-zinc-900/70 dark:border-white/10 dark:shadow-2xl p-4 md:p-6 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-white/5 mb-4">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
-                Live Feed Instagram
-              </span>
-            </div>
-            <span className="text-xs font-bold text-amber-600 dark:text-amber-300">@makaroni.ikantawes</span>
-          </div>
+        <div>
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold tracking-wide transition-all dark:bg-amber-500 dark:text-zinc-950 dark:hover:bg-amber-400 shadow-2xs"
+          >
+            <Instagram className="w-3.5 h-3.5" />
+            <span>Kunjungi Profil</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      </div>
 
-          {/* Embedded Live Instagram Profile Iframe Container */}
-          <div className="relative w-full rounded-2xl overflow-hidden border border-zinc-200/80 dark:border-zinc-800 bg-white p-1 shadow-md h-[560px]">
-            <iframe
-              src="https://www.instagram.com/makaroni.ikantawes/embed"
-              title="Feed Instagram Makaroni Ikan Tawes"
-              className="absolute inset-0 w-full h-full border-0 rounded-xl"
-            />
-          </div>
+      {/* ── Live Instagram Feed Widget ── */}
+      <div className="social-widget space-y-3">
+        <div className="relative w-full rounded-xl overflow-hidden border border-slate-200/90 dark:border-zinc-800 bg-white h-125 shadow-2xs">
+          <iframe
+            src="https://www.instagram.com/makaroni.ikantawes/embed"
+            title="Feed Instagram Makaroni Ikan Tawes"
+            className="absolute inset-0 w-full h-full border-0 rounded-xl"
+          />
+        </div>
 
-          <div className="pt-4 flex items-center justify-between text-xs text-zinc-500">
-            <span>Tersambung langsung dengan server Instagram resmi</span>
-            <a
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-bold text-amber-600 dark:text-amber-300 hover:underline flex items-center gap-1"
-            >
-              Lihat di Aplikasi Instagram <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-          </div>
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 pt-1">
+          <span>Kanal dokumentasi resmi operasional CV GASELA GROUP</span>
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-amber-700 dark:text-amber-400 hover:underline inline-flex items-center gap-1"
+          >
+            Buka di Aplikasi Instagram <ExternalLink className="w-3 h-3" />
+          </a>
         </div>
       </div>
     </section>
   );
 }
+

@@ -12,7 +12,6 @@
 
 import type { Metadata } from 'next';
 import { HeroSection } from '@/components/landing/HeroSection';
-import { MarqueeSection } from '@/components/landing/MarqueeSection';
 import { AboutSection } from '@/components/landing/AboutSection';
 import { ScrollAnimationSection } from '@/components/landing/ScrollAnimationSection';
 import { ContactSection } from '@/components/landing/ContactSection';
@@ -81,25 +80,20 @@ export default function LandingPage() {
       {/* Google Rich Snippets Structured Data */}
       <CompanyJsonLd />
 
-      {/* 1. Full-screen cinematic hero with animated stats */}
+      {/* 1. Full-screen hero section */}
       <HeroSection />
 
-      {/* 2. Infinite business-line ticker */}
-      <MarqueeSection />
-
-      {/* 3. Company biography, founder & journey timeline */}
+      {/* 2. Company biography, founder profile & journey timeline */}
       <AboutSection />
 
-      {/*
-       * 4. The signature scroll-driven pinned portfolio section.
-       *    The 500vh height lives inside ScrollAnimationSection.
-       */}
+      {/* 3. Portfolio section */}
       <section id="portfolio" aria-label="Portfolio bisnis Gasela Group">
         <ScrollAnimationSection />
       </section>
 
-      {/* 5. Contact / CTA section */}
+      {/* 4. Contact & branch directory */}
       <ContactSection />
     </>
   );
 }
+

@@ -69,20 +69,20 @@ function StatCard({
   accent?: 'zinc' | 'green' | 'amber' | 'red' | 'blue';
 }) {
   const accents: Record<string, string> = {
-    zinc: 'text-zinc-900 bg-zinc-50',
-    green: 'text-emerald-600 bg-emerald-50',
-    amber: 'text-amber-600 bg-amber-50',
-    red: 'text-red-600 bg-red-50',
-    blue: 'text-blue-600 bg-blue-50',
+    zinc: 'text-zinc-900 bg-zinc-50 dark:text-zinc-100 dark:bg-zinc-800',
+    green: 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/50',
+    amber: 'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/50',
+    red: 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-950/50',
+    blue: 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-950/50',
   };
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 space-y-3">
+    <div className="rounded-xl border border-zinc-200 bg-white p-4 space-y-3 dark:border-zinc-800 dark:bg-zinc-950 shadow-2xs">
       <div className={`inline-flex items-center justify-center rounded-lg p-2 ${accents[accent]}`}>
         <Icon className="size-4" />
       </div>
       <div>
-        <p className="text-2xl font-bold tracking-tight text-zinc-900 leading-none">{value}</p>
-        <p className="mt-1.5 text-xs text-zinc-500 font-medium">{label}</p>
+        <p className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 leading-none">{value}</p>
+        <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400 font-medium">{label}</p>
       </div>
     </div>
   );
@@ -91,8 +91,8 @@ function StatCard({
 function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <h3 className="text-sm font-bold text-zinc-800">{title}</h3>
-      {subtitle && <p className="text-xs text-zinc-400">{subtitle}</p>}
+      <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-100">{title}</h3>
+      {subtitle && <p className="text-xs text-zinc-400 dark:text-zinc-500">{subtitle}</p>}
     </div>
   );
 }
@@ -100,7 +100,7 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }
 function EmptyState({ message }: { message: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">
-      <div className="rounded-full bg-zinc-100 p-3">
+      <div className="rounded-full bg-zinc-100 dark:bg-zinc-800 p-3">
         <BarChart3 className="size-5 text-zinc-400" />
       </div>
       <p className="text-sm text-zinc-400 font-medium">{message}</p>
@@ -119,7 +119,7 @@ const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ className?
 // ─── FILTER PANELS ─────────────────────────────────────────────────────────────
 
 const SELECT_CLS =
-  'w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-shadow';
+  'w-full rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400 focus:border-transparent transition-shadow';
 
 function AttendanceFilters({
   attFrom, setAttFrom,
@@ -135,15 +135,15 @@ function AttendanceFilters({
   return (
     <div className="grid gap-4 sm:grid-cols-3">
       <div>
-        <Label htmlFor="att-from" className="text-xs font-semibold text-zinc-600">Dari Tanggal</Label>
+        <Label htmlFor="att-from" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Dari Tanggal</Label>
         <Input id="att-from" type="date" value={attFrom} onChange={(e) => setAttFrom(e.target.value)} className="mt-1.5" />
       </div>
       <div>
-        <Label htmlFor="att-to" className="text-xs font-semibold text-zinc-600">Sampai Tanggal</Label>
+        <Label htmlFor="att-to" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Sampai Tanggal</Label>
         <Input id="att-to" type="date" value={attTo} onChange={(e) => setAttTo(e.target.value)} className="mt-1.5" />
       </div>
       <div>
-        <Label htmlFor="att-dept" className="text-xs font-semibold text-zinc-600">Departemen</Label>
+        <Label htmlFor="att-dept" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Departemen</Label>
         <select id="att-dept" value={attDept} onChange={(e) => setAttDept(e.target.value)} className={`mt-1.5 ${SELECT_CLS}`}>
           <option value="">Semua Departemen</option>
           {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
@@ -165,15 +165,15 @@ function LeaveFilters({
   return (
     <div className="grid gap-4 sm:grid-cols-3">
       <div>
-        <Label htmlFor="leave-from" className="text-xs font-semibold text-zinc-600">Dari Tanggal</Label>
+        <Label htmlFor="leave-from" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Dari Tanggal</Label>
         <Input id="leave-from" type="date" value={leaveFrom} onChange={(e) => setLeaveFrom(e.target.value)} className="mt-1.5" />
       </div>
       <div>
-        <Label htmlFor="leave-to" className="text-xs font-semibold text-zinc-600">Sampai Tanggal</Label>
+        <Label htmlFor="leave-to" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Sampai Tanggal</Label>
         <Input id="leave-to" type="date" value={leaveTo} onChange={(e) => setLeaveTo(e.target.value)} className="mt-1.5" />
       </div>
       <div>
-        <Label htmlFor="leave-status" className="text-xs font-semibold text-zinc-600">Status</Label>
+        <Label htmlFor="leave-status" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Status</Label>
         <select id="leave-status" value={leaveStatus} onChange={(e) => setLeaveStatus(e.target.value)} className={`mt-1.5 ${SELECT_CLS}`}>
           <option value="">Semua Status</option>
           <option value="pending">Menunggu</option>
@@ -199,17 +199,17 @@ function PayrollFilters({
   return (
     <div className="grid gap-4 sm:grid-cols-3">
       <div>
-        <Label htmlFor="pay-month" className="text-xs font-semibold text-zinc-600">Bulan</Label>
+        <Label htmlFor="pay-month" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Bulan</Label>
         <select id="pay-month" value={payMonth} onChange={(e) => setPayMonth(e.target.value)} className={`mt-1.5 ${SELECT_CLS}`}>
           {MONTHS.map((name, i) => <option key={i + 1} value={i + 1}>{name}</option>)}
         </select>
       </div>
       <div>
-        <Label htmlFor="pay-year" className="text-xs font-semibold text-zinc-600">Tahun</Label>
+        <Label htmlFor="pay-year" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Tahun</Label>
         <Input id="pay-year" type="number" min={2000} max={2100} value={payYear} onChange={(e) => setPayYear(e.target.value)} className="mt-1.5" />
       </div>
       <div>
-        <Label htmlFor="pay-status" className="text-xs font-semibold text-zinc-600">Status</Label>
+        <Label htmlFor="pay-status" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Status</Label>
         <select id="pay-status" value={payStatus} onChange={(e) => setPayStatus(e.target.value)} className={`mt-1.5 ${SELECT_CLS}`}>
           <option value="">Semua Status</option>
           <option value="draft">Draft</option>
@@ -545,10 +545,10 @@ export default function ReportsPage() {
       {/* ── PAGE HEADER ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight">Laporan & Analitik</h1>
-          <p className="mt-0.5 text-sm text-zinc-500">Tinjau visualisasi data sebelum mengekspor ke CSV/Excel.</p>
+          <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">Laporan &amp; Analitik</h1>
+          <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">Tinjau visualisasi data sebelum mengekspor ke CSV/Excel.</p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-zinc-500 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2">
+        <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 py-2">
           <FileSpreadsheet className="size-3.5 text-emerald-500" />
           Format ekspor: CSV (UTF-8) · Kompatibel Excel &amp; Google Sheets
         </div>
@@ -558,8 +558,8 @@ export default function ReportsPage() {
       {csvMsg && (
         <div className={`mb-6 flex items-center gap-2.5 rounded-xl border px-4 py-3 text-sm font-medium ${
           csvMsg.type === 'success'
-            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-            : 'border-red-200 bg-red-50 text-red-700'
+            ? 'border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+            : 'border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300'
         }`}>
           {csvMsg.type === 'success' ? <CheckCircle2 className="size-4 shrink-0" /> : <AlertCircle className="size-4 shrink-0" />}
           {csvMsg.text}
@@ -568,7 +568,7 @@ export default function ReportsPage() {
       )}
 
       {/* ── TAB BAR ── */}
-      <div className="flex items-center gap-1 border-b border-zinc-200 mb-6 overflow-x-auto">
+      <div className="flex items-center gap-1 border-b border-zinc-200 dark:border-zinc-800 mb-6 overflow-x-auto">
         {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.key;
@@ -578,11 +578,11 @@ export default function ReportsPage() {
               onClick={() => { setActiveTab(tab.key); setCsvMsg(null); }}
               className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all focus:outline-none whitespace-nowrap ${
                 active
-                  ? 'border-zinc-900 text-zinc-900'
-                  : 'border-transparent text-zinc-400 hover:text-zinc-700 hover:border-zinc-300'
+                  ? 'border-zinc-900 text-zinc-900 dark:border-amber-500 dark:text-white'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700'
               }`}
             >
-              <Icon className={`size-4 ${active ? 'text-zinc-900' : 'text-zinc-400'}`} />
+              <Icon className={`size-4 ${active ? 'text-zinc-900 dark:text-amber-500' : 'text-zinc-400'}`} />
               {tab.label}
             </button>
           );
@@ -590,13 +590,13 @@ export default function ReportsPage() {
       </div>
 
       {/* ── FILTER BAR (horizontal, full-width) ── */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-5 mb-6 shadow-xs">
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5 mb-6 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-end gap-4">
           <div className="flex items-center gap-2 shrink-0">
-            <div className="rounded-lg bg-zinc-100 p-2">
-              <Filter className="size-4 text-zinc-600" />
+            <div className="rounded-lg bg-zinc-100 dark:bg-zinc-800 p-2">
+              <Filter className="size-4 text-zinc-600 dark:text-zinc-400" />
             </div>
-            <span className="text-sm font-bold text-zinc-800">Filter</span>
+            <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200">Filter</span>
           </div>
 
           <div className="flex-1">
@@ -627,14 +627,14 @@ export default function ReportsPage() {
           <div className="flex items-center gap-2 shrink-0">
             <Button
               variant="outline"
-              className="border-red-200 bg-red-50/60 text-red-700 hover:bg-red-100 hover:text-red-800 font-semibold text-xs gap-1.5 px-4 py-2.5 h-auto shadow-2xs"
+              className="border-red-200 dark:border-red-900/50 bg-red-50/60 dark:bg-red-950/40 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/60 font-semibold text-xs gap-1.5 px-4 py-2.5 h-auto shadow-2xs"
               onClick={() => exportPdf(activeTab)}
             >
-              <FileDown className="size-3.5 text-red-600 shrink-0" />
+              <FileDown className="size-3.5 text-red-600 dark:text-red-400 shrink-0" />
               <span>Export PDF</span>
             </Button>
             <Button
-              className="bg-zinc-900 text-white hover:bg-zinc-700 text-xs font-semibold gap-1.5 px-4 py-2.5 h-auto shadow-2xs"
+              className="bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-amber-600 dark:hover:bg-amber-700 dark:text-white text-xs font-semibold gap-1.5 px-4 py-2.5 h-auto shadow-2xs"
               disabled={downloading !== null}
               onClick={() => downloadCsv(activeTab)}
             >
@@ -652,8 +652,8 @@ export default function ReportsPage() {
       {/* ── LOADING STATE ── */}
       {isLoading && (
         <div className="flex flex-col items-center justify-center py-24 gap-3">
-          <Loader2 className="size-8 animate-spin text-zinc-900" />
-          <p className="text-sm text-zinc-500 font-medium">Memuat data laporan…</p>
+          <Loader2 className="size-8 animate-spin text-zinc-900 dark:text-amber-500" />
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">Memuat data laporan…</p>
         </div>
       )}
 
@@ -675,12 +675,12 @@ export default function ReportsPage() {
           <div className="grid gap-6 lg:grid-cols-5">
 
             {/* Donut Chart (3 cols) */}
-            <div className="lg:col-span-3 rounded-xl border border-zinc-200 bg-white p-6">
+            <div className="lg:col-span-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-6 shadow-2xs">
               <SectionHeader title="Sebaran Status Kehadiran" subtitle="Persentase status dari seluruh record" />
               {attPieData.length === 0 ? (
                 <EmptyState message="Tidak ada data untuk ditampilkan." />
               ) : (
-                <div className="mt-5 flex flex-col sm:flex-row items-center gap-6 min-h-[200px]">
+                <div className="mt-5 flex flex-col sm:flex-row items-center gap-6 min-h-50">
                   {mounted && (
                     <div className="relative size-44 shrink-0">
                       <ResponsiveContainer width="100%" height="100%">
@@ -698,8 +698,8 @@ export default function ReportsPage() {
                         </PieChart>
                       </ResponsiveContainer>
                       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-3xl font-extrabold text-zinc-900">{attTotal}</span>
-                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-semibold mt-0.5">Record</span>
+                        <span className="text-3xl font-extrabold text-zinc-900 dark:text-white">{attTotal}</span>
+                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest font-semibold mt-0.5">Record</span>
                       </div>
                     </div>
                   )}
@@ -709,12 +709,12 @@ export default function ReportsPage() {
                       return (
                         <div key={item.name} className="flex items-center gap-3">
                           <span className="size-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                          <span className="text-sm text-zinc-600 flex-1">{item.name}</span>
+                          <span className="text-sm text-zinc-600 dark:text-zinc-300 flex-1">{item.name}</span>
                           <div className="flex items-center gap-2 shrink-0">
-                            <div className="w-20 h-1.5 rounded-full bg-zinc-100 overflow-hidden">
+                            <div className="w-20 h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
                               <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: item.color }} />
                             </div>
-                            <span className="text-xs font-bold text-zinc-800 w-8 text-right">{pct}%</span>
+                            <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 w-8 text-right">{pct}%</span>
                           </div>
                         </div>
                       );
@@ -725,17 +725,17 @@ export default function ReportsPage() {
             </div>
 
             {/* Discipline Metrics (2 cols) */}
-            <div className="lg:col-span-2 rounded-xl border border-zinc-200 bg-white p-6">
+            <div className="lg:col-span-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-6 shadow-2xs">
               <SectionHeader title="Ringkasan Kedisiplinan" subtitle="Rincian berdasarkan kategori status" />
               <div className="mt-5 space-y-3">
                 {[
-                  { label: 'Tepat Waktu', value: attPresent, color: 'text-emerald-600 bg-emerald-50' },
-                  { label: 'Terlambat', value: attLate, color: 'text-amber-600 bg-amber-50' },
-                  { label: 'Cuti / Izin Resmi', value: attOnLeave, color: 'text-blue-600 bg-blue-50' },
-                  { label: 'Mangkir / Absen', value: attAbsent, color: 'text-red-600 bg-red-50' },
+                  { label: 'Tepat Waktu', value: attPresent, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60' },
+                  { label: 'Terlambat', value: attLate, color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60' },
+                  { label: 'Cuti / Izin Resmi', value: attOnLeave, color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60' },
+                  { label: 'Mangkir / Absen', value: attAbsent, color: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60' },
                 ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between py-2.5 border-b border-zinc-50 last:border-0">
-                    <span className="text-sm text-zinc-600">{item.label}</span>
+                  <div key={item.label} className="flex items-center justify-between py-2.5 border-b border-zinc-50 dark:border-zinc-850/80 last:border-0">
+                    <span className="text-sm text-zinc-600 dark:text-zinc-300">{item.label}</span>
                     <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full ${item.color}`}>{item.value} hari</span>
                   </div>
                 ))}
@@ -744,11 +744,11 @@ export default function ReportsPage() {
           </div>
 
           {/* Data Table */}
-          <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
+          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden shadow-2xs">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
               <SectionHeader title="Detail Data Kehadiran" subtitle={`Menampilkan ${Math.min(15, attTotal)} dari ${attTotal} record`} />
               {attTotal > 15 && (
-                <span className="text-xs text-zinc-400 bg-zinc-50 border border-zinc-200 rounded-full px-3 py-1">
+                <span className="text-xs text-zinc-400 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full px-3 py-1">
                   +{attTotal - 15} record lagi tersedia via CSV
                 </span>
               )}
@@ -759,28 +759,28 @@ export default function ReportsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-zinc-50 border-b border-zinc-100 text-left">
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Tanggal</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Karyawan</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider hidden md:table-cell">Departemen</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider hidden lg:table-cell">Shift</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Masuk / Keluar</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Lokasi GPS (Presensi)</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Status</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider text-right">Terlambat</th>
+                    <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 text-left">
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Tanggal</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Karyawan</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell">Departemen</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell">Shift</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Masuk / Keluar</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Lokasi GPS (Presensi)</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Status</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider text-right">Terlambat</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-50">
+                  <tbody className="divide-y divide-zinc-50 dark:divide-zinc-850/80">
                     {attRecs.slice(0, 15).map((r: any, i: number) => (
-                      <tr key={i} className="hover:bg-zinc-50 transition-colors">
-                        <td className="px-5 py-3.5 text-sm font-medium text-zinc-900 whitespace-nowrap">{fmtDate(r.attendanceDate)}</td>
+                      <tr key={i} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors">
+                        <td className="px-5 py-3.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 whitespace-nowrap">{fmtDate(r.attendanceDate)}</td>
                         <td className="px-5 py-3.5">
-                          <div className="font-semibold text-zinc-900 text-sm">{r.employee?.fullName}</div>
-                          <div className="text-[11px] text-zinc-400 mt-0.5">{r.employee?.employeeNumber}</div>
+                          <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{r.employee?.fullName}</div>
+                          <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">{r.employee?.employeeNumber}</div>
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-500 hidden md:table-cell">{r.employee?.department?.name ?? '—'}</td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-500 hidden lg:table-cell">{r.shift?.name ?? '—'}</td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-700 whitespace-nowrap font-mono">
+                        <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400 hidden md:table-cell">{r.employee?.department?.name ?? '—'}</td>
+                        <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400 hidden lg:table-cell">{r.shift?.name ?? '—'}</td>
+                        <td className="px-5 py-3.5 text-sm text-zinc-700 dark:text-zinc-300 whitespace-nowrap font-mono">
                           {r.checkInTime ? fmtTime(r.checkInTime) : '—'}&nbsp;/&nbsp;{r.checkOutTime ? fmtTime(r.checkOutTime) : '—'}
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
@@ -789,10 +789,10 @@ export default function ReportsPage() {
                               href={`https://www.google.com/maps?q=${r.checkInLat},${r.checkInLng}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-md hover:bg-emerald-100 transition-colors shadow-2xs"
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/80 dark:border-emerald-900/50 px-2.5 py-1 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors shadow-2xs"
                               title="Buka lokasi persis check-in di Google Maps"
                             >
-                              <MapPin className="size-3.5 text-emerald-600 shrink-0" />
+                              <MapPin className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                               <span>{Number(r.checkInLat).toFixed(4)}, {Number(r.checkInLng).toFixed(4)}</span>
                               <ExternalLink className="size-3 text-emerald-500 ml-0.5 shrink-0" />
                             </a>
@@ -805,9 +805,9 @@ export default function ReportsPage() {
                         </td>
                         <td className="px-5 py-3.5 text-right">
                           {Number(r.lateMinutes) > 0 ? (
-                            <span className="text-amber-600 font-semibold text-xs">{r.lateMinutes} mnt</span>
+                            <span className="text-amber-600 dark:text-amber-400 font-semibold text-xs">{r.lateMinutes} mnt</span>
                           ) : (
-                            <span className="text-zinc-300 text-xs">—</span>
+                            <span className="text-zinc-300 dark:text-zinc-600 text-xs">—</span>
                           )}
                         </td>
                       </tr>
@@ -838,7 +838,7 @@ export default function ReportsPage() {
           <div className="grid gap-6 lg:grid-cols-5">
 
             {/* Bar Chart (3 cols) */}
-            <div className="lg:col-span-3 rounded-xl border border-zinc-200 bg-white p-6">
+            <div className="lg:col-span-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-6 shadow-2xs">
               <SectionHeader title="Frekuensi per Jenis Cuti" subtitle="Jumlah pengajuan berdasarkan tipe" />
               {leaveBarData.length === 0 ? (
                 <EmptyState message="Tidak ada data jenis cuti untuk ditampilkan." />
@@ -850,16 +850,16 @@ export default function ReportsPage() {
                         <XAxis dataKey="name" stroke="#a1a1aa" fontSize={11} tickLine={false} axisLine={false} />
                         <YAxis stroke="#a1a1aa" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
                         <Tooltip
-                          cursor={{ fill: '#f4f4f5' }}
+                          cursor={{ fill: '#27272a', opacity: 0.3 }}
                           content={({ active, payload }) =>
                             active && payload?.length ? (
-                              <div className="rounded-lg border border-zinc-200 bg-white shadow-lg px-3 py-2 text-xs font-bold text-zinc-900">
+                              <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg px-3 py-2 text-xs font-bold text-zinc-900 dark:text-zinc-100">
                                 {payload[0].value} Pengajuan
                               </div>
                             ) : null
                           }
                         />
-                        <Bar dataKey="value" fill="#18181b" radius={[6, 6, 0, 0]} maxBarSize={48} />
+                        <Bar dataKey="value" fill="#f59e0b" radius={[6, 6, 0, 0]} maxBarSize={48} />
                       </ReBarChart>
                     </ResponsiveContainer>
                   )}
@@ -868,16 +868,16 @@ export default function ReportsPage() {
             </div>
 
             {/* Alasan Teratas (2 cols) */}
-            <div className="lg:col-span-2 rounded-xl border border-zinc-200 bg-white p-6">
+            <div className="lg:col-span-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-6 shadow-2xs">
               <SectionHeader title="Riwayat Pengajuan Terbaru" subtitle="5 pengajuan terkini" />
               <div className="mt-4 space-y-3 max-h-56 overflow-y-auto">
                 {leaveRecs.slice(0, 5).map((r: any, i: number) => (
-                  <div key={i} className="flex items-start gap-3 py-2 border-b border-zinc-50 last:border-0">
-                    <div className="flex size-7 items-center justify-center rounded-full bg-zinc-100 text-xs font-bold text-zinc-600 shrink-0 mt-0.5">
+                  <div key={i} className="flex items-start gap-3 py-2 border-b border-zinc-50 dark:border-zinc-850/80 last:border-0">
+                    <div className="flex size-7 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-xs font-bold text-zinc-600 dark:text-zinc-300 shrink-0 mt-0.5">
                       {r.employee?.fullName?.charAt(0) ?? '?'}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-zinc-800 truncate">{r.employee?.fullName}</div>
+                      <div className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate">{r.employee?.fullName}</div>
                       <div className="text-xs text-zinc-400 mt-0.5">{r.leaveType?.name} · {r.totalDays} hari</div>
                     </div>
                     <span className={`ml-auto shrink-0 ${badgeClass(r.status)}`}>{statusLabel(r.status)}</span>
@@ -889,11 +889,11 @@ export default function ReportsPage() {
           </div>
 
           {/* Data Table */}
-          <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
+          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden shadow-2xs">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
               <SectionHeader title="Detail Data Cuti" subtitle={`Menampilkan ${Math.min(15, leaveTotal)} dari ${leaveTotal} record`} />
               {leaveTotal > 15 && (
-                <span className="text-xs text-zinc-400 bg-zinc-50 border border-zinc-200 rounded-full px-3 py-1">
+                <span className="text-xs text-zinc-400 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full px-3 py-1">
                   +{leaveTotal - 15} record lagi via CSV
                 </span>
               )}
@@ -904,29 +904,29 @@ export default function ReportsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-zinc-50 border-b border-zinc-100 text-left">
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">No. Pengajuan</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Karyawan</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider hidden md:table-cell">Jenis Cuti</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider hidden lg:table-cell">Tanggal</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Jumlah Hari</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Status</th>
+                    <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 text-left">
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">No. Pengajuan</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Karyawan</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell">Jenis Cuti</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell">Tanggal</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Jumlah Hari</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-50">
+                  <tbody className="divide-y divide-zinc-50 dark:divide-zinc-850/80">
                     {leaveRecs.slice(0, 15).map((r: any, i: number) => (
-                      <tr key={i} className="hover:bg-zinc-50 transition-colors">
-                        <td className="px-5 py-3.5 text-xs font-mono font-medium text-zinc-500">{r.requestNumber}</td>
+                      <tr key={i} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors">
+                        <td className="px-5 py-3.5 text-xs font-mono font-medium text-zinc-500 dark:text-zinc-400">{r.requestNumber}</td>
                         <td className="px-5 py-3.5">
-                          <div className="font-semibold text-zinc-900 text-sm">{r.employee?.fullName}</div>
-                          <div className="text-[11px] text-zinc-400 mt-0.5">{r.employee?.employeeNumber}</div>
+                          <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{r.employee?.fullName}</div>
+                          <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">{r.employee?.employeeNumber}</div>
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-600 hidden md:table-cell">{r.leaveType?.name}</td>
-                        <td className="px-5 py-3.5 text-xs text-zinc-500 whitespace-nowrap hidden lg:table-cell">
+                        <td className="px-5 py-3.5 text-sm text-zinc-600 dark:text-zinc-300 hidden md:table-cell">{r.leaveType?.name}</td>
+                        <td className="px-5 py-3.5 text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap hidden lg:table-cell">
                           {fmtDate(r.startDate)} – {fmtDate(r.endDate)}
                         </td>
                         <td className="px-5 py-3.5">
-                          <span className="text-sm font-bold text-zinc-900">{r.totalDays}</span>
+                          <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{r.totalDays}</span>
                           <span className="text-xs text-zinc-400 ml-1">hari</span>
                         </td>
                         <td className="px-5 py-3.5">
@@ -960,7 +960,7 @@ export default function ReportsPage() {
           <div className="grid gap-6 lg:grid-cols-5">
 
             {/* Horizontal Bar (3 cols) */}
-            <div className="lg:col-span-3 rounded-xl border border-zinc-200 bg-white p-6">
+            <div className="lg:col-span-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-6 shadow-2xs">
               <SectionHeader title="Biaya Gaji per Departemen" subtitle="Total gaji bersih yang dibayarkan" />
               {payBarData.length === 0 ? (
                 <EmptyState message="Tidak ada data departemen untuk ditampilkan." />
@@ -972,16 +972,16 @@ export default function ReportsPage() {
                         <XAxis type="number" hide />
                         <YAxis dataKey="name" type="category" stroke="#a1a1aa" fontSize={11} tickLine={false} axisLine={false} width={90} />
                         <Tooltip
-                          cursor={{ fill: '#f4f4f5' }}
+                          cursor={{ fill: '#27272a', opacity: 0.3 }}
                           content={({ active, payload }) =>
                             active && payload?.length ? (
-                              <div className="rounded-lg border border-zinc-200 bg-white shadow-lg px-3 py-2 text-xs font-bold text-zinc-900">
+                              <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg px-3 py-2 text-xs font-bold text-zinc-900 dark:text-zinc-100">
                                 {fmtRupiah(Number(payload[0].value))}
                               </div>
                             ) : null
                           }
                         />
-                        <Bar dataKey="value" fill="#18181b" radius={[0, 6, 6, 0]} maxBarSize={28} />
+                        <Bar dataKey="value" fill="#10b981" radius={[0, 6, 6, 0]} maxBarSize={28} />
                       </ReBarChart>
                     </ResponsiveContainer>
                   )}
@@ -990,22 +990,22 @@ export default function ReportsPage() {
             </div>
 
             {/* Top Earners (2 cols) */}
-            <div className="lg:col-span-2 rounded-xl border border-zinc-200 bg-white p-6">
+            <div className="lg:col-span-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-6 shadow-2xs">
               <SectionHeader title="Gaji Tertinggi" subtitle="5 karyawan dengan gaji bersih terbesar" />
               <div className="mt-4 space-y-2 max-h-56 overflow-y-auto">
                 {[...payRecs]
                   .sort((a, b) => Number(b.netSalary) - Number(a.netSalary))
                   .slice(0, 5)
                   .map((r: any, i: number) => (
-                    <div key={i} className="flex items-center gap-3 py-2 border-b border-zinc-50 last:border-0">
-                      <span className="size-6 flex items-center justify-center rounded-full bg-zinc-900 text-white text-[10px] font-extrabold shrink-0">
+                    <div key={i} className="flex items-center gap-3 py-2 border-b border-zinc-50 dark:border-zinc-850/80 last:border-0">
+                      <span className="size-6 flex items-center justify-center rounded-full bg-zinc-900 dark:bg-amber-500 text-white dark:text-zinc-950 text-[10px] font-extrabold shrink-0">
                         {i + 1}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-semibold text-zinc-800 truncate">{r.employee?.fullName}</div>
+                        <div className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate">{r.employee?.fullName}</div>
                         <div className="text-[11px] text-zinc-400 mt-0.5 truncate">{r.employee?.department?.name ?? '—'}</div>
                       </div>
-                      <span className="text-xs font-bold text-zinc-900 shrink-0">{fmtRupiah(r.netSalary)}</span>
+                      <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 shrink-0">{fmtRupiah(r.netSalary)}</span>
                     </div>
                   ))}
                 {payRecs.length === 0 && <p className="text-sm text-zinc-400 text-center py-8">Belum ada data penggajian.</p>}
@@ -1014,38 +1014,38 @@ export default function ReportsPage() {
           </div>
 
           {/* Data Table */}
-          <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
-            <div className="px-6 py-4 border-b border-zinc-100">
+          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden shadow-2xs">
+            <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
               <SectionHeader title="Detail Data Penggajian" subtitle={`${payRecs.length} record ditemukan`} />
             </div>
             {payRecs.length === 0 ? (
               <EmptyState message="Belum ada data penggajian yang di-generate untuk bulan/tahun ini. Silakan generate gaji terlebih dahulu di menu Penggajian (Payroll)." />
             ) : (
-              <div className="overflow-x-auto max-h-[360px] overflow-y-auto">
+              <div className="overflow-x-auto max-h-90 overflow-y-auto">
                 <table className="w-full text-sm">
                   <thead className="sticky top-0 z-10">
-                    <tr className="bg-zinc-50 border-b border-zinc-100 text-left">
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Karyawan</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider hidden md:table-cell">Departemen</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Gaji Pokok</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider hidden lg:table-cell">Tunjangan</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider hidden lg:table-cell">Potongan</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Gaji Bersih</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Status</th>
+                    <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 text-left">
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Karyawan</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell">Departemen</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Gaji Pokok</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell">Tunjangan</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell">Potongan</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Gaji Bersih</th>
+                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-50">
+                  <tbody className="divide-y divide-zinc-50 dark:divide-zinc-850/80">
                     {payRecs.map((r: any, i: number) => (
-                      <tr key={i} className="hover:bg-zinc-50 transition-colors">
+                      <tr key={i} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors">
                         <td className="px-5 py-3.5">
-                          <div className="font-semibold text-zinc-900 text-sm">{r.employeeName ?? r.employee?.fullName}</div>
-                          <div className="text-[11px] text-zinc-400 mt-0.5">{r.payrollNumber}</div>
+                          <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{r.employeeName ?? r.employee?.fullName}</div>
+                          <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">{r.payrollNumber}</div>
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-500 hidden md:table-cell">{r.department ?? r.employee?.department?.name ?? '—'}</td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-700">{fmtRupiah(r.basicSalary)}</td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-500 hidden lg:table-cell">{fmtRupiah(r.totalAllowance)}</td>
+                        <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400 hidden md:table-cell">{r.department ?? r.employee?.department?.name ?? '—'}</td>
+                        <td className="px-5 py-3.5 text-sm text-zinc-700 dark:text-zinc-300">{fmtRupiah(r.basicSalary)}</td>
+                        <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400 hidden lg:table-cell">{fmtRupiah(r.totalAllowance)}</td>
                         <td className="px-5 py-3.5 text-sm text-red-500 hidden lg:table-cell">−{fmtRupiah(r.totalAllDeductions ?? 0)}</td>
-                        <td className="px-5 py-3.5 text-sm font-extrabold text-zinc-900">{fmtRupiah(r.netSalary)}</td>
+                        <td className="px-5 py-3.5 text-sm font-extrabold text-zinc-900 dark:text-zinc-100">{fmtRupiah(r.netSalary)}</td>
                         <td className="px-5 py-3.5">
                           <span className={badgeClass(r.status)}>{statusLabel(r.status)}</span>
                         </td>
@@ -1060,11 +1060,11 @@ export default function ReportsPage() {
       )}
 
       {/* ── EXCEL HINT ── */}
-      <div className="mt-8 rounded-xl border border-zinc-100 bg-zinc-50 px-5 py-4 flex gap-3">
+      <div className="mt-8 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 py-4 flex gap-3">
         <FileSpreadsheet className="size-4 text-zinc-400 shrink-0 mt-0.5" />
         <div>
-          <p className="text-xs font-semibold text-zinc-700 mb-1">Cara membuka file CSV di Microsoft Excel</p>
-          <ol className="list-decimal list-inside space-y-0.5 text-xs text-zinc-500">
+          <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Cara membuka file CSV di Microsoft Excel</p>
+          <ol className="list-decimal list-inside space-y-0.5 text-xs text-zinc-500 dark:text-zinc-400">
             <li>Klik tombol <strong>Ekspor CSV</strong> pada bagian filter di atas.</li>
             <li>Buka Excel → <strong>Data</strong> → <strong>From Text/CSV</strong> → pilih file yang diunduh.</li>
             <li>Pastikan delimiter yang dipilih adalah <strong>titik koma (;)</strong> → klik <strong>Load</strong>.</li>

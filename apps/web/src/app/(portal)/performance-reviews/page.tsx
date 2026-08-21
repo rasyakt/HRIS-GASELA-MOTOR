@@ -8,6 +8,7 @@ import {
   Edit2,
   Loader2,
   PlusCircle,
+  Search,
   Star,
   Trash2,
   TrendingUp,
@@ -57,9 +58,9 @@ const STATUS_LABELS: Record<string, string> = {
   acknowledged: 'Diakui',
 };
 const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-zinc-100 text-zinc-600',
-  submitted: 'bg-blue-100 text-blue-700',
-  acknowledged: 'bg-emerald-100 text-emerald-700',
+  draft: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300',
+  submitted: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
+  acknowledged: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300',
 };
 
 function ScoreBar({ score }: { score: number }) {
@@ -67,10 +68,10 @@ function ScoreBar({ score }: { score: number }) {
   const color = score >= 80 ? 'bg-emerald-500' : score >= 60 ? 'bg-amber-400' : 'bg-red-400';
   return (
     <div className="flex items-center gap-2">
-      <div className="h-2 flex-1 rounded-full bg-zinc-200 overflow-hidden">
+      <div className="h-2 flex-1 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
         <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs font-semibold text-zinc-700 w-8 text-right">{score}</span>
+      <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 w-8 text-right">{score}</span>
     </div>
   );
 }
@@ -88,24 +89,24 @@ function ReviewCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   return (
-    <Card className="border-zinc-200 shadow-sm hover:shadow-md transition-shadow">
+    <Card className="border-zinc-200 dark:border-zinc-800 shadow-2xs hover:shadow-xs transition-shadow">
       <CardContent className="pt-4 pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <span className="font-semibold text-zinc-900 text-sm truncate">{review.employeeName}</span>
+              <span className="font-semibold text-zinc-900 dark:text-white text-sm truncate">{review.employeeName}</span>
               <Badge className={`text-[10px] font-semibold ${STATUS_COLORS[review.status]}`}>
                 {STATUS_LABELS[review.status]}
               </Badge>
             </div>
-            <p className="text-xs text-zinc-500 mb-2">
-              Periode: <strong>{MONTH_NAMES[review.periodMonth - 1]} {review.periodYear}</strong>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+              Periode: <strong className="text-zinc-800 dark:text-zinc-200">{MONTH_NAMES[review.periodMonth - 1]} {review.periodYear}</strong>
               {' · '}Reviewer: {review.reviewerName}
               {' · '}{fmtDate(review.reviewDate)}
             </p>
             {review.overallScore !== null && (
               <div className="mb-2">
-                <p className="text-[11px] text-zinc-400 mb-1 flex items-center gap-1">
+                <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mb-1 flex items-center gap-1">
                   <Star className="size-3" /> Skor Keseluruhan
                 </p>
                 <ScoreBar score={review.overallScore} />
@@ -121,7 +122,7 @@ function ReviewCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-7 text-red-500 hover:text-red-600 hover:bg-red-50"
+                  className="size-7 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
                   onClick={() => onDelete(review.id)}
                 >
                   <Trash2 className="size-3.5" />
@@ -134,17 +135,17 @@ function ReviewCard({
           </div>
         </div>
         {expanded && (
-          <div className="mt-3 space-y-2 border-t border-zinc-100 pt-3">
+          <div className="mt-3 space-y-2 border-t border-zinc-100 dark:border-zinc-800 pt-3">
             {review.strengths && (
               <div>
-                <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide mb-0.5">Kekuatan</p>
-                <p className="text-xs text-zinc-700 whitespace-pre-wrap">{review.strengths}</p>
+                <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-0.5">Kekuatan</p>
+                <p className="text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{review.strengths}</p>
               </div>
             )}
             {review.areasForImprovement && (
               <div>
-                <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-wide mb-0.5">Area Perbaikan</p>
-                <p className="text-xs text-zinc-700 whitespace-pre-wrap">{review.areasForImprovement}</p>
+                <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-0.5">Area Perbaikan</p>
+                <p className="text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{review.areasForImprovement}</p>
               </div>
             )}
             {review.goalsNextPeriod && (
@@ -278,12 +279,12 @@ export default function PerformanceReviewsPage() {
 
   if (!user || !canManage) return null;
 
-  const selectCls = 'mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900';
+  const selectCls = 'mt-1 block w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400';
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       {/* Header */}
-      <div className="rounded-xl bg-zinc-900 p-6 text-white">
+      <div className="rounded-xl bg-zinc-900 dark:bg-zinc-950 border border-zinc-800 p-6 text-white">
         <div className="flex items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -293,7 +294,7 @@ export default function PerformanceReviewsPage() {
             <p className="text-sm text-zinc-400">Evaluasi kinerja karyawan per periode</p>
           </div>
           {canManage && (
-            <Button onClick={openCreate} className="bg-white text-zinc-900 hover:bg-zinc-100 gap-2">
+            <Button onClick={openCreate} className="bg-white text-zinc-900 hover:bg-zinc-100 dark:bg-amber-600 dark:text-white dark:hover:bg-amber-700 gap-2 font-semibold shadow-2xs">
               <PlusCircle className="size-4" /> Tambah Review
             </Button>
           )}
@@ -302,38 +303,47 @@ export default function PerformanceReviewsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="border-zinc-200 text-center">
+        <Card className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-center shadow-2xs">
           <CardContent className="pt-4 pb-3">
-            <p className="text-2xl font-bold text-zinc-900">{reviews.data?.length ?? '—'}</p>
-            <p className="text-xs text-zinc-500 mt-0.5">Total Review</p>
+            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{reviews.data?.length ?? '—'}</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium">Total Review</p>
           </CardContent>
         </Card>
-        <Card className="border-zinc-200 text-center">
+        <Card className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-center shadow-2xs">
           <CardContent className="pt-4 pb-3">
-            <p className="text-2xl font-bold text-zinc-900">
+            <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
               {avgScore !== null ? avgScore.toFixed(1) : '—'}
             </p>
-            <p className="text-xs text-zinc-500 mt-0.5">Rata-rata Skor</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium">Rata-rata Skor</p>
           </CardContent>
         </Card>
-        <Card className="border-zinc-200 text-center">
+        <Card className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-center shadow-2xs">
           <CardContent className="pt-4 pb-3">
-            <p className="text-2xl font-bold text-emerald-600">
+            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
               {reviews.data?.filter((r) => r.status === 'acknowledged').length ?? '—'}
             </p>
-            <p className="text-xs text-zinc-500 mt-0.5">Diakui</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium">Diakui</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filter */}
-      <div className="flex gap-3">
-        <Input
-          placeholder="Cari nama karyawan…"
-          value={filterEmployee}
-          onChange={(e) => setFilterEmployee(e.target.value)}
-          className="max-w-xs"
-        />
+      {/* Filter by employee */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400" />
+          <Input
+            placeholder="Filter nama karyawan..."
+            value={filterEmployee}
+            onChange={(e) => setFilterEmployee(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        {avgScore !== null && (
+          <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 shadow-2xs">
+            <Star className="size-3.5 text-amber-500 fill-amber-500" />
+            <span>Rata-rata Skor: <strong className="text-zinc-900 dark:text-white font-bold">{avgScore.toFixed(1)}</strong></span>
+          </div>
+        )}
       </div>
 
       {/* List */}
@@ -343,7 +353,7 @@ export default function PerformanceReviewsPage() {
         </div>
       )}
       {reviews.isError && (
-        <p className="text-sm text-red-600 text-center py-8">Gagal memuat data review.</p>
+        <p className="text-sm text-red-600 dark:text-red-400 text-center py-8">Gagal memuat data review.</p>
       )}
       {!reviews.isLoading && filtered.length === 0 && (
         <div className="flex flex-col items-center py-16 text-zinc-400">
@@ -375,13 +385,13 @@ export default function PerformanceReviewsPage() {
         <div className="fixed inset-0 z-50 overflow-hidden">
           <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm transition-opacity" onClick={closeDrawer} />
           <div className="pointer-events-none fixed inset-0 flex items-center justify-center p-4">
-            <div className="pointer-events-auto w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+            <div className="pointer-events-auto w-full max-w-lg bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 p-5">
-                <h3 className="text-base font-bold text-zinc-900">
+              <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-5">
+                <h3 className="text-base font-bold text-zinc-900 dark:text-white">
                   {editingId !== null ? 'Edit Review' : 'Tambah Review'}
                 </h3>
-                <button onClick={closeDrawer} className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors">
+                <button onClick={closeDrawer} className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors">
                   <X className="size-5" />
                 </button>
               </div>
@@ -454,31 +464,31 @@ export default function PerformanceReviewsPage() {
                   <textarea id="pr-strengths" rows={3} value={form.strengths}
                     onChange={(e) => setForm((f) => ({ ...f, strengths: e.target.value }))}
                     placeholder="Tulis kelebihan karyawan di periode ini…"
-                    className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-zinc-900" />
+                    className="mt-1 block w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 resize-none focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400" />
                 </div>
                 <div>
                   <Label htmlFor="pr-improve">Area Perbaikan</Label>
                   <textarea id="pr-improve" rows={3} value={form.areasForImprovement}
                     onChange={(e) => setForm((f) => ({ ...f, areasForImprovement: e.target.value }))}
                     placeholder="Hal-hal yang perlu diperbaiki…"
-                    className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-zinc-900" />
+                    className="mt-1 block w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 resize-none focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400" />
                 </div>
                 <div>
                   <Label htmlFor="pr-goals">Target Periode Berikutnya</Label>
                   <textarea id="pr-goals" rows={3} value={form.goalsNextPeriod}
                     onChange={(e) => setForm((f) => ({ ...f, goalsNextPeriod: e.target.value }))}
                     placeholder="Target & rencana untuk periode selanjutnya…"
-                    className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-zinc-900" />
+                    className="mt-1 block w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 resize-none focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400" />
                 </div>
 
                 {(createMut.isError || updateMut.isError) && (
-                  <p className="text-sm text-red-600">
+                  <p className="text-sm text-red-600 dark:text-red-400">
                     {((createMut.error || updateMut.error) as Error)?.message ?? 'Terjadi kesalahan'}
                   </p>
                 )}
 
                 <div className="flex gap-3 pt-2">
-                  <Button type="submit" disabled={isBusy} className="flex-1 bg-zinc-900 text-white hover:bg-zinc-800">
+                  <Button type="submit" disabled={isBusy} className="flex-1 bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-amber-600 dark:hover:bg-amber-700 font-semibold">
                     {isBusy && <Loader2 className="mr-1.5 size-4 animate-spin" />}
                     {editingId !== null ? 'Simpan Perubahan' : 'Tambah Review'}
                   </Button>

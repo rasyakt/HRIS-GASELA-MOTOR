@@ -448,21 +448,21 @@ function GenerateCard({
       {showCompModal && <SalaryComponentsModal onClose={() => setShowCompModal(false)} />}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Generate Gaji</CardTitle>
-          <Button variant="outline" size="sm" onClick={() => setShowCompModal(true)} className="text-xs font-semibold gap-1.5">
-            <PlusCircle className="size-3.5 text-amber-600" />
+          <CardTitle className="text-zinc-900 dark:text-white">Generate Gaji</CardTitle>
+          <Button variant="outline" size="sm" onClick={() => setShowCompModal(true)} className="text-xs font-semibold gap-1.5 border-zinc-200 dark:border-zinc-800">
+            <PlusCircle className="size-3.5 text-amber-600 dark:text-amber-400" />
             Kelola Komponen Gaji &amp; THR
           </Button>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-end gap-3">
             <div className="space-y-1">
-              <Label htmlFor="gen-month">Bulan</Label>
+              <Label htmlFor="gen-month" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Bulan</Label>
               <select
                 id="gen-month"
                 value={month}
                 onChange={(e) => setMonth(Number(e.target.value))}
-                className="h-9 rounded-md border border-zinc-300 bg-white px-3 text-sm"
+                className="h-9 rounded-md border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
               >
                 {MONTH_NAMES.map((m, i) => (
                   <option key={m} value={i + 1}>
@@ -472,7 +472,7 @@ function GenerateCard({
               </select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="gen-year">Tahun</Label>
+              <Label htmlFor="gen-year" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Tahun</Label>
               <Input
                 id="gen-year"
                 type="number"
@@ -486,6 +486,7 @@ function GenerateCard({
             <Button
               onClick={() => generate.mutate()}
               disabled={generate.isPending}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-semibold"
             >
               {generate.isPending ? (
                 <Loader2 data-icon="inline-start" className="animate-spin" />
@@ -496,7 +497,7 @@ function GenerateCard({
             </Button>
           </div>
           {generate.isError && (
-            <p className="mt-3 text-sm text-red-600">
+            <p className="mt-3 text-sm text-red-600 dark:text-red-400">
               {generate.error instanceof Error
                 ? generate.error.message
                 : 'Gagal generate gaji'}
@@ -599,8 +600,8 @@ export default function PayrollPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-zinc-900">Penggajian</h2>
-        <p className="text-sm text-zinc-500">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Penggajian</h2>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
           {isAdmin
             ? 'Generate, tinjau, setujui, dan tandai pembayaran gaji.'
             : 'Slip gaji Anda.'}
@@ -611,8 +612,8 @@ export default function PayrollPage() {
         <>
           <GenerateCard onDone={(r) => setGenerateResult(r.batch)} />
           {generateResult && (
-            <Card className="border-emerald-200 bg-emerald-50">
-              <CardContent className="py-3 text-sm text-emerald-800">
+            <Card className="border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/40">
+              <CardContent className="py-3 text-sm text-emerald-800 dark:text-emerald-300">
                 Generate selesai: {generateResult.totalEmployees} slip dibuat,{' '}
                 {generateResult.skipped} dilewati (sudah ada). Total bruto{' '}
                 {fmtRupiah(generateResult.summary.totalGross)} · bersih{' '}
@@ -624,7 +625,7 @@ export default function PayrollPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex flex-wrap items-center justify-between gap-3">
+              <CardTitle className="flex flex-wrap items-center justify-between gap-3 text-zinc-900 dark:text-white">
                 <span>Slip Gaji</span>
                 <Badge>{data ? `${data.total} slip` : '…'}</Badge>
               </CardTitle>
@@ -632,7 +633,7 @@ export default function PayrollPage() {
             <CardContent>
               <div className="mb-4 flex flex-wrap items-end gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="f-month">Bulan</Label>
+                  <Label htmlFor="f-month" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Bulan</Label>
                   <select
                     id="f-month"
                     value={month ?? ''}
@@ -641,7 +642,7 @@ export default function PayrollPage() {
                       setPage(1);
                       setSelected(new Set());
                     }}
-                    className="h-9 rounded-md border border-zinc-300 bg-white px-3 text-sm"
+                    className="h-9 rounded-md border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
                   >
                     <option value="">Semua</option>
                     {MONTH_NAMES.map((m, i) => (
@@ -652,7 +653,7 @@ export default function PayrollPage() {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="f-year">Tahun</Label>
+                  <Label htmlFor="f-year" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Tahun</Label>
                   <Input
                     id="f-year"
                     type="number"
@@ -669,7 +670,7 @@ export default function PayrollPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="f-status">Status</Label>
+                  <Label htmlFor="f-status" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Status</Label>
                   <select
                     id="f-status"
                     value={status ?? ''}
@@ -678,7 +679,7 @@ export default function PayrollPage() {
                       setPage(1);
                       setSelected(new Set());
                     }}
-                    className="h-9 rounded-md border border-zinc-300 bg-white px-3 text-sm"
+                    className="h-9 rounded-md border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
                   >
                     <option value="">Semua</option>
                     <option value="draft">Draft</option>
@@ -692,14 +693,14 @@ export default function PayrollPage() {
                 <p className="text-sm text-zinc-400">Memuat…</p>
               ) : data && data.items.length > 0 ? (
                 <>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-zinc-200 text-left text-xs text-zinc-500">
-                          <th className="pb-2 pr-3 font-medium">
+                        <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                          <th className="p-3">
                             <input
                               type="checkbox"
-                              className="size-4 accent-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="size-4 accent-zinc-900 dark:accent-amber-500 disabled:opacity-30 disabled:cursor-not-allowed"
                               disabled={selectableRows.length === 0}
                               checked={
                                 selectableRows.length > 0 &&
@@ -716,17 +717,17 @@ export default function PayrollPage() {
                               }}
                             />
                           </th>
-                          <th className="pb-2 pr-3 font-medium">No.</th>
-                          <th className="pb-2 pr-3 font-medium">Nama</th>
-                          <th className="pb-2 pr-3 font-medium">Periode</th>
-                          <th className="pb-2 pr-3 text-right font-medium">
+                          <th className="p-3">No.</th>
+                          <th className="p-3">Nama</th>
+                          <th className="p-3">Periode</th>
+                          <th className="p-3 text-right">
                             Gaji Bruto
                           </th>
-                          <th className="pb-2 pr-3 text-right font-medium">
+                          <th className="p-3 text-right">
                             Gaji Bersih
                           </th>
-                          <th className="pb-2 pr-3 font-medium">Status</th>
-                          <th className="pb-2 font-medium">Aksi</th>
+                          <th className="p-3">Status</th>
+                          <th className="p-3">Aksi</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -736,39 +737,39 @@ export default function PayrollPage() {
                           return (
                             <tr
                               key={r.id}
-                              className="border-b border-zinc-100 last:border-0"
+                              className="border-b border-zinc-100 dark:border-zinc-800/80 hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors last:border-0"
                             >
-                              <td className="py-2 pr-3">
+                              <td className="p-3">
                                 {selectable && (
                                   <input
                                     type="checkbox"
-                                    className="size-4 accent-zinc-900"
+                                    className="size-4 accent-zinc-900 dark:accent-amber-500"
                                     checked={selected.has(r.id)}
                                     onChange={() => toggle(r.id)}
                                   />
                                 )}
                               </td>
-                              <td className="py-2 pr-3 font-medium text-zinc-900">
+                              <td className="p-3 font-medium text-zinc-900 dark:text-zinc-100">
                                 {r.payrollNumber}
                               </td>
-                              <td className="py-2 pr-3 text-zinc-900">
+                              <td className="p-3 text-zinc-900 dark:text-zinc-100 font-medium">
                                 {r.employeeName}
                               </td>
-                              <td className="py-2 pr-3 text-zinc-600">
+                              <td className="p-3 text-zinc-600 dark:text-zinc-300">
                                 {fmtMonthYear(r.month, r.year)}
                               </td>
-                              <td className="py-2 pr-3 text-right text-zinc-600">
+                              <td className="p-3 text-right text-zinc-600 dark:text-zinc-300 font-mono">
                                 {fmtRupiah(r.grossSalary)}
                               </td>
-                              <td className="py-2 pr-3 text-right font-medium text-zinc-900">
+                              <td className="p-3 text-right font-semibold text-zinc-900 dark:text-zinc-100 font-mono">
                                 {fmtRupiah(r.netSalary)}
                               </td>
-                              <td className="py-2 pr-3">
+                              <td className="p-3">
                                 <Badge className={badgeClass(r.status)}>
                                   {statusLabel(r.status)}
                                 </Badge>
                               </td>
-                              <td className="py-2">
+                              <td className="p-3">
                                 <Button
                                   variant="outline"
                                   size="sm"

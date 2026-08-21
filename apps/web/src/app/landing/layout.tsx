@@ -7,27 +7,19 @@
  *    under /landing also receive the full experience.
  */
 
-import { Playfair_Display } from 'next/font/google';
 import { HashScroll } from '@/components/landing/HashScroll';
 import { LandingContentProvider } from '@/components/landing/LandingContentProvider';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  weight: ['700', '800', '900'],
-  variable: '--font-playfair',
-  display: 'swap',
-});
-
 export default function LandingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`${playfair.variable}`}>
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-zinc-950 dark:text-zinc-100 flex flex-col font-sans selection:bg-amber-500 selection:text-white">
       <HashScroll />
 
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-amber-300 focus:text-zinc-950 focus:font-bold focus:rounded-lg"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:px-4 focus:py-2 focus:bg-amber-600 focus:text-white focus:font-semibold focus:rounded-lg focus:shadow-lg"
       >
         Langsung ke konten
       </a>
@@ -35,10 +27,13 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
       <LandingContentProvider>
         <LandingNav />
 
-        <main id="main-content">{children}</main>
+        <main id="main-content" className="flex-1">
+          {children}
+        </main>
 
         <LandingFooter />
       </LandingContentProvider>
     </div>
   );
 }
+
