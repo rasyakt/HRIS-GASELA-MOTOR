@@ -33,6 +33,7 @@ COPY --from=builder /prod/backend ./
 
 # Prisma CLI untuk migrasi saat start (devDependency tidak ikut deploy --prod)
 RUN npm install -g prisma@6.19.3
+RUN prisma generate --schema=prisma/schema.prisma
 
 EXPOSE 3001
-CMD ["sh", "-c", "prisma migrate deploy --schema=prisma/schema.prisma && node dist/main"]
+CMD ["sh", "-c", "prisma migrate deploy --schema=prisma/schema.prisma && prisma generate --schema=prisma/schema.prisma && node dist/main"]
