@@ -367,6 +367,38 @@ async function main() {
     console.log('  Admin sudah ada, dilewati');
   }
 
+  // --- Admin Landing Page (terpisah dari hierarki HRIS) ---
+  const landingAdminExists = await prisma.user.findUnique({
+    where: { username: 'landingadmin' },
+  });
+  if (!landingAdminExists) {
+    const landingAdminEmployee = await getOrCreateEmployee('EMP-0006', {
+      fullName: 'Admin Landing Page',
+      email: 'landing@gaselamotor.com',
+      phone: '081234567891',
+      joinDate: new Date('2026-01-01'),
+      employmentStatus: 'active',
+      employmentType: 'permanent',
+      ptkpStatus: 'TK0',
+      basicSalary: 4500000,
+      departmentId: deptHrd.id,
+      positionId: (await prisma.position.findUnique({ where: { code: 'HRD' } }))!.id,
+      profilePhotoUrl: null,
+    });
+    const passwordHash = await bcrypt.hash('Landing123!', 10);
+    await prisma.user.create({
+      data: {
+        employeeId: landingAdminEmployee.id,
+        username: 'landingadmin',
+        passwordHash,
+        role: 'landing_admin',
+      },
+    });
+    console.log('  Admin Landing dibuat: landingadmin / Landing123!');
+  } else {
+    console.log('  Admin Landing sudah ada, dilewati');
+  }
+
   // --- User karyawan contoh ---
   const employeeUserExists = await prisma.user.findUnique({
     where: { username: 'employee' },

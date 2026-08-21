@@ -49,6 +49,21 @@ CRITICAL_FIXES_REPORT.md
 HIGH_PRIORITY_FIXES_REPORT.md
 REMAINING_ISSUES.md
 SESSION_SUMMARY.md
+HRIS_Gasela_Motor_Project_Plan.md
+
+# python & automation scripts
+*.py
+*.pyc
+__pycache__/
+scripts/
+
+# screenshots & manual guide assets
+docs/screenshots/
+docs/screenshots_final/
+docs/Buku Panduan hakcipta_dgip.go.id.pdf
+docs/Buku Panduan HRIS GASELA*.docx
+docs/BUKU_PANDUAN_HRIS_GASELA.md
+docs/~$*
 
 # kiro config
 .kiro/

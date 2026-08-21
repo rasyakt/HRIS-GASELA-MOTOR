@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
-import { DesignTokens, typography, spacing, borderRadius } from './design-tokens';
+import { DesignTokens, GradientPresets, typography, spacing, borderRadius } from './design-tokens';
 import { lightTheme, darkTheme } from './themes';
 
 // Dummy storage for Expo Go compatibility in MVP
@@ -38,7 +38,7 @@ const generateShadows = (isDark: boolean) => {
 };
 
 // Generate gradients based on theme
-const generateGradients = (isDark: boolean) => {
+const generateGradients = (isDark: boolean): GradientPresets => {
   if (isDark) {
     return {
       primary: ['#1e40af', '#3b82f6'], // Blue gradient for dark mode
@@ -47,7 +47,7 @@ const generateGradients = (isDark: boolean) => {
       success: ['#047857', '#34d399'],
       warning: ['#d97706', '#fbbf24'],
       brand: ['#1e293b', '#334155'],
-    };
+    } as const;
   }
   return {
     primary: ['#18181b', '#3f3f46'],
@@ -56,7 +56,7 @@ const generateGradients = (isDark: boolean) => {
     success: ['#10b981', '#059669'],
     warning: ['#f59e0b', '#d97706'],
     brand: ['#18181b', '#27272a'],
-  };
+  } as const;
 };
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

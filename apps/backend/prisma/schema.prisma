@@ -93,6 +93,7 @@ enum UserRole {
   manager
   employee
   owner
+  landing_admin
 }
 
 enum DocumentType {
@@ -640,4 +641,15 @@ model WarningLetter {
   createdAt       DateTime     @default(now()) @map("created_at")
 
   @@map("warning_letters")
+}
+
+/// Content overrides for the public landing page, keyed by section.
+/// Sections not present fall back to DEFAULT_LANDING_CONTENT (shared-types).
+model LandingContent {
+  id        Int      @id @default(autoincrement()) @map("content_id")
+  section   String   @unique @map("section_key") @db.VarChar(50)
+  content   Json     @map("content_json")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("landing_contents")
 }

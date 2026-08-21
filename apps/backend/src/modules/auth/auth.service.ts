@@ -82,11 +82,11 @@ export class AuthService {
     user: UserWithEmployee,
   ): Promise<LoginResponse> {
     const tokens = await this.issueTokens(user);
-    
+
     // Get access token TTL in seconds
     const ttlConfig = this.config.getOrThrow<string>('app.jwtAccessTtl');
     let expiresIn = 900; // default 15 minutes
-    
+
     // Parse TTL (e.g., "15m", "1h", "3600")
     if (typeof ttlConfig === 'string') {
       if (ttlConfig.endsWith('m')) {
@@ -99,7 +99,7 @@ export class AuthService {
         expiresIn = parseInt(ttlConfig);
       }
     }
-    
+
     return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
@@ -133,11 +133,11 @@ export class AuthService {
     const accessToken = this.signAccessToken(user);
     const refreshToken = this.signRefreshToken(user);
     const refreshHash = await bcrypt.hash(refreshToken, 10);
-    
+
     // Set refresh token expiry (default 7 days)
     const refreshTtl = this.config.getOrThrow<string>('app.jwtRefreshTtl');
     let expiryDays = 7;
-    
+
     if (typeof refreshTtl === 'string') {
       if (refreshTtl.endsWith('d')) {
         expiryDays = parseInt(refreshTtl);
@@ -147,13 +147,13 @@ export class AuthService {
         expiryDays = parseInt(refreshTtl) / (24 * 60);
       }
     }
-    
+
     const refreshTokenExpiry = new Date();
     refreshTokenExpiry.setDate(refreshTokenExpiry.getDate() + expiryDays);
-    
+
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { 
+      data: {
         refreshTokenHash: refreshHash,
         refreshTokenExpiry,
         lastLogin: new Date(),
@@ -261,8 +261,8 @@ export class AuthService {
     // Invalidate all sessions on password change
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { 
-        passwordHash: newHash, 
+      data: {
+        passwordHash: newHash,
         refreshTokenHash: null,
         refreshTokenExpiry: null,
       },

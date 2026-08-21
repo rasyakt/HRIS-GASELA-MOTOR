@@ -1,6 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { DashboardSummary, Paginated } from '@gasela/shared-types';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { useCallback, useState } from 'react';
 import {
   RefreshControl,
@@ -57,6 +58,32 @@ export function AttendanceScreen() {
     setActionError(null);
     setActionLoading(kind);
     try {
+      // 1. Verifikasi Biometrik Face ID / Hardware Security (0 MB database burden)
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+      if (hasHardware && isEnrolled) {
+        const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
+        const isFaceId = supportedTypes.includes(
+          LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION,
+        );
+        const promptTitle = isFaceId
+          ? `Verifikasi Face ID untuk Check-${kind === 'in' ? 'in' : 'out'}`
+          : `Verifikasi Biometrik Wajah untuk Check-${kind === 'in' ? 'in' : 'out'}`;
+
+        const authResult = await LocalAuthentication.authenticateAsync({
+          promptMessage: promptTitle,
+          fallbackLabel: 'Gunakan Kredensial Perangkat',
+          cancelLabel: 'Batal',
+          disableDeviceFallback: false,
+        });
+
+        if (!authResult.success) {
+          throw new Error('Verifikasi Face ID / Biometrik dibatalkan atau tidak cocok.');
+        }
+      }
+
+      // 2. Validasi Lokasi Geofencing GPS
       const pos = await getPosition();
       await authApi(`/api/attendances/check-${kind}`, {
         method: 'POST',

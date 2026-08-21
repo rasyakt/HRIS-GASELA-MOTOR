@@ -20,7 +20,8 @@ import {
 import { memoryStorage } from 'multer';
 import type { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { ExactRoles, Roles } from '../auth/decorators/roles.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import { UploadsService, UploadCategory } from './uploads.service';
 import type { UploadFile } from './uploads.service';
 import type { CreateUploadDto } from './dto/create-upload.dto';
@@ -42,6 +43,7 @@ export class UploadsController {
     }),
   )
   @Roles('admin', 'hrd', 'owner', 'manager', 'employee')
+  @ExactRoles('landing_admin')
   async upload(
     @UploadedFile() file: UploadFile | undefined,
     @Body() dto: CreateUploadDto,
@@ -65,6 +67,20 @@ export class UploadsController {
         category: saved.category,
       },
     };
+  }
+
+  @Public()
+  @Get('landing/:fileName')
+  @ApiOperation({ summary: 'Ambil aset landing page (publik, cache 24 jam)' })
+  getLandingFile(
+    @Param('fileName') fileName: string,
+    @Res({ passthrough: true }) res: Response,
+  ): StreamableFile {
+    const stream = this.uploadsService.streamFile(`landing/${fileName}`);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return new StreamableFile(stream, {
+      type: this.uploadsService.getMimeType(fileName),
+    });
   }
 
   @Get(':category/:fileName')

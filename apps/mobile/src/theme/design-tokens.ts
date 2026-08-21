@@ -106,12 +106,12 @@ export interface ShadowScale {
 }
 
 export interface GradientPresets {
-  primary: string[];
-  secondary: string[];
-  accent: string[];
-  success: string[];
-  warning: string[];
-  brand: string[];
+  primary: readonly [string, string, ...string[]];
+  secondary: readonly [string, string, ...string[]];
+  accent: readonly [string, string, ...string[]];
+  success: readonly [string, string, ...string[]];
+  warning: readonly [string, string, ...string[]];
+  brand: readonly [string, string, ...string[]];
 }
 
 export interface DesignTokens {

@@ -11,7 +11,7 @@ import { writeFile, rm } from 'fs/promises';
 import { join, extname, isAbsolute } from 'path';
 import { Readable } from 'stream';
 
-export type UploadCategory = 'avatar' | 'attendance' | 'document';
+export type UploadCategory = 'avatar' | 'attendance' | 'document' | 'landing';
 
 export interface UploadFile {
   originalname: string;
@@ -24,6 +24,7 @@ const ALLOWED: Record<UploadCategory, string[]> = {
   avatar: ['.jpg', '.jpeg', '.png', '.webp'],
   attendance: ['.jpg', '.jpeg', '.png', '.webp'],
   document: ['.pdf', '.jpg', '.jpeg', '.png'],
+  landing: ['.jpg', '.jpeg', '.png', '.webp', '.svg'],
 };
 
 const MIME_BY_EXT: Record<string, string> = {
@@ -31,6 +32,7 @@ const MIME_BY_EXT: Record<string, string> = {
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
   '.webp': 'image/webp',
+  '.svg': 'image/svg+xml',
   '.pdf': 'application/pdf',
 };
 

@@ -19,6 +19,7 @@ import {
   User,
   ShieldAlert,
   ShieldCheck,
+  Globe,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -43,7 +44,9 @@ interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  minRole: UserRole;
+  minRole?: UserRole;
+  /** Role TEPAT (bukan hierarki) — untuk peran terisolasi seperti landing_admin */
+  exactRole?: UserRole;
 }
 
 interface NavGroup {
@@ -81,6 +84,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Sistem Admin',
     items: [
       { href: '/employees', label: 'Karyawan', icon: Users, minRole: 'admin' },
+      { href: '/landing-cms', label: 'Landing Page CMS', icon: Globe, exactRole: 'landing_admin' },
       { href: '/audit-logs', label: 'Audit Log', icon: ShieldCheck, minRole: 'admin' },
       { href: '/settings', label: 'Pengaturan', icon: Settings, minRole: 'admin' },
     ],
@@ -101,6 +105,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/employees': 'Manajemen Karyawan',
   '/audit-logs': 'Audit Log & Rekam Jejak',
   '/settings': 'Pengaturan Sistem',
+  '/landing-cms': 'Landing Page CMS',
 };
 
 export default function PortalLayout({
@@ -153,9 +158,16 @@ export default function PortalLayout({
     if (!user) return [];
     return NAV_GROUPS.map((group) => ({
       ...group,
-      items: group.items.filter((item) => roleAtLeast(user.role, item.minRole)),
+      items: group.items.filter(
+        (item) =>
+          item.exactRole ? user.role === item.exactRole : roleAtLeast(user.role, item.minRole ?? 'employee'),
+      ),
     })).filter((group) => group.items.length > 0);
   }, [user]);
+
+  const totalItemsCount = useMemo(() => {
+    return visibleGroups.reduce((acc, group) => acc + group.items.length, 0);
+  }, [visibleGroups]);
 
   const authApi = useAuthApi();
   const unreadQuery = useQuery<{ unread: number }>({
@@ -271,8 +283,8 @@ export default function PortalLayout({
     <div className="flex h-screen w-screen overflow-hidden">
       <CommandPalette />
       <OfflineBanner />
-      <div className="hidden lg:block h-full">{sidebar(false)}</div>
-      {mobileOpen && (
+      {totalItemsCount > 1 && <div className="hidden lg:block h-full">{sidebar(false)}</div>}
+      {totalItemsCount > 1 && mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
             className="absolute inset-0 bg-black/40"
@@ -292,25 +304,29 @@ export default function PortalLayout({
       <div className="flex min-w-0 flex-1 flex-col h-full overflow-hidden">
         <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 lg:px-6">
           <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setMobileOpen(true)}
-            >
-              <Menu />
-            </Button>
+            {totalItemsCount > 1 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setMobileOpen(true)}
+              >
+                <Menu />
+              </Button>
+            )}
             <h1 className="text-base font-semibold text-zinc-900">{pageTitle}</h1>
           </div>
           {/* Ctrl+K search trigger */}
-          <button
-            onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
-            className="hidden sm:flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
-          >
-            <Search className="size-3.5" />
-            <span>Cari fitur…</span>
-            <kbd className="rounded border border-zinc-200 bg-white px-1 py-0.5 text-[10px] font-semibold">⌘K</kbd>
-          </button>
+          {totalItemsCount > 1 && (
+            <button
+              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
+              className="hidden sm:flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
+            >
+              <Search className="size-3.5" />
+              <span>Cari fitur…</span>
+              <kbd className="rounded border border-zinc-200 bg-white px-1 py-0.5 text-[10px] font-semibold">⌘K</kbd>
+            </button>
+          )}
           <div className="relative">
             <button
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}

@@ -141,12 +141,21 @@ export class EmployeeQueryDto
 export const createUserAccountSchema = z.object({
   username: z.string().min(3, 'Username minimal 3 karakter'),
   password: z.string().min(6, 'Password minimal 6 karakter'),
-  role: z.enum(['admin', 'hrd', 'manager', 'employee', 'owner']),
+  role: z.enum([
+    'admin',
+    'hrd',
+    'manager',
+    'employee',
+    'owner',
+    'landing_admin',
+  ]),
 });
 
 export const updateUserAccountSchema = z.object({
   username: z.string().min(3).optional(),
-  role: z.enum(['admin', 'hrd', 'manager', 'employee', 'owner']).optional(),
+  role: z
+    .enum(['admin', 'hrd', 'manager', 'employee', 'owner', 'landing_admin'])
+    .optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -154,9 +163,15 @@ export const resetUserPasswordSchema = z.object({
   password: z.string().min(6, 'Password minimal 6 karakter'),
 });
 
-export class CreateUserAccountDto extends createZodDto(createUserAccountSchema) {}
-export class UpdateUserAccountDto extends createZodDto(updateUserAccountSchema) {}
-export class ResetUserPasswordDto extends createZodDto(resetUserPasswordSchema) {}
+export class CreateUserAccountDto extends createZodDto(
+  createUserAccountSchema,
+) {}
+export class UpdateUserAccountDto extends createZodDto(
+  updateUserAccountSchema,
+) {}
+export class ResetUserPasswordDto extends createZodDto(
+  resetUserPasswordSchema,
+) {}
 
 export const createFamilyMemberSchema = z.object({
   fullName: z.string().min(2, 'Nama lengkap minimal 2 karakter'),
@@ -169,6 +184,9 @@ export const createFamilyMemberSchema = z.object({
 
 export const updateFamilyMemberSchema = createFamilyMemberSchema.partial();
 
-export class CreateFamilyMemberDto extends createZodDto(createFamilyMemberSchema) {}
-export class UpdateFamilyMemberDto extends createZodDto(updateFamilyMemberSchema) {}
-
+export class CreateFamilyMemberDto extends createZodDto(
+  createFamilyMemberSchema,
+) {}
+export class UpdateFamilyMemberDto extends createZodDto(
+  updateFamilyMemberSchema,
+) {}
