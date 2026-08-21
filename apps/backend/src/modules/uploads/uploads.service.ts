@@ -98,7 +98,7 @@ export class UploadsService {
       url: `/api/uploads/${category}/${fileName}`,
       originalName: file.originalname,
       size: file.size,
-      mimeType: expectedMime,
+      mimeType: expectedMimes[0] ?? file.mimetype,
       category,
     };
   }
@@ -135,7 +135,7 @@ export class UploadsService {
 
   getMimeType(fileName: string): string {
     const ext = extname(fileName).toLowerCase();
-    return MIME_BY_EXT[ext] ?? 'application/octet-stream';
+    return MIME_BY_EXT[ext]?.[0] ?? 'application/octet-stream';
   }
 
   async remove(relative: string): Promise<void> {
