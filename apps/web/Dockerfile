@@ -12,7 +12,11 @@ COPY apps/web/ apps/web/
 # API diakses dari server (SSR) via proxy internal compose
 ENV NEXT_PUBLIC_API_URL=http://backend:3001
 
-RUN pnpm install --frozen-lockfile
+# Optimasi timeout koneksi & hanya install dependensi web (abaikan mobile/backend)
+RUN pnpm config set fetch-timeout 600000 && \
+    pnpm config set fetch-retries 5 && \
+    pnpm install --frozen-lockfile --filter @gasela/web...
+
 RUN pnpm --filter @gasela/shared-types build
 RUN pnpm --filter @gasela/shared-utils build
 RUN pnpm --filter @gasela/web build
