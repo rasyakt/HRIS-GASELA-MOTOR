@@ -110,8 +110,8 @@ export default function ApprovalsPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-zinc-900">Persetujuan</h2>
-        <p className="text-sm text-zinc-500">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Persetujuan</h2>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
           Proses pengajuan cuti dan lembur yang menunggu keputusan Anda.
         </p>
       </div>
@@ -127,27 +127,27 @@ export default function ApprovalsPage() {
         </CardHeader>
         <CardContent>
           {leaveItems.length === 0 ? (
-            <p className="text-sm text-zinc-500">Tidak ada pengajuan cuti menunggu.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Tidak ada pengajuan cuti menunggu.</p>
           ) : (
             <div className="space-y-3">
               {leaveItems.map((r) => (
-                <div key={r.id} className="rounded-lg border border-zinc-200 p-3">
+                <div key={r.id} className="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/90 shadow-2xs">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <div className="text-sm font-medium text-zinc-900">
+                      <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                         {r.employeeName}
-                        <span className="ml-2 text-xs font-normal text-zinc-400">
+                        <span className="ml-2 text-xs font-normal text-zinc-400 dark:text-zinc-500">
                           {r.department}
                         </span>
                       </div>
-                      <div className="text-xs text-zinc-500">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
                         {r.requestNumber} · {r.leaveTypeName} · {fmtDate(r.startDate)} –{' '}
                         {fmtDate(r.endDate)} ({r.totalDays} hari)
                       </div>
                       {r.reason && (
-                        <div className="mt-1 text-xs text-zinc-600">“{r.reason}”</div>
+                        <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-300">“{r.reason}”</div>
                       )}
-                      <div className="mt-1 text-xs text-zinc-400">
+                      <div className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
                         Diajukan {fmtDateTime(r.createdAt)}
                       </div>
                     </div>
@@ -178,7 +178,7 @@ export default function ApprovalsPage() {
                           <input
                             type="text"
                             placeholder="Alasan penolakan…"
-                            className="h-7 w-48 rounded-lg border border-input bg-transparent px-2 text-xs outline-none focus-visible:border-ring"
+                            className="h-7 w-48 rounded-lg border border-input bg-transparent dark:bg-zinc-800 px-2 text-xs text-zinc-900 dark:text-zinc-100 outline-none focus-visible:border-ring"
                             value={rejectReason}
                             onChange={(e) => setRejectReason(e.target.value)}
                           />
@@ -207,7 +207,7 @@ export default function ApprovalsPage() {
                     </div>
                   </div>
                   {rejectingId === r.id && rejectError && (
-                    <p className="mt-2 text-xs text-red-600">{rejectError}</p>
+                    <p className="mt-2 text-xs text-red-600 dark:text-red-400">{rejectError}</p>
                   )}
                 </div>
               ))}
@@ -225,27 +225,27 @@ export default function ApprovalsPage() {
         </CardHeader>
         <CardContent>
           {overtimeItems.length === 0 ? (
-            <p className="text-sm text-zinc-500">Tidak ada pengajuan lembur menunggu.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Tidak ada pengajuan lembur menunggu.</p>
           ) : (
             <div className="space-y-3">
               {overtimeItems.map((r) => (
-                <div key={r.id} className="rounded-lg border border-zinc-200 p-3">
+                <div key={r.id} className="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/90 shadow-2xs">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <div className="text-sm font-medium text-zinc-900">
+                      <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                         {r.employeeName}
-                        <span className="ml-2 text-xs font-normal text-zinc-400">
+                        <span className="ml-2 text-xs font-normal text-zinc-400 dark:text-zinc-500">
                           {r.department}
                         </span>
                       </div>
-                      <div className="text-xs text-zinc-500">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
                         {r.requestNumber} · {fmtDate(r.overtimeDate)} · {fmtTime(r.startTime)} –{' '}
                         {fmtTime(r.endTime)} ({fmtHours(r.hours)} jam)
                       </div>
                       {r.purpose && (
-                        <div className="mt-1 text-xs text-zinc-600">“{r.purpose}”</div>
+                        <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-300">“{r.purpose}”</div>
                       )}
-                      <div className="mt-1 text-xs text-zinc-400">
+                      <div className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
                         Diajukan {fmtDateTime(r.createdAt)}
                       </div>
                     </div>

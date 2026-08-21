@@ -67,14 +67,14 @@ function BpjsSettingForm({
   const isDirty = JSON.stringify(rates) !== JSON.stringify(parseRates(setting.value));
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-5 space-y-5 shadow-xs">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-4">
+    <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 p-5 space-y-5 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 dark:border-zinc-800 pb-4">
         <div>
-          <h4 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-            <ShieldCheck className="size-4 text-emerald-600" />
+          <h4 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+            <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
             Pengaturan Tarif &amp; Batas Upah BPJS
           </h4>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
             Atur persentase potongan iuran BPJS karyawan dan kontribusi perusahaan tanpa perlu mengedit kode JSON.
           </p>
         </div>
@@ -92,10 +92,10 @@ function BpjsSettingForm({
 
       {/* BPJS Kesehatan Section */}
       <div className="space-y-3">
-        <span className="text-xs font-bold text-zinc-800 uppercase tracking-wider">1. BPJS Kesehatan</span>
+        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">1. BPJS Kesehatan</span>
         <div className="grid gap-3 sm:grid-cols-3">
           <div>
-            <Label className="text-xs font-semibold text-zinc-600">Iuran Pekerja (%)</Label>
+            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Iuran Pekerja (%)</Label>
             <div className="relative mt-1">
               <Input
                 type="number" step="0.1" min="0" max="100"
@@ -105,11 +105,11 @@ function BpjsSettingForm({
               />
               <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
             </div>
-            <p className="text-[10px] text-zinc-400 mt-1">Standar resmi: 1%</p>
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Standar resmi: 1%</p>
           </div>
 
           <div>
-            <Label className="text-xs font-semibold text-zinc-600">Iuran Perusahaan (%)</Label>
+            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Iuran Perusahaan (%)</Label>
             <div className="relative mt-1">
               <Input
                 type="number" step="0.1" min="0" max="100"
@@ -119,28 +119,28 @@ function BpjsSettingForm({
               />
               <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
             </div>
-            <p className="text-[10px] text-zinc-400 mt-1">Standar resmi: 4%</p>
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Standar resmi: 4%</p>
           </div>
 
           <div>
-            <Label className="text-xs font-semibold text-zinc-600">Maksimal Upah Kena BPJS Kes (Rp)</Label>
+            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Maksimal Upah Kena BPJS Kes (Rp)</Label>
             <Input
               type="number" step="100000" min="0"
               value={rates.kesehatanCapSalary}
               onChange={(e) => updateRate('kesehatanCapSalary', parseInt(e.target.value, 10) || 0)}
               className="mt-1 text-xs font-semibold"
             />
-            <p className="text-[10px] text-zinc-400 mt-1">Batas max: Rp {rates.kesehatanCapSalary.toLocaleString('id-ID')}</p>
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Batas max: Rp {rates.kesehatanCapSalary.toLocaleString('id-ID')}</p>
           </div>
         </div>
       </div>
 
       {/* BPJS Ketenagakerjaan Section */}
-      <div className="border-t border-zinc-100 pt-4 space-y-3">
-        <span className="text-xs font-bold text-zinc-800 uppercase tracking-wider">2. BPJS Ketenagakerjaan (JHT &amp; JP)</span>
+      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4 space-y-3">
+        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">2. BPJS Ketenagakerjaan (JHT &amp; JP)</span>
         <div className="grid gap-3 sm:grid-cols-3">
           <div>
-            <Label className="text-xs font-semibold text-zinc-600">JHT Pekerja (%)</Label>
+            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">JHT Pekerja (%)</Label>
             <div className="relative mt-1">
               <Input
                 type="number" step="0.1" min="0" max="100"
@@ -150,11 +150,11 @@ function BpjsSettingForm({
               />
               <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
             </div>
-            <p className="text-[10px] text-zinc-400 mt-1">Tabungan Hari Tua: 2%</p>
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Tabungan Hari Tua: 2%</p>
           </div>
 
           <div>
-            <Label className="text-xs font-semibold text-zinc-600">JHT Perusahaan (%)</Label>
+            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">JHT Perusahaan (%)</Label>
             <div className="relative mt-1">
               <Input
                 type="number" step="0.1" min="0" max="100"
@@ -164,11 +164,11 @@ function BpjsSettingForm({
               />
               <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
             </div>
-            <p className="text-[10px] text-zinc-400 mt-1">Ditanggung Perusahaan: 3.7%</p>
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Ditanggung Perusahaan: 3.7%</p>
           </div>
 
           <div>
-            <Label className="text-xs font-semibold text-zinc-600">Jaminan Pensiun (JP) Pekerja (%)</Label>
+            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Jaminan Pensiun (JP) Pekerja (%)</Label>
             <div className="relative mt-1">
               <Input
                 type="number" step="0.1" min="0" max="100"
@@ -178,11 +178,11 @@ function BpjsSettingForm({
               />
               <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
             </div>
-            <p className="text-[10px] text-zinc-400 mt-1">Jaminan Pensiun: 1%</p>
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Jaminan Pensiun: 1%</p>
           </div>
 
           <div>
-            <Label className="text-xs font-semibold text-zinc-600">Jaminan Pensiun (JP) Perusahaan (%)</Label>
+            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Jaminan Pensiun (JP) Perusahaan (%)</Label>
             <div className="relative mt-1">
               <Input
                 type="number" step="0.1" min="0" max="100"
@@ -192,28 +192,28 @@ function BpjsSettingForm({
               />
               <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
             </div>
-            <p className="text-[10px] text-zinc-400 mt-1">Ditanggung Perusahaan: 2%</p>
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Ditanggung Perusahaan: 2%</p>
           </div>
 
           <div>
-            <Label className="text-xs font-semibold text-zinc-600">Maksimal Upah Kena JP (Rp)</Label>
+            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Maksimal Upah Kena JP (Rp)</Label>
             <Input
               type="number" step="100000" min="0"
               value={rates.jpCapSalary}
               onChange={(e) => updateRate('jpCapSalary', parseInt(e.target.value, 10) || 0)}
               className="mt-1 text-xs font-semibold"
             />
-            <p className="text-[10px] text-zinc-400 mt-1">Cap JP: Rp {rates.jpCapSalary.toLocaleString('id-ID')}</p>
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Cap JP: Rp {rates.jpCapSalary.toLocaleString('id-ID')}</p>
           </div>
         </div>
       </div>
 
       {/* JKK & JKM Section */}
-      <div className="border-t border-zinc-100 pt-4 space-y-3">
-        <span className="text-xs font-bold text-zinc-800 uppercase tracking-wider">3. JKK &amp; JKM Perusahaan</span>
+      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4 space-y-3">
+        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">3. JKK &amp; JKM Perusahaan</span>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <Label className="text-xs font-semibold text-zinc-600">JKK (Kecelakaan Kerja) (%)</Label>
+            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">JKK (Kecelakaan Kerja) (%)</Label>
             <div className="relative mt-1">
               <Input
                 type="number" step="0.01" min="0" max="100"
@@ -223,11 +223,11 @@ function BpjsSettingForm({
               />
               <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
             </div>
-            <p className="text-[10px] text-zinc-400 mt-1">Risiko standar: 0.24%</p>
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Risiko standar: 0.24%</p>
           </div>
 
           <div>
-            <Label className="text-xs font-semibold text-zinc-600">JKM (Jaminan Kematian) (%)</Label>
+            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">JKM (Jaminan Kematian) (%)</Label>
             <div className="relative mt-1">
               <Input
                 type="number" step="0.01" min="0" max="100"
@@ -237,7 +237,7 @@ function BpjsSettingForm({
               />
               <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
             </div>
-            <p className="text-[10px] text-zinc-400 mt-1">Standar resmi: 0.3%</p>
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Standar resmi: 0.3%</p>
           </div>
         </div>
       </div>
@@ -262,13 +262,13 @@ function SettingRow({
   }
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4">
+    <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 p-4">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <div className="font-mono text-sm font-medium text-zinc-900">
+          <div className="font-mono text-sm font-medium text-zinc-900 dark:text-white">
             {setting.key}
           </div>
-          <div className="mt-0.5 text-xs text-zinc-500">
+          <div className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
             {SETTING_HINTS[setting.key] ?? setting.description}
           </div>
         </div>
@@ -289,7 +289,7 @@ function SettingRow({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         rows={2}
-        className="mt-3 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800"
+        className="mt-3 w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-800 dark:text-zinc-100 outline-none"
       />
     </div>
   );

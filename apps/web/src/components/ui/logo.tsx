@@ -39,7 +39,7 @@ export function GaselaLogo({
     <div className={`inline-flex items-center gap-3 select-none ${className}`}>
       {/* Icon Emblem */}
       <div
-        className={`relative flex ${iconSizes[size]} shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-zinc-900 via-zinc-950 to-black p-1.5 shadow-xl ring-1 ring-white/15`}
+        className={`relative flex ${iconSizes[size]} shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-zinc-900 via-zinc-950 to-black dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-950 p-1.5 shadow-md ring-1 ring-white/15 dark:ring-white/25`}
       >
         <svg
           viewBox="0 0 40 40"
@@ -62,7 +62,7 @@ export function GaselaLogo({
             strokeWidth="2.8"
             strokeLinecap="round"
             strokeLinejoin="round"
-            opacity="0.9"
+            opacity="0.95"
           />
           <defs>
             <linearGradient
@@ -75,7 +75,7 @@ export function GaselaLogo({
             >
               <stop stopColor="#FFFFFF" />
               <stop offset="0.5" stopColor="#E4E4E7" />
-              <stop offset="1" stopColor="#71717A" />
+              <stop offset="1" stopColor="#A1A1AA" />
             </linearGradient>
           </defs>
         </svg>
@@ -84,10 +84,10 @@ export function GaselaLogo({
       {/* Brand Text */}
       {showText && (
         <div className="flex flex-col leading-none">
-          <div className={`font-black tracking-tight ${textSizes[size]} ${isLight ? 'text-white' : 'text-zinc-950'}`}>
+          <div className={`font-black tracking-tight ${textSizes[size]} ${isLight ? 'text-white' : 'text-zinc-950 dark:text-white'}`}>
             Gasela<span className="text-emerald-500 font-bold">Pulse</span>
           </div>
-          <div className={`mt-0.5 font-medium tracking-widest uppercase ${subtextSizes[size]} ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>
+          <div className={`mt-0.5 font-medium tracking-widest uppercase ${subtextSizes[size]} ${isLight ? 'text-zinc-400' : 'text-zinc-500 dark:text-zinc-400'}`}>
             GASELA MOTOR · HRIS
           </div>
         </div>

@@ -87,14 +87,14 @@ export default function OvertimePage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-zinc-900">Lembur</h2>
-        <p className="text-sm text-zinc-500">
-          Ajukan lembur dan pantau status persetujuannya.
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Lembur</h2>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          Ajukan lembur dan pantau status persetujuan.
         </p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="self-start lg:col-span-1">
+        <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Ajukan Lembur</CardTitle>
           </CardHeader>
@@ -109,7 +109,7 @@ export default function OvertimePage() {
                   {...register('overtimeDate')}
                 />
                 {errors.overtimeDate && (
-                  <p className="text-xs text-red-600">{errors.overtimeDate.message}</p>
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.overtimeDate.message}</p>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -122,7 +122,7 @@ export default function OvertimePage() {
                     {...register('startTime')}
                   />
                   {errors.startTime && (
-                    <p className="text-xs text-red-600">{errors.startTime.message}</p>
+                    <p className="text-xs text-red-600 dark:text-red-400">{errors.startTime.message}</p>
                   )}
                 </div>
                 <div className="space-y-1.5">
@@ -134,7 +134,7 @@ export default function OvertimePage() {
                     {...register('endTime')}
                   />
                   {errors.endTime && (
-                    <p className="text-xs text-red-600">{errors.endTime.message}</p>
+                    <p className="text-xs text-red-600 dark:text-red-400">{errors.endTime.message}</p>
                   )}
                 </div>
               </div>
@@ -144,21 +144,21 @@ export default function OvertimePage() {
                   id="purpose"
                   rows={3}
                   placeholder="Jelaskan tujuan lembur…"
-                  className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring"
+                  className="w-full rounded-lg border border-input bg-transparent dark:bg-zinc-900 px-2.5 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 outline-none placeholder:text-muted-foreground focus-visible:border-ring"
                   aria-invalid={!!errors.purpose}
                   {...register('purpose')}
                 />
                 {errors.purpose && (
-                  <p className="text-xs text-red-600">{errors.purpose.message}</p>
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.purpose.message}</p>
                 )}
               </div>
               {formError && (
-                <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+                <p className="rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 px-3 py-2 text-xs text-red-700 dark:text-red-300">
                   {formError}
                 </p>
               )}
               {formOk && (
-                <p className="rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                <p className="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-300">
                   Pengajuan lembur berhasil dikirim.
                 </p>
               )}
@@ -186,27 +186,27 @@ export default function OvertimePage() {
                 {/* Mobile View (Cards) */}
                 <div className="grid grid-cols-1 gap-3 lg:hidden">
                   {myRequests.data.items.map((r) => (
-                    <div key={r.id} className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3">
+                    <div key={r.id} className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 p-3">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-zinc-900 text-sm">{r.requestNumber}</span>
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{r.requestNumber}</span>
                         <Badge className={badgeClass(r.status)}>{r.status}</Badge>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div>
-                          <p className="text-zinc-500 mb-0.5">Tanggal</p>
-                          <p className="font-medium text-zinc-900">{fmtDate(r.overtimeDate)}</p>
+                          <p className="text-zinc-500 dark:text-zinc-400 mb-0.5">Tanggal</p>
+                          <p className="font-medium text-zinc-900 dark:text-zinc-100">{fmtDate(r.overtimeDate)}</p>
                         </div>
                         <div>
-                          <p className="text-zinc-500 mb-0.5">Durasi</p>
-                          <p className="font-medium text-zinc-900">{fmtHours(r.hours)} jam</p>
+                          <p className="text-zinc-500 dark:text-zinc-400 mb-0.5">Durasi</p>
+                          <p className="font-medium text-zinc-900 dark:text-zinc-100">{fmtHours(r.hours)} jam</p>
                         </div>
                         <div className="col-span-2">
-                          <p className="text-zinc-500 mb-0.5">Jam</p>
-                          <p className="font-medium text-zinc-900">{fmtTime(r.startTime)} – {fmtTime(r.endTime)}</p>
+                          <p className="text-zinc-500 dark:text-zinc-400 mb-0.5">Jam</p>
+                          <p className="font-medium text-zinc-900 dark:text-zinc-100">{fmtTime(r.startTime)} – {fmtTime(r.endTime)}</p>
                         </div>
                       </div>
                       {r.status === 'pending' && (
-                        <div className="mt-2 text-right border-t border-zinc-200 pt-2">
+                        <div className="mt-2 text-right border-t border-zinc-200 dark:border-zinc-800 pt-2">
                           <Button
                             variant="outline"
                             size="sm"
@@ -226,7 +226,7 @@ export default function OvertimePage() {
                 <div className="hidden lg:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-zinc-200 text-left text-xs text-zinc-500">
+                      <tr className="border-b border-zinc-200 dark:border-zinc-800 text-left text-xs text-zinc-500 dark:text-zinc-400">
                         <th className="pb-2 pr-3 font-medium">No. Pengajuan</th>
                         <th className="pb-2 pr-3 font-medium">Tanggal</th>
                         <th className="pb-2 pr-3 font-medium">Jam</th>
@@ -238,19 +238,19 @@ export default function OvertimePage() {
                     </thead>
                     <tbody>
                       {myRequests.data.items.map((r) => (
-                        <tr key={r.id} className="border-b border-zinc-100 last:border-0">
-                          <td className="py-2 pr-3 font-medium text-zinc-900">
+                        <tr key={r.id} className="border-b border-zinc-100 dark:border-zinc-800/80 last:border-0">
+                          <td className="py-2 pr-3 font-medium text-zinc-900 dark:text-zinc-100">
                             {r.requestNumber}
                           </td>
-                          <td className="py-2 pr-3 text-zinc-600">{fmtDate(r.overtimeDate)}</td>
-                          <td className="py-2 pr-3 text-zinc-600">
+                          <td className="py-2 pr-3 text-zinc-600 dark:text-zinc-300">{fmtDate(r.overtimeDate)}</td>
+                          <td className="py-2 pr-3 text-zinc-600 dark:text-zinc-300">
                             {fmtTime(r.startTime)} – {fmtTime(r.endTime)}
                           </td>
-                          <td className="py-2 pr-3 text-zinc-600">{fmtHours(r.hours)} jam</td>
+                          <td className="py-2 pr-3 text-zinc-600 dark:text-zinc-300">{fmtHours(r.hours)} jam</td>
                           <td className="py-2 pr-3">
                             <Badge className={badgeClass(r.status)}>{r.status}</Badge>
                           </td>
-                          <td className="py-2 pr-3 text-zinc-500">
+                          <td className="py-2 pr-3 text-zinc-500 dark:text-zinc-400">
                             {fmtDateTime(r.createdAt)}
                           </td>
                           <td className="py-2 text-right">
@@ -272,7 +272,7 @@ export default function OvertimePage() {
                 </div>
               </>
             ) : (
-              <p className="text-sm text-zinc-500">Belum ada pengajuan lembur.</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Belum ada pengajuan lembur.</p>
             )}
           </CardContent>
         </Card>

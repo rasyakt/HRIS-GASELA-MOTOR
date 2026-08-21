@@ -76,33 +76,33 @@ export default function AuditLogsPage() {
 
       {/* Stats Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="shadow-xs">
+        <Card className="shadow-2xs">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex size-11 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
               <Activity className="size-5" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Aktivitas Hari Ini</p>
-              <h3 className="text-2xl font-bold text-zinc-900">{statsQuery.data?.todayCount ?? '—'}</h3>
+              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Aktivitas Hari Ini</p>
+              <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{statsQuery.data?.todayCount ?? '—'}</h3>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-xs">
+        <Card className="shadow-2xs">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex size-11 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400">
               <Terminal className="size-5" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Total Record Log</p>
-              <h3 className="text-2xl font-bold text-zinc-900">{statsQuery.data?.total ?? '—'}</h3>
+              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Record Log</p>
+              <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{statsQuery.data?.total ?? '—'}</h3>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Search & Filter */}
-      <Card className="shadow-sm">
+      <Card className="shadow-2xs">
         <CardContent className="p-4 space-y-4">
           <form
             onSubmit={(e) => {
@@ -129,9 +129,9 @@ export default function AuditLogsPage() {
               <Loader2 className="animate-spin text-zinc-400 size-6" />
             </div>
           ) : logsQuery.data && logsQuery.data.items.length > 0 ? (
-            <div className="overflow-x-auto rounded-lg border border-zinc-200">
+            <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
               <table className="w-full text-xs text-left">
-                <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-semibold">
+                <thead className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 font-semibold">
                   <tr>
                     <th className="p-3">Waktu</th>
                     <th className="p-3">User</th>
@@ -141,33 +141,34 @@ export default function AuditLogsPage() {
                     <th className="p-3 text-right">Detail</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 text-zinc-900">
+                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 text-zinc-900 dark:text-zinc-100">
                   {logsQuery.data.items.map((log) => (
-                    <tr key={log.id} className="hover:bg-zinc-50/80 transition-colors">
-                      <td className="p-3 font-mono text-zinc-500 whitespace-nowrap">
+                    <tr key={log.id} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors">
+                      <td className="p-3 font-mono text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                         {new Date(log.timestamp).toLocaleString('id-ID')}
                       </td>
                       <td className="p-3">
-                        <span className="font-semibold text-zinc-900">{log.username || 'System'}</span>
-                        {log.userId && <span className="text-[10px] text-zinc-400 ml-1">(ID: {log.userId})</span>}
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">{log.username || 'System / Guest'}</span>
                       </td>
                       <td className="p-3">
-                        <Badge className="bg-zinc-100 text-zinc-800 border-zinc-200 font-mono text-[10px]">
+                        <Badge className="bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 text-[10px] font-mono">
                           {log.action}
                         </Badge>
                       </td>
-                      <td className="p-3 font-mono text-zinc-700">
+                      <td className="p-3 text-zinc-600 dark:text-zinc-300 font-mono">
                         {log.resource} {log.resourceId ? `#${log.resourceId}` : ''}
                       </td>
-                      <td className="p-3 font-mono text-zinc-500">{log.ipAddress || '—'}</td>
+                      <td className="p-3 text-zinc-500 dark:text-zinc-400 font-mono">
+                        {log.ipAddress || '—'}
+                      </td>
                       <td className="p-3 text-right">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedLog(log)}
-                          className="size-7 p-0 text-zinc-500 hover:text-zinc-900"
+                          className="size-7 p-0 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
                         >
-                          <Eye className="size-4" />
+                          <Eye className="size-3.5" />
                         </Button>
                       </td>
                     </tr>

@@ -430,7 +430,7 @@ export default function EmployeesPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex border-b border-zinc-200 mb-4 overflow-x-auto">
+          <div className="flex border-b border-zinc-200 dark:border-zinc-800 mb-4 overflow-x-auto">
             {[
               { value: 'all', label: 'Semua Karyawan' },
               { value: 'employee', label: 'Role Karyawan' },
@@ -449,8 +449,8 @@ export default function EmployeesPage() {
                 }}
                 className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
                   selectedRole === tab.value
-                    ? 'border-zinc-900 text-zinc-950 bg-zinc-50'
-                    : 'border-transparent text-zinc-500 hover:text-zinc-900'
+                    ? 'border-zinc-900 text-zinc-950 bg-zinc-50 dark:border-amber-500 dark:text-white dark:bg-zinc-900'
+                    : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
                 }`}
               >
                 {tab.label}
@@ -476,7 +476,7 @@ export default function EmployeesPage() {
                 setSelectedDepartment(e.target.value);
                 setPage(1);
               }}
-              className="w-full sm:w-auto rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-950"
+              className="w-full sm:w-auto rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-xs font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
             >
               <option value="all">Semua Departemen</option>
               {departments.data?.map((dept) => (
@@ -492,7 +492,7 @@ export default function EmployeesPage() {
                 setSelectedPosition(e.target.value);
                 setPage(1);
               }}
-              className="w-full sm:w-auto rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-950"
+              className="w-full sm:w-auto rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-xs font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
             >
               <option value="all">Semua Posisi</option>
               {positions.data?.map((pos) => (
@@ -529,7 +529,7 @@ export default function EmployeesPage() {
                 link.click();
                 document.body.removeChild(link);
               }}
-              className="w-full sm:w-auto sm:ml-auto text-xs gap-1 text-zinc-700 hover:text-zinc-950"
+              className="w-full sm:w-auto sm:ml-auto text-xs gap-1 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white"
             >
               <Download className="size-3.5" /> Ekspor CSV
             </Button>
@@ -547,35 +547,35 @@ export default function EmployeesPage() {
                   <div
                     key={e.id}
                     onClick={() => handleOpenDetail(e)}
-                    className="cursor-pointer flex flex-col gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm hover:border-zinc-300 transition-colors"
+                    className="cursor-pointer flex flex-col gap-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-2xs hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
                   >
                     <div className="flex justify-between items-start gap-2">
                       <div>
-                        <p className="font-bold text-zinc-900 leading-tight">{e.fullName}</p>
-                        <p className="text-xs text-zinc-500 font-mono mt-1">{e.employeeNumber}</p>
+                        <p className="font-bold text-zinc-900 dark:text-white leading-tight">{e.fullName}</p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono mt-1">{e.employeeNumber}</p>
                       </div>
                       <Badge className={`${badgeClass(e.employmentStatus)} border-0 whitespace-nowrap`}>
                         {e.employmentStatus}
                       </Badge>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs border-t border-zinc-100 pt-2">
-                      <p className="text-zinc-500">Departemen</p>
-                      <p className="text-zinc-900 font-medium text-right">{e.department?.name ?? '—'}</p>
-                      <p className="text-zinc-500">Posisi</p>
-                      <p className="text-zinc-900 font-medium text-right">{e.position?.name ?? '—'}</p>
-                      <p className="text-zinc-500">Bergabung</p>
-                      <p className="text-zinc-900 font-medium text-right">{fmtDate(e.joinDate)}</p>
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs border-t border-zinc-100 dark:border-zinc-800 pt-2">
+                      <p className="text-zinc-500 dark:text-zinc-400">Departemen</p>
+                      <p className="text-zinc-900 dark:text-zinc-100 font-medium text-right">{e.department?.name ?? '—'}</p>
+                      <p className="text-zinc-500 dark:text-zinc-400">Posisi</p>
+                      <p className="text-zinc-900 dark:text-zinc-100 font-medium text-right">{e.position?.name ?? '—'}</p>
+                      <p className="text-zinc-500 dark:text-zinc-400">Bergabung</p>
+                      <p className="text-zinc-900 dark:text-zinc-100 font-medium text-right">{fmtDate(e.joinDate)}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* Desktop View (Table) */}
-              <div className="hidden lg:block overflow-x-auto rounded-lg border border-zinc-200">
+              <div className="hidden lg:block overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-xs font-semibold text-zinc-600">
+                    <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400">
                       <th className="p-3">NIK</th>
                       <th className="p-3">Nama</th>
                       <th className="p-3">Email</th>
@@ -591,13 +591,13 @@ export default function EmployeesPage() {
                       <tr
                         key={e.id}
                         onClick={() => handleOpenDetail(e)}
-                        className="cursor-pointer border-b border-zinc-100 hover:bg-zinc-50/80 transition-colors last:border-0"
+                        className="cursor-pointer border-b border-zinc-100 dark:border-zinc-800/80 hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors last:border-0"
                       >
-                        <td className="p-3 font-semibold text-zinc-900">{e.employeeNumber}</td>
-                        <td className="p-3 font-medium text-zinc-900">{e.fullName}</td>
-                        <td className="p-3 text-zinc-500">{e.email}</td>
-                        <td className="p-3 text-zinc-600">{e.department?.name ?? '—'}</td>
-                        <td className="p-3 text-zinc-600">{e.position?.name ?? '—'}</td>
+                        <td className="p-3 font-semibold text-zinc-900 dark:text-zinc-100">{e.employeeNumber}</td>
+                        <td className="p-3 font-medium text-zinc-900 dark:text-zinc-100">{e.fullName}</td>
+                        <td className="p-3 text-zinc-500 dark:text-zinc-400">{e.email}</td>
+                        <td className="p-3 text-zinc-600 dark:text-zinc-300">{e.department?.name ?? '—'}</td>
+                        <td className="p-3 text-zinc-600 dark:text-zinc-300">{e.position?.name ?? '—'}</td>
                         <td className="p-3">
                           <Badge className={`${badgeClass(e.employmentStatus)} border-0`}>
                             {e.employmentStatus}
@@ -608,7 +608,7 @@ export default function EmployeesPage() {
                             {e.employmentType}
                           </Badge>
                         </td>
-                        <td className="p-3 text-zinc-500">{fmtDate(e.joinDate)}</td>
+                        <td className="p-3 text-zinc-500 dark:text-zinc-400">{fmtDate(e.joinDate)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -616,9 +616,7 @@ export default function EmployeesPage() {
               </div>
             </>
           ) : (
-            <p className="text-sm text-zinc-500 py-6 text-center">
-              {search ? 'Tidak ada karyawan yang cocok.' : 'Belum ada data karyawan.'}
-            </p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 py-4 text-center">Tidak ada karyawan yang ditemukan.</p>
           )}
 
           {data && data.totalPages > 1 && (

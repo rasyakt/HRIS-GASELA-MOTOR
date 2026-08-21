@@ -101,8 +101,8 @@ export default function LeavePage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-zinc-900">Cuti</h2>
-        <p className="text-sm text-zinc-500">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Cuti</h2>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
           Cek saldo, ajukan cuti, dan pantau status pengajuan Anda.
         </p>
       </div>
@@ -121,32 +121,32 @@ export default function LeavePage() {
                   {balances.data.map((b) => (
                     <div key={b.leaveTypeId}>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium text-zinc-900">{b.leaveTypeName}</span>
-                        <span className="text-zinc-500">
+                        <span className="font-medium text-zinc-900 dark:text-zinc-100">{b.leaveTypeName}</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">
                           {fmtNumber(b.quota)} hr
                         </span>
                       </div>
-                      <div className="mt-1 flex items-center gap-2">
-                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-zinc-100">
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
                           <div
-                            className="h-full rounded-full bg-zinc-900"
+                            className="h-full rounded-full bg-zinc-900 dark:bg-amber-500 transition-all duration-300"
                             style={{
                               width: `${b.quota > 0 ? (b.remaining / b.quota) * 100 : 0}%`,
                             }}
                           />
                         </div>
-                        <span className="text-xs font-semibold text-zinc-900">
+                        <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
                           sisa {b.remaining}
                         </span>
                       </div>
-                      <div className="text-xs text-zinc-400">
+                      <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
                         terpakai {b.used} dari kuota {b.quota}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-zinc-500">Belum ada saldo cuti.</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">Belum ada saldo cuti.</p>
               )}
             </CardContent>
           </Card>
@@ -157,7 +157,7 @@ export default function LeavePage() {
             </CardHeader>
             <CardContent>
               {activeTypes.length === 0 ? (
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
                   Tidak ada jenis cuti aktif. Hubungi HRD.
                 </p>
               ) : (
@@ -166,19 +166,19 @@ export default function LeavePage() {
                     <Label htmlFor="leaveTypeId">Jenis Cuti</Label>
                     <select
                       id="leaveTypeId"
-                      className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring"
+                      className="h-9 w-full rounded-lg border border-input bg-transparent dark:bg-zinc-900 px-2.5 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus-visible:border-ring"
                       aria-invalid={!!errors.leaveTypeId}
                       {...register('leaveTypeId', { setValueAs: (v) => Number(v) })}
                     >
-                      <option value="">Pilih jenis cuti…</option>
+                      <option value="" className="dark:bg-zinc-900">Pilih jenis cuti…</option>
                       {activeTypes.map((t) => (
-                        <option key={t.id} value={t.id}>
+                        <option key={t.id} value={t.id} className="dark:bg-zinc-900">
                           {t.name} (sisa {t.annualQuota} hr)
                         </option>
                       ))}
                     </select>
                     {errors.leaveTypeId && (
-                      <p className="text-xs text-red-600">{errors.leaveTypeId.message}</p>
+                      <p className="text-xs text-red-600 dark:text-red-400">{errors.leaveTypeId.message}</p>
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -192,7 +192,7 @@ export default function LeavePage() {
                         {...register('startDate')}
                       />
                       {errors.startDate && (
-                        <p className="text-xs text-red-600">{errors.startDate.message}</p>
+                        <p className="text-xs text-red-600 dark:text-red-400">{errors.startDate.message}</p>
                       )}
                     </div>
                     <div className="space-y-1.5">
@@ -205,7 +205,7 @@ export default function LeavePage() {
                         {...register('endDate')}
                       />
                       {errors.endDate && (
-                        <p className="text-xs text-red-600">{errors.endDate.message}</p>
+                        <p className="text-xs text-red-600 dark:text-red-400">{errors.endDate.message}</p>
                       )}
                     </div>
                   </div>
@@ -215,21 +215,21 @@ export default function LeavePage() {
                       id="reason"
                       rows={3}
                       placeholder="Tuliskan alasan pengajuan cuti…"
-                      className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring"
+                      className="w-full rounded-lg border border-input bg-transparent dark:bg-zinc-900 px-2.5 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 outline-none placeholder:text-muted-foreground focus-visible:border-ring"
                       aria-invalid={!!errors.reason}
                       {...register('reason')}
                     />
                     {errors.reason && (
-                      <p className="text-xs text-red-600">{errors.reason.message}</p>
+                      <p className="text-xs text-red-600 dark:text-red-400">{errors.reason.message}</p>
                     )}
                   </div>
                   {formError && (
-                    <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+                    <p className="rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 px-3 py-2 text-xs text-red-700 dark:text-red-300">
                       {formError}
                     </p>
                   )}
                   {formOk && (
-                    <p className="rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                    <p className="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-300">
                       Pengajuan cuti berhasil dikirim.
                     </p>
                   )}
@@ -259,27 +259,27 @@ export default function LeavePage() {
                 {/* Mobile View (Cards) */}
                 <div className="grid grid-cols-1 gap-3 lg:hidden">
                   {myRequests.data.items.map((r) => (
-                    <div key={r.id} className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3">
+                    <div key={r.id} className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 p-3">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-zinc-900 text-sm">{r.requestNumber}</span>
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{r.requestNumber}</span>
                         <Badge className={badgeClass(r.status)}>{r.status}</Badge>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div>
-                          <p className="text-zinc-500 mb-0.5">Jenis</p>
-                          <p className="font-medium text-zinc-900">{r.leaveTypeName}</p>
+                          <p className="text-zinc-500 dark:text-zinc-400 mb-0.5">Jenis</p>
+                          <p className="font-medium text-zinc-900 dark:text-zinc-100">{r.leaveTypeName}</p>
                         </div>
                         <div>
-                          <p className="text-zinc-500 mb-0.5">Hari</p>
-                          <p className="font-medium text-zinc-900">{r.totalDays}</p>
+                          <p className="text-zinc-500 dark:text-zinc-400 mb-0.5">Hari</p>
+                          <p className="font-medium text-zinc-900 dark:text-zinc-100">{r.totalDays}</p>
                         </div>
                         <div className="col-span-2">
-                          <p className="text-zinc-500 mb-0.5">Tanggal</p>
-                          <p className="font-medium text-zinc-900">{fmtDate(r.startDate)} – {fmtDate(r.endDate)}</p>
+                          <p className="text-zinc-500 dark:text-zinc-400 mb-0.5">Tanggal</p>
+                          <p className="font-medium text-zinc-900 dark:text-zinc-100">{fmtDate(r.startDate)} – {fmtDate(r.endDate)}</p>
                         </div>
                       </div>
                       {r.status === 'pending' && (
-                        <div className="mt-2 text-right border-t border-zinc-200 pt-2">
+                        <div className="mt-2 text-right border-t border-zinc-200 dark:border-zinc-800 pt-2">
                           <Button
                             variant="outline"
                             size="sm"
@@ -299,7 +299,7 @@ export default function LeavePage() {
                 <div className="hidden lg:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-zinc-200 text-left text-xs text-zinc-500">
+                      <tr className="border-b border-zinc-200 dark:border-zinc-800 text-left text-xs text-zinc-500 dark:text-zinc-400">
                         <th className="pb-2 pr-3 font-medium">No. Pengajuan</th>
                         <th className="pb-2 pr-3 font-medium">Jenis</th>
                         <th className="pb-2 pr-3 font-medium">Tanggal</th>
@@ -311,19 +311,19 @@ export default function LeavePage() {
                     </thead>
                     <tbody>
                       {myRequests.data.items.map((r) => (
-                        <tr key={r.id} className="border-b border-zinc-100 last:border-0">
-                          <td className="py-2 pr-3 font-medium text-zinc-900">
+                        <tr key={r.id} className="border-b border-zinc-100 dark:border-zinc-800/80 last:border-0">
+                          <td className="py-2 pr-3 font-medium text-zinc-900 dark:text-zinc-100">
                             {r.requestNumber}
                           </td>
-                          <td className="py-2 pr-3 text-zinc-600">{r.leaveTypeName}</td>
-                          <td className="py-2 pr-3 text-zinc-600">
+                          <td className="py-2 pr-3 text-zinc-600 dark:text-zinc-300">{r.leaveTypeName}</td>
+                          <td className="py-2 pr-3 text-zinc-600 dark:text-zinc-300">
                             {fmtDate(r.startDate)} – {fmtDate(r.endDate)}
                           </td>
-                          <td className="py-2 pr-3 text-zinc-600">{r.totalDays}</td>
+                          <td className="py-2 pr-3 text-zinc-600 dark:text-zinc-300">{r.totalDays}</td>
                           <td className="py-2 pr-3">
                             <Badge className={badgeClass(r.status)}>{r.status}</Badge>
                           </td>
-                          <td className="py-2 pr-3 text-zinc-500">{fmtDateTime(r.createdAt)}</td>
+                          <td className="py-2 pr-3 text-zinc-500 dark:text-zinc-400">{fmtDateTime(r.createdAt)}</td>
                           <td className="py-2 text-right">
                             {r.status === 'pending' && (
                               <Button
@@ -343,7 +343,7 @@ export default function LeavePage() {
                 </div>
               </>
             ) : (
-              <p className="text-sm text-zinc-500">Belum ada pengajuan cuti.</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Belum ada pengajuan cuti.</p>
             )}
           </CardContent>
         </Card>

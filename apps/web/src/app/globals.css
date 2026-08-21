@@ -30,7 +30,7 @@
     color-scheme: dark;
     --background: #09090b;
     --foreground: #f8fafc;
-    --card: #18181b;
+    --card: #121215;
     --card-foreground: #f8fafc;
     --popover: #18181b;
     --popover-foreground: #f8fafc;
@@ -38,7 +38,7 @@
     --primary-foreground: #09090b;
     --secondary: #27272a;
     --secondary-foreground: #f8fafc;
-    --muted: #27272a;
+    --muted: #1e1e24;
     --muted-foreground: #a1a1aa;
     --accent: #27272a;
     --accent-foreground: #f8fafc;
@@ -47,6 +47,22 @@
     --border: #27272a;
     --input: #27272a;
     --ring: #d4d4d8;
+  }
+
+  .dark select {
+    background-color: #18181b !important;
+    color: #f8fafc !important;
+    border-color: #27272a !important;
+  }
+
+  .dark option {
+    background-color: #18181b !important;
+    color: #f8fafc !important;
+  }
+
+  .dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+  .dark textarea {
+    color: #f8fafc;
   }
 }
 
