@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SocialMediaSection } from '@/components/landing/SocialMediaSection';
 import { QuickLinksSection } from '@/components/landing/QuickLinksSection';
+import { UnitBreadcrumbJsonLd } from '@/components/landing/JsonLd';
 
 // ─────────────────────────────────────────────────────────────
 // Types & Data
@@ -160,9 +161,47 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const unit = UNIT_DETAILS[id];
   if (!unit) return { title: 'Lini Bisnis tidak ditemukan' };
+
+  const canonicalUrl = `https://gasela.my.id/landing/unit/${id}`;
+
   return {
-    title: `${unit.name} — CV GASELA GROUP`,
-    description: unit.description,
+    title: `${unit.name} — ${unit.tagline} | CV GASELA GROUP`,
+    description: `${unit.description.slice(0, 160)}... Hubungi ${unit.phone} atau kunjungi lokasi kami di Cikoneng, Ciamis.`,
+    keywords: [
+      unit.name,
+      unit.tagline,
+      'CV GASELA',
+      'Cikoneng',
+      'Ciamis',
+      'Jawa Barat',
+      ...(unit.features || []),
+      ...(unit.menus || []),
+    ],
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: `${unit.name} — CV GASELA GROUP`,
+      description: `${unit.tagline} — ${unit.description.slice(0, 150)}...`,
+      url: canonicalUrl,
+      siteName: 'CV GASELA GROUP',
+      images: [
+        {
+          url: unit.image,
+          width: 1200,
+          height: 630,
+          alt: `${unit.name} Cikoneng Ciamis`,
+        },
+      ],
+      type: 'article',
+      locale: 'id_ID',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${unit.name} — CV GASELA GROUP`,
+      description: unit.tagline,
+      images: [unit.image],
+    },
   };
 }
 
@@ -184,6 +223,8 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-white relative py-28 px-6 md:px-16 lg:px-24 overflow-hidden">
+      {/* Breadcrumb Structured Data */}
+      <UnitBreadcrumbJsonLd name={unit.name} url={`https://gasela.my.id/landing/unit/${id}`} />
       {/* Background patterns */}
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.015)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-size-[64px_64px]" />
       <div className="absolute top-1/4 right-1/4 w-150 h-150 bg-blue-500/5 rounded-full blur-[150px] pointer-events-none" />
