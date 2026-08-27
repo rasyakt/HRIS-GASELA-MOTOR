@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import type {
   ApprovePayrollInput,
@@ -345,7 +346,7 @@ export class PayrollService {
             employeeId: emp.id,
             month: input.month,
             year: input.year,
-            basicSalary,
+            basicSalary: String(basicSalary),
             totalAllowance,
             totalDeduction,
             overtimePay,
@@ -441,13 +442,22 @@ export class PayrollService {
   }
 
   async myDetail(employeeId: number, id: number): Promise<PayrollDetailDto> {
-    const row = await this.prisma.payroll.findFirst({
-      where: { id, employeeId },
+    const row = await this.prisma.payroll.findUnique({
+      where: { id },
       include: this.payrollDetailInclude,
     });
+
     if (!row) {
       throw new NotFoundException(`Slip gaji #${id} tidak ditemukan`);
     }
+
+    // SECURITY: Validate ownership
+    if (row.employeeId !== employeeId) {
+      throw new NotFoundException(
+        'Slip gaji tidak ditemukan atau Anda tidak memiliki akses',
+      );
+    }
+
     return this.toPayrollDetailDto(row);
   }
 

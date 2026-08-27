@@ -37,12 +37,23 @@ Thumbs.db
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
+logs/
+apps/backend/logs/
+*.audit.json
+.*-audit.json
 
 # turbo
 .turbo/
 
 # build info
 *.tsbuildinfo
+*.tsbuildinfo*
+
+# database backups / dumps
+*.sql
+!apps/backend/prisma/migrations/**/*.sql
+*.dump
+*.tar.gz
 
 # .md
 CRITICAL_FIXES_REPORT.md
@@ -50,6 +61,9 @@ HIGH_PRIORITY_FIXES_REPORT.md
 REMAINING_ISSUES.md
 SESSION_SUMMARY.md
 HRIS_Gasela_Motor_Project_Plan.md
+SECURITY_AUDIT_REPORT.md
+SECURITY_FIXES_SUMMARY.md
+SECURITY_IMPLEMENTATION_COMPLETE.md
 
 # python & automation scripts
 *.py

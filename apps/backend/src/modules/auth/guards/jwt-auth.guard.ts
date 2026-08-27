@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { UserRole } from '@prisma/client';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import type { AuthRequest } from '../types/auth-request.type';
+import { PrismaService } from '../../../prisma/prisma.service';
 
 export interface AccessTokenPayload {
   sub: number;
@@ -17,6 +18,7 @@ export interface AccessTokenPayload {
   username: string;
   role: string;
   fullName: string;
+  jwtVersion: number;
 }
 
 @Injectable()
@@ -25,6 +27,7 @@ export class JwtAuthGuard implements CanActivate {
     private readonly jwtService: JwtService,
     private readonly reflector: Reflector,
     private readonly config: ConfigService,
+    private readonly prisma: PrismaService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -49,6 +52,23 @@ export class JwtAuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync<
         AccessTokenPayload & { iat: number; exp: number }
       >(token, { secret: this.config.getOrThrow<string>('app.jwtSecret') });
+
+      // SECURITY: Validate JWT version to allow session invalidation
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: { jwtVersion: true, isActive: true },
+      });
+
+      if (!user || !user.isActive) {
+        throw new UnauthorizedException('User tidak ditemukan atau tidak aktif');
+      }
+
+      if (user.jwtVersion !== payload.jwtVersion) {
+        throw new UnauthorizedException(
+          'Token sudah tidak valid. Silakan login ulang.',
+        );
+      }
+
       request.user = {
         id: payload.sub,
         employeeId: payload.employeeId,
@@ -57,7 +77,10 @@ export class JwtAuthGuard implements CanActivate {
         fullName: payload.fullName,
       };
       return true;
-    } catch {
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       throw new UnauthorizedException(
         'Token tidak valid atau sudah kadaluarsa',
       );

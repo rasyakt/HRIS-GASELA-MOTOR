@@ -50,10 +50,8 @@ export class EmployeesController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,
   ) {
-    if (user.role === 'employee' && user.employeeId !== id) {
-      throw new ForbiddenException('Anda hanya dapat melihat data profil Anda sendiri');
-    }
-    return this.employeesService.getById(id);
+    // Authorization moved to service layer for better security
+    return this.employeesService.getById(id, user);
   }
 
   @Roles('admin', 'hrd')

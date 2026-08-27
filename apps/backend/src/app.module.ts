@@ -4,6 +4,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
+import { LoggerModule } from './common/logger/logger.module';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
@@ -44,6 +45,7 @@ import configuration from './config/configuration';
         limit: 120, // 120 req/menit per IP (endpoint biasa)
       },
     ]),
+    LoggerModule,
     PrismaModule,
     HealthModule,
     AuthModule,

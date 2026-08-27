@@ -210,8 +210,8 @@ export class ReportsService {
     });
   }
 
-  private rp(v: Prisma.Decimal | number): string {
-    return Number(v).toLocaleString('id-ID', {
+  private rp(v: Prisma.Decimal | number | string | null | undefined): string {
+    return Number(v ?? 0).toLocaleString('id-ID', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     });
