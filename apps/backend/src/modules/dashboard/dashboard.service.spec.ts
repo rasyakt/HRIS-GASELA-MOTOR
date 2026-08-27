@@ -1,4 +1,4 @@
-﻿import { Test } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import type { AdminDashboard, ManagerDashboard } from '@gasela/shared-types';
 import { DashboardService } from './dashboard.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -23,6 +23,7 @@ describe('DashboardService', () => {
       },
       employee: { count: jest.fn(), findMany: jest.fn() },
       department: { findMany: jest.fn() },
+      companySetting: { findUnique: jest.fn() },
     };
     const module = await Test.createTestingModule({
       providers: [
@@ -84,7 +85,7 @@ describe('DashboardService', () => {
     expect(result.team.total).toBe(2);
   });
 
-  it('role hrd: menambahkan statistik perusahaan & sebaran departemen', async () => {
+  it('role hrd: menambahkan statistik perusahaan, sebaran departemen & lokasi kantor', async () => {
     prisma.attendance.findFirst.mockResolvedValue(null);
     prisma.leaveBalance.findMany.mockResolvedValue([]);
     prisma.leaveRequest.count.mockResolvedValue(0);
@@ -98,6 +99,27 @@ describe('DashboardService', () => {
       { name: 'HRD', _count: { employees: 2 } },
       { name: 'Workshop', _count: { employees: 3 } },
     ]);
+    prisma.companySetting.findUnique.mockImplementation(({ where }: any) => {
+      if (where.key === 'office.location') {
+        return Promise.resolve({
+          key: 'office.location',
+          value: JSON.stringify({ lat: -6.914744, lng: 107.60981 }),
+        });
+      }
+      if (where.key === 'office.radius_meters') {
+        return Promise.resolve({
+          key: 'office.radius_meters',
+          value: '100',
+        });
+      }
+      if (where.key === 'company.name') {
+        return Promise.resolve({
+          key: 'company.name',
+          value: 'PT Gasela Motor',
+        });
+      }
+      return Promise.resolve(null);
+    });
 
     const result = (await service.summary({
       ...user,
@@ -109,5 +131,11 @@ describe('DashboardService', () => {
     expect(result.stats.absentToday).toBe(1); // 5 - 2 - 0 - 2(leave)
     expect(result.stats.overtimeHoursThisMonth).toBe(10);
     expect(result.departments).toHaveLength(2);
+    expect(result.officeLocation).toEqual({
+      lat: -6.914744,
+      lng: 107.60981,
+      radiusMeters: 100,
+      companyName: 'PT Gasela Motor',
+    });
   });
 });

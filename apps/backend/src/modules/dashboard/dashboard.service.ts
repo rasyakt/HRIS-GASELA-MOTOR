@@ -1,7 +1,8 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type {
   DashboardSummary,
   EmployeeDashboard,
+  OfficeLocationDto,
   RecentAttendanceDto,
 } from '@gasela/shared-types';
 import type { AuthUser } from '@gasela/shared-types';
@@ -36,15 +37,17 @@ export class DashboardService {
   async summary(user: AuthUser): Promise<DashboardSummary> {
     const employeePart = await this.employeePart(user.employeeId);
     if (roleAtLeast('hrd', user.role)) {
-      const [stats, departments] = await Promise.all([
+      const [stats, departments, officeLocation] = await Promise.all([
         this.companyStats(),
         this.departmentDistribution(),
+        this.getOfficeLocationInfo(),
       ]);
       return {
         ...employeePart,
         role: 'admin',
         stats,
         departments,
+        officeLocation,
       };
     }
     if (roleAtLeast('manager', user.role)) {
@@ -273,4 +276,56 @@ export class DashboardService {
       count: d._count.employees,
     }));
   }
+
+  private async getOfficeLocationInfo(): Promise<OfficeLocationDto | null> {
+    try {
+      const [locSetting, radiusSetting, nameSetting] = await Promise.all([
+        this.prisma.companySetting.findUnique({
+          where: { key: 'office.location' },
+        }),
+        this.prisma.companySetting.findUnique({
+          where: { key: 'office.radius_meters' },
+        }),
+        this.prisma.companySetting.findUnique({
+          where: { key: 'company.name' },
+        }),
+      ]);
+
+      if (!locSetting?.value) {
+        return null;
+      }
+
+      let parsedLoc: { lat: number; lng: number };
+      try {
+        parsedLoc = JSON.parse(locSetting.value) as {
+          lat: number;
+          lng: number;
+        };
+      } catch {
+        return null;
+      }
+
+      if (
+        typeof parsedLoc.lat !== 'number' ||
+        typeof parsedLoc.lng !== 'number' ||
+        isNaN(parsedLoc.lat) ||
+        isNaN(parsedLoc.lng)
+      ) {
+        return null;
+      }
+
+      const radiusMeters = Number(radiusSetting?.value ?? 100) || 100;
+      const companyName = nameSetting?.value?.trim() || 'PT Gasela Motor';
+
+      return {
+        lat: parsedLoc.lat,
+        lng: parsedLoc.lng,
+        radiusMeters,
+        companyName,
+      };
+    } catch {
+      return null;
+    }
+  }
 }
+
