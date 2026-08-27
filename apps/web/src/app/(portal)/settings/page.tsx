@@ -1,7 +1,17 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CalendarPlus, Loader2, RotateCcw, Save, ShieldCheck, Trash2 } from 'lucide-react';
+import {
+  CalendarPlus,
+  Crosshair,
+  ExternalLink,
+  Loader2,
+  MapPin,
+  RotateCcw,
+  Save,
+  ShieldCheck,
+  Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -70,8 +80,8 @@ function BpjsSettingForm({
     <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 p-5 space-y-5 shadow-2xs">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 dark:border-zinc-800 pb-4">
         <div>
-          <h4 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-            <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
+          <h4 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+            <ShieldCheck className="size-4 text-zinc-700 dark:text-zinc-300" />
             Pengaturan Tarif &amp; Batas Upah BPJS
           </h4>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
@@ -245,6 +255,188 @@ function BpjsSettingForm({
   );
 }
 
+function OfficeLocationSettingForm({
+  setting,
+  onSave,
+  saving,
+}: {
+  setting: CompanySettingDto;
+  onSave: (value: string) => void;
+  saving: boolean;
+}) {
+  const parseCoords = (str: string): { lat: number; lng: number } => {
+    try {
+      const parsed = JSON.parse(str);
+      if (typeof parsed.lat === 'number' && typeof parsed.lng === 'number') {
+        return { lat: parsed.lat, lng: parsed.lng };
+      }
+    } catch {}
+    return { lat: -6.914744, lng: 107.60981 };
+  };
+
+  const [coords, setCoords] = useState<{ lat: number; lng: number }>(() =>
+    parseCoords(setting.value),
+  );
+  const [gettingGps, setGettingGps] = useState(false);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+
+  const initial = parseCoords(setting.value);
+  const isDirty = coords.lat !== initial.lat || coords.lng !== initial.lng;
+
+  const handleGetGps = () => {
+    if (!navigator.geolocation) {
+      setGpsError('Browser tidak mendukung Geolocation.');
+      return;
+    }
+    setGettingGps(true);
+    setGpsError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({
+          lat: Number(pos.coords.latitude.toFixed(6)),
+          lng: Number(pos.coords.longitude.toFixed(6)),
+        });
+        setGettingGps(false);
+      },
+      (err) => {
+        setGpsError(`Gagal mengambil GPS: ${err.message}`);
+        setGettingGps(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
+
+  const handleSave = () => {
+    onSave(JSON.stringify({ lat: coords.lat, lng: coords.lng }));
+  };
+
+  const delta = 0.003;
+  const osmEmbedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${coords.lng - delta}%2C${coords.lat - delta}%2C${coords.lng + delta}%2C${coords.lat + delta}&layer=mapnik&marker=${coords.lat}%2C${coords.lng}`;
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`;
+
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 p-5 space-y-4 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 dark:border-zinc-800 pb-4">
+        <div>
+          <h4 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+            <MapPin className="size-4 text-zinc-700 dark:text-zinc-300" />
+            Koordinat Lokasi Kantor ({setting.key})
+          </h4>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+            Titik pusat geofence presensi check-in/out karyawan dan peta di Dashboard Admin.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleGetGps}
+            disabled={gettingGps}
+            className="text-xs"
+          >
+            {gettingGps ? (
+              <Loader2 className="size-3.5 animate-spin mr-1" />
+            ) : (
+              <Crosshair className="size-3.5 mr-1 text-zinc-500 dark:text-zinc-400" />
+            )}
+            Ambil Lokasi GPS
+          </Button>
+          <Button size="sm" onClick={handleSave} disabled={!isDirty || saving}>
+            {saving ? (
+              <Loader2 className="size-3.5 animate-spin mr-1" />
+            ) : (
+              <Save className="size-3.5 mr-1" />
+            )}
+            Simpan Perubahan
+          </Button>
+        </div>
+      </div>
+
+      {gpsError && (
+        <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 p-2.5 rounded-lg border border-red-200 dark:border-red-900/50">
+          {gpsError}
+        </div>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-3">
+          <div>
+            <Label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+              Latitude (Lintang)
+            </Label>
+            <Input
+              type="number"
+              step="0.000001"
+              value={coords.lat}
+              onChange={(e) =>
+                setCoords((c) => ({
+                  ...c,
+                  lat: parseFloat(e.target.value) || 0,
+                }))
+              }
+              className="mt-1 text-xs font-mono font-semibold"
+              placeholder="-6.914744"
+            />
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
+              Contoh: -6.914744
+            </p>
+          </div>
+
+          <div>
+            <Label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+              Longitude (Bujur)
+            </Label>
+            <Input
+              type="number"
+              step="0.000001"
+              value={coords.lng}
+              onChange={(e) =>
+                setCoords((c) => ({
+                  ...c,
+                  lng: parseFloat(e.target.value) || 0,
+                }))
+              }
+              className="mt-1 text-xs font-mono font-semibold"
+              placeholder="107.609810"
+            />
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
+              Contoh: 107.609810
+            </p>
+          </div>
+
+          <div className="pt-1">
+            <a
+              href={googleMapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
+            >
+              <ExternalLink className="size-3.5" />
+              Verifikasi titik di Google Maps
+            </a>
+          </div>
+        </div>
+
+        {/* Live Mini Map Preview */}
+        <div className="space-y-1">
+          <Label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            Pratinjau Peta Lokasi
+          </Label>
+          <div className="relative h-44 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800 overflow-hidden shadow-2xs">
+            <iframe
+              src={osmEmbedUrl}
+              title="Pratinjau Peta Lokasi Kantor"
+              className="absolute inset-0 size-full border-0 dark:[filter:invert(0.88)_hue-rotate(180deg)_contrast(0.9)_saturate(0.65)]"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SettingRow({
   setting,
   onSave,
@@ -259,6 +451,16 @@ function SettingRow({
 
   if (setting.key === 'bpjs.rates') {
     return <BpjsSettingForm setting={setting} onSave={onSave} saving={saving} />;
+  }
+
+  if (setting.key === 'office.location') {
+    return (
+      <OfficeLocationSettingForm
+        setting={setting}
+        onSave={onSave}
+        saving={saving}
+      />
+    );
   }
 
   return (

@@ -23,6 +23,7 @@ import type {
 } from '@gasela/shared-types';
 import { ArrowRight, CalendarX2, Hourglass, Timer, Users } from 'lucide-react';
 import Link from 'next/link';
+import { CompanyLocationMapCard } from '@/components/dashboard/CompanyLocationMapCard';
 import { useAuthApi } from '@/lib/auth-api';
 import { badgeClass, fmtDate, fmtHours, fmtTime } from '@/lib/format';
 import { useAuthStore } from '@/store/auth-store';
@@ -517,6 +518,7 @@ export default function DashboardPage() {
           {data.role === 'admin' && (
             <div className="space-y-6">
               <CompanyStatsGrid stats={data.stats} />
+              <CompanyLocationMapCard location={data.officeLocation} />
               <div className="grid gap-6 md:grid-cols-2">
                 <AttendanceDonutChart stats={data.stats} />
                 <DepartmentChart departments={data.departments} />

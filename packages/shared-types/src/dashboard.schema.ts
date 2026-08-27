@@ -81,13 +81,22 @@ export interface DepartmentCountDto {
   count: number;
 }
 
+export interface OfficeLocationDto {
+  lat: number;
+  lng: number;
+  radiusMeters: number;
+  companyName: string;
+}
+
 export interface AdminDashboard extends Omit<EmployeeDashboard, 'role'> {
   role: 'admin';
   stats: CompanyStatsDto;
   departments: DepartmentCountDto[];
+  officeLocation: OfficeLocationDto | null;
 }
 
 export type DashboardSummary =
   | EmployeeDashboard
   | ManagerDashboard
   | AdminDashboard;
+
