@@ -14,6 +14,7 @@ import type {
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { assertPasswordComplexity } from '../../common/utils/password-validator';
 
 const EMPLOYEE_INCLUDE = {
   department: { select: { id: true, code: true, name: true } },
@@ -75,7 +76,18 @@ export class EmployeesService {
     };
   }
 
-  async getById(id: number) {
+  async getById(id: number, requestingUser?: AuthUser) {
+    // Authorization check in service layer (SECURITY FIX for IDOR)
+    if (
+      requestingUser &&
+      requestingUser.role === 'employee' &&
+      requestingUser.employeeId !== id
+    ) {
+      throw new ForbiddenException(
+        'Anda hanya dapat melihat data profil Anda sendiri',
+      );
+    }
+
     const employee = await this.prisma.employee.findUnique({
       where: { id },
       include: {
@@ -99,14 +111,21 @@ export class EmployeesService {
     });
     await this.assertReferences(input);
 
+    const {
+      basicSalary,
+      birthDate,
+      joinDate,
+      permanentDate,
+      ...restInput
+    } = input;
+
     return this.prisma.employee.create({
       data: {
-        ...input,
-        birthDate: input.birthDate ? new Date(input.birthDate) : null,
-        joinDate: new Date(input.joinDate),
-        permanentDate: input.permanentDate
-          ? new Date(input.permanentDate)
-          : null,
+        ...restInput,
+        basicSalary: String(basicSalary),
+        birthDate: birthDate ? new Date(birthDate) : null,
+        joinDate: new Date(joinDate),
+        permanentDate: permanentDate ? new Date(permanentDate) : null,
       },
       include: EMPLOYEE_INCLUDE,
     });
@@ -127,55 +146,68 @@ export class EmployeesService {
     await this.assertReferences(input);
 
     // Safely parse dates with null checks
-    let birthDate: Date | null = null;
+    let parsedBirthDate: Date | null = null;
     if (input.birthDate !== undefined && input.birthDate !== null) {
       if (typeof input.birthDate === 'string' && input.birthDate.trim()) {
         try {
-          birthDate = new Date(input.birthDate);
-          if (isNaN(birthDate.getTime())) {
-            birthDate = null;
+          parsedBirthDate = new Date(input.birthDate);
+          if (isNaN(parsedBirthDate.getTime())) {
+            parsedBirthDate = null;
           }
         } catch {
-          birthDate = null;
+          parsedBirthDate = null;
         }
       }
     }
 
-    let joinDate: Date | undefined;
+    let parsedJoinDate: Date | undefined;
     if (input.joinDate !== undefined && input.joinDate !== null) {
       if (typeof input.joinDate === 'string' && input.joinDate.trim()) {
         try {
-          joinDate = new Date(input.joinDate);
-          if (isNaN(joinDate.getTime())) {
-            joinDate = undefined;
+          parsedJoinDate = new Date(input.joinDate);
+          if (isNaN(parsedJoinDate.getTime())) {
+            parsedJoinDate = undefined;
           }
         } catch {
-          joinDate = undefined;
+          parsedJoinDate = undefined;
         }
       }
     }
 
-    let permanentDate: Date | null = null;
+    let parsedPermanentDate: Date | null = null;
     if (input.permanentDate !== undefined && input.permanentDate !== null) {
       if (typeof input.permanentDate === 'string' && input.permanentDate.trim()) {
         try {
-          permanentDate = new Date(input.permanentDate);
-          if (isNaN(permanentDate.getTime())) {
-            permanentDate = null;
+          parsedPermanentDate = new Date(input.permanentDate);
+          if (isNaN(parsedPermanentDate.getTime())) {
+            parsedPermanentDate = null;
           }
         } catch {
-          permanentDate = null;
+          parsedPermanentDate = null;
         }
       }
     }
+
+    const {
+      basicSalary,
+      birthDate: _bd,
+      joinDate: _jd,
+      permanentDate: _pd,
+      ...restInput
+    } = input;
 
     return this.prisma.employee.update({
       where: { id },
       data: {
-        ...input,
-        ...(input.birthDate !== undefined && { birthDate }),
-        ...(input.joinDate !== undefined && { joinDate }),
-        ...(input.permanentDate !== undefined && { permanentDate }),
+        ...restInput,
+        ...(basicSalary !== undefined && {
+          basicSalary: String(basicSalary),
+        }),
+        ...(input.birthDate !== undefined && { birthDate: parsedBirthDate }),
+        ...(input.joinDate !== undefined && { joinDate: parsedJoinDate }),
+        ...(input.permanentDate !== undefined && {
+          permanentDate: parsedPermanentDate,
+        }),
       },
       include: EMPLOYEE_INCLUDE,
     });
@@ -226,6 +258,9 @@ export class EmployeesService {
       throw new ConflictException(`Username '${input.username}' sudah dipakai`);
     }
 
+    // Validate password complexity
+    assertPasswordComplexity(input.password);
+
     const passwordHash = await bcrypt.hash(input.password, 10);
     return this.prisma.user.create({
       data: {
@@ -268,9 +303,17 @@ export class EmployeesService {
       }
     }
 
+    // SECURITY: Invalidate JWT if role changes
+    const updateData = { ...input };
+    if (input.role && input.role !== employee.user.role) {
+      updateData.jwtVersion = { increment: 1 };
+      updateData.refreshTokenHash = null;
+      updateData.refreshTokenExpiry = null;
+    }
+
     return this.prisma.user.update({
       where: { employeeId },
-      data: input,
+      data: updateData,
       select: {
         id: true,
         username: true,
@@ -293,13 +336,19 @@ export class EmployeesService {
       throw new ForbiddenException('Hanya Owner yang dapat mereset password akun Owner');
     }
 
+    // Validate password complexity
+    assertPasswordComplexity(input.password);
+
     const passwordHash = await bcrypt.hash(input.password, 10);
     // Invalidate all refresh tokens on password reset for security
     await this.prisma.user.update({
       where: { employeeId },
       data: {
         passwordHash,
+        passwordChangedAt: new Date(),
         refreshTokenHash: null,
+        refreshTokenExpiry: null,
+        jwtVersion: { increment: 1 }, // Invalidate existing JWTs
       },
       select: { id: true },
     });

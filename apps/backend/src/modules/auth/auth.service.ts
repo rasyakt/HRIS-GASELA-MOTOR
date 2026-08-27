@@ -15,6 +15,8 @@ import type {
 } from '@gasela/shared-types';
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { assertPasswordComplexity } from '../../common/utils/password-validator';
+import { WinstonLoggerService } from '../../common/logger/logger.service';
 
 interface UserWithEmployee {
   id: number;
@@ -24,15 +26,20 @@ interface UserWithEmployee {
   role: UserRole;
   refreshTokenHash: string | null;
   isActive: boolean;
+  jwtVersion: number | null; // Added for JWT versioning
   employee: { fullName: string; departmentId: number | null };
 }
 
 @Injectable()
 export class AuthService {
+  private readonly MAX_FAILED_ATTEMPTS = 5;
+  private readonly LOCKOUT_DURATION_MINUTES = 30;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    private readonly logger: WinstonLoggerService,
   ) {}
 
   private toAuthUser(u: UserWithEmployee): AuthUser {
@@ -60,6 +67,7 @@ export class AuthService {
         username: u.username,
         role: u.role,
         fullName: u.employee?.fullName ?? u.username,
+        jwtVersion: u.jwtVersion || 0, // Include JWT version for validation
       },
       {
         secret: this.config.getOrThrow<string>('app.jwtSecret'),
@@ -108,24 +116,99 @@ export class AuthService {
     };
   }
 
-  async login(input: LoginInput): Promise<LoginResponse> {
+  async login(input: LoginInput, ipAddress?: string): Promise<LoginResponse> {
     const user = await this.prisma.user.findUnique({
       where: { username: input.username },
       include: { employee: true },
     });
+    
     if (!user) {
+      // SECURITY: Log failed login attempt
+      this.logger.failedLogin(input.username, ipAddress || 'unknown', 'user_not_found');
       throw new UnauthorizedException('Username atau password salah');
     }
+
+    // Check if account is locked
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      const minutesLeft = Math.ceil(
+        (user.lockedUntil.getTime() - Date.now()) / 60000,
+      );
+      this.logger.warn(
+        `Login attempt on locked account: ${user.username} from IP: ${ipAddress}`,
+        'AuthService',
+      );
+      throw new UnauthorizedException(
+        `Akun dikunci karena terlalu banyak percobaan login gagal. Coba lagi dalam ${minutesLeft} menit.`,
+      );
+    }
+
+    // Validate password
     const passwordValid = await bcrypt.compare(
       input.password,
       user.passwordHash,
     );
+
     if (!passwordValid) {
-      throw new UnauthorizedException('Username atau password salah');
+      // Increment failed attempts
+      const failedAttempts = (user.failedLoginAttempts || 0) + 1;
+
+      // SECURITY: Log failed login attempt
+      this.logger.failedLogin(input.username, ipAddress || 'unknown', 'invalid_password');
+
+      if (failedAttempts >= this.MAX_FAILED_ATTEMPTS) {
+        // Lock the account
+        const lockUntil = new Date();
+        lockUntil.setMinutes(
+          lockUntil.getMinutes() + this.LOCKOUT_DURATION_MINUTES,
+        );
+
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: {
+            failedLoginAttempts: failedAttempts,
+            lockedUntil: lockUntil,
+          },
+        });
+
+        // SECURITY: Log account lockout
+        this.logger.accountLocked(user.username, ipAddress || 'unknown', lockUntil);
+
+        throw new UnauthorizedException(
+          `Akun dikunci selama ${this.LOCKOUT_DURATION_MINUTES} menit karena terlalu banyak percobaan login gagal.`,
+        );
+      }
+
+      // Update failed attempts
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { failedLoginAttempts: failedAttempts },
+      });
+
+      const remainingAttempts = this.MAX_FAILED_ATTEMPTS - failedAttempts;
+      throw new UnauthorizedException(
+        `Username atau password salah. ${remainingAttempts} percobaan tersisa.`,
+      );
     }
+
+    // Check if user is active
     if (!user.isActive || !user.employee.isActive) {
+      this.logger.failedLogin(input.username, ipAddress || 'unknown', 'account_inactive');
       throw new UnauthorizedException('Akun dinonaktifkan, hubungi HRD');
     }
+
+    // Reset failed attempts on successful login
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
+      select: { id: true },
+    });
+
+    // SECURITY: Log successful login
+    this.logger.successfulLogin(user.username, ipAddress || 'unknown', user.id);
+
     return this.buildLoginResponse(user);
   }
 
@@ -257,14 +340,21 @@ export class AuthService {
     if (input.oldPassword === input.newPassword) {
       throw new ConflictException('Password baru tidak boleh sama dengan lama');
     }
+
+    // Validate password complexity
+    assertPasswordComplexity(input.newPassword);
+
     const newHash = await bcrypt.hash(input.newPassword, 10);
+    
     // Invalidate all sessions on password change
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
         passwordHash: newHash,
+        passwordChangedAt: new Date(),
         refreshTokenHash: null,
         refreshTokenExpiry: null,
+        jwtVersion: { increment: 1 }, // Invalidate existing JWTs
       },
       select: { id: true },
     });

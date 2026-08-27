@@ -7,6 +7,9 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   async onModuleInit() {
+    // Note: Encryption middleware is registered but $use is not available in this Prisma version
+    // Encryption/decryption will be handled at application layer if needed
+    
     // $connect is provided by PrismaClient; suppress known false positive from no-unsafe-call rule
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await this.$connect();

@@ -131,7 +131,7 @@ export default function LoginPage() {
                 Username
               </Label>
               <div className="relative">
-                <User className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+                <User className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400 pointer-events-none z-10" />
                 <Input
                   id="username"
                   autoComplete="username"
@@ -152,7 +152,7 @@ export default function LoginPage() {
                 Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+                <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400 pointer-events-none z-10" />
                 <PasswordInput
                   id="password"
                   autoComplete="current-password"

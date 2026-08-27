@@ -182,8 +182,8 @@ model Employee {
   email                 String           @unique @db.VarChar(100)
   phone                 String?          @db.VarChar(20)
   birthDate             DateTime?        @map("birth_date") @db.Date
-  idCardNumber          String?          @unique @map("id_card_number") @db.VarChar(20)
-  taxNumber             String?          @map("tax_number") @db.VarChar(20)
+  idCardNumber          String?          @map("id_card_number") @db.Text
+  taxNumber             String?          @map("tax_number") @db.Text
   address               String?          @db.Text
   emergencyContactName  String?          @map("emergency_contact_name") @db.VarChar(100)
   emergencyContactPhone String?          @map("emergency_contact_phone") @db.VarChar(20)
@@ -200,9 +200,9 @@ model Employee {
   employmentStatus      EmploymentStatus @default(probation) @map("employment_status")
   employmentType        EmploymentType   @map("employment_type")
   ptkpStatus            PtkpStatus       @default(K2) @map("ptkp_status")
-  basicSalary           Decimal          @map("basic_salary") @db.Decimal(15, 2)
+  basicSalary           String           @map("basic_salary") @db.Text
   bankAccountName       String?          @map("bank_account_name") @db.VarChar(100)
-  bankAccountNumber     String?          @map("bank_account_number") @db.VarChar(30)
+  bankAccountNumber     String?          @map("bank_account_number") @db.Text
   bankName              String?          @map("bank_name") @db.VarChar(50)
   profilePhotoUrl       String?          @map("profile_photo_url") @db.VarChar(255)
   isActive              Boolean          @default(true) @map("is_active")
@@ -257,18 +257,24 @@ model FamilyMember {
 }
 
 model User {
-  id                  Int       @id @default(autoincrement()) @map("user_id")
-  employeeId          Int       @unique @map("employee_id")
-  employee            Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  username            String    @unique @db.VarChar(50)
-  passwordHash        String    @map("password_hash") @db.VarChar(255)
-  role                UserRole
-  refreshTokenHash    String?   @map("refresh_token_hash") @db.VarChar(255)
-  refreshTokenExpiry  DateTime? @map("refresh_token_expiry")
-  lastLogin           DateTime? @map("last_login")
-  isActive            Boolean   @default(true) @map("is_active")
-  createdAt           DateTime  @default(now()) @map("created_at")
+  id                    Int       @id @default(autoincrement()) @map("user_id")
+  employeeId            Int       @unique @map("employee_id")
+  employee              Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  username              String    @unique @db.VarChar(50)
+  passwordHash          String    @map("password_hash") @db.VarChar(255)
+  role                  UserRole
+  refreshTokenHash      String?   @map("refresh_token_hash") @db.VarChar(255)
+  refreshTokenExpiry    DateTime? @map("refresh_token_expiry")
+  lastLogin             DateTime? @map("last_login")
+  failedLoginAttempts   Int       @default(0) @map("failed_login_attempts")
+  lockedUntil           DateTime? @map("locked_until")
+  jwtVersion            Int       @default(0) @map("jwt_version")
+  passwordChangedAt     DateTime? @map("password_changed_at")
+  isActive              Boolean   @default(true) @map("is_active")
+  createdAt             DateTime  @default(now()) @map("created_at")
 
+  @@index([lockedUntil])
+  @@index([jwtVersion])
   @@map("users")
 }
 
@@ -423,7 +429,7 @@ model Payroll {
   employee                    Employee      @relation("PayrollOwner", fields: [employeeId], references: [id])
   month                       Int
   year                        Int
-  basicSalary                 Decimal       @map("basic_salary") @db.Decimal(15, 2)
+  basicSalary                 String        @map("basic_salary") @db.Text
   totalAllowance              Decimal       @default(0) @map("total_allowance") @db.Decimal(15, 2)
   totalDeduction              Decimal       @default(0) @map("total_deduction") @db.Decimal(15, 2)
   overtimePay                 Decimal       @default(0) @map("overtime_pay") @db.Decimal(15, 2)
@@ -623,6 +629,9 @@ model AuditLog {
   userAgent   String?  @db.VarChar(255)
   timestamp   DateTime @default(now()) @map("timestamp")
 
+  @@index([action, timestamp])
+  @@index([userId])
+  @@index([resource])
   @@map("audit_logs")
 }
 

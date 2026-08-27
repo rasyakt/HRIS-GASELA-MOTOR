@@ -32,13 +32,14 @@ export class AuthController {
     @Body() body: LoginDto,
     @Req() req: Request,
   ): Promise<LoginResponse> {
-    const result = await this.authService.login(body);
+    const ipAddress = req.ip || (req as any).connection?.remoteAddress;
+    const result = await this.authService.login(body, ipAddress);
     await this.auditLogsService.record({
       action: 'login',
       resource: 'auth',
       userId: result.user.id,
       username: result.user.username,
-      ipAddress: req.ip,
+      ipAddress,
       userAgent: req.headers['user-agent'],
     });
     return result;
