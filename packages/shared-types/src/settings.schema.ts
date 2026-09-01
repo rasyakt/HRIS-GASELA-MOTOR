@@ -6,6 +6,7 @@ export const COMPANY_SETTING_KEYS = [
   'office.radius_meters',
   'bpjs.rates',
   'overtime.rate_multiplier_weekday',
+  'portal.theme_config',
 ] as const;
 export type CompanySettingKey = (typeof COMPANY_SETTING_KEYS)[number];
 
