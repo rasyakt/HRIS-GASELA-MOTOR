@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { UserRole } from './enums';
 
 export const loginSchema = z.object({
   username: z.string().min(3).max(50),
@@ -23,9 +24,32 @@ export const changePasswordSchema = z
     path: ['newPassword'],
   });
 
+export const twoFactorVerifySchema = z.object({
+  tempToken: z.string().min(1, 'Temporary token wajib diisi'),
+  code: z.string().min(6, 'Kode harus minimal 6 karakter').max(30, 'Kode tidak valid'),
+});
+
+export const twoFactorEnableSchema = z.object({
+  code: z.string().min(6, 'Kode harus 6 digit angka').max(10),
+});
+
+export const twoFactorDisableSchema = z.object({
+  password: z.string().min(1, 'Password konfirmasi wajib diisi'),
+});
+
+export const twoFactorRegenerateRecoveryCodesSchema = z.object({
+  password: z.string().min(1, 'Password konfirmasi wajib diisi'),
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+export type TwoFactorVerifyInput = z.infer<typeof twoFactorVerifySchema>;
+export type TwoFactorEnableInput = z.infer<typeof twoFactorEnableSchema>;
+export type TwoFactorDisableInput = z.infer<typeof twoFactorDisableSchema>;
+export type TwoFactorRegenerateRecoveryCodesInput = z.infer<
+  typeof twoFactorRegenerateRecoveryCodesSchema
+>;
 
 export interface AuthUser {
   id: number;
@@ -34,13 +58,16 @@ export interface AuthUser {
   role: UserRole;
   fullName: string;
   department?: string | null;
+  twoFactorEnabled?: boolean;
 }
 
 export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
+  requires2FA?: boolean;
+  tempToken?: string;
+  accessToken?: string;
+  refreshToken?: string;
   expiresIn?: number; // Access token TTL in seconds
-  user: AuthUser;
+  user?: AuthUser;
 }
 
 export interface JwtPayload {
@@ -48,6 +75,26 @@ export interface JwtPayload {
   employeeId: number;
   username: string;
   role: UserRole;
+  isTemp2FA?: boolean;
 }
 
-import type { UserRole } from './enums';
+export interface TwoFactorStatusResponse {
+  enabled: boolean;
+  hasRecoveryCodes?: boolean;
+}
+
+export interface TwoFactorSetupResponse {
+  secret: string;
+  qrCodeUrl: string;
+  otpauthUrl: string;
+}
+
+export interface TwoFactorEnableResponse {
+  message: string;
+  recoveryCodes: string[];
+}
+
+export interface TwoFactorRegenerateResponse {
+  message: string;
+  recoveryCodes: string[];
+}

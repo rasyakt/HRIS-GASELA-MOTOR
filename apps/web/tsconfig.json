@@ -19,7 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@gasela/shared-types": ["../../packages/shared-types/src/index.ts"],
+      "@gasela/shared-utils": ["../../packages/shared-utils/src/index.ts"]
     }
   },
   "include": [

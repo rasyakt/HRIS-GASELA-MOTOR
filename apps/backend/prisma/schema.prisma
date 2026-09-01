@@ -270,6 +270,9 @@ model User {
   lockedUntil           DateTime? @map("locked_until")
   jwtVersion            Int       @default(0) @map("jwt_version")
   passwordChangedAt     DateTime? @map("password_changed_at")
+  twoFactorEnabled      Boolean   @default(false) @map("two_factor_enabled")
+  twoFactorSecret       String?   @map("two_factor_secret") @db.Text
+  twoFactorRecoveryCodes String?  @map("two_factor_recovery_codes") @db.Text
   isActive              Boolean   @default(true) @map("is_active")
   createdAt             DateTime  @default(now()) @map("created_at")
 
