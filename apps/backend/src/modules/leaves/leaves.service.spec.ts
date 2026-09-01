@@ -47,6 +47,9 @@ describe('LeavesService', () => {
         update: jest.fn(),
         count: jest.fn(),
       },
+      holiday: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
       $transaction: jest.fn(),
     };
     const module = await Test.createTestingModule({

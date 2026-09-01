@@ -83,7 +83,21 @@ export function LoginScreen() {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       });
-      setSession(session, rememberMe);
+      if (session.requires2FA) {
+        setError('Akun Anda memerlukan verifikasi 2FA. Silakan gunakan Web Portal.');
+        return;
+      }
+      if (session.accessToken && session.refreshToken && session.user) {
+        setSession(
+          {
+            accessToken: session.accessToken,
+            refreshToken: session.refreshToken,
+            expiresIn: session.expiresIn,
+            user: session.user,
+          },
+          rememberMe,
+        );
+      }
     } catch (err) {
       setError(
         err instanceof ApiError

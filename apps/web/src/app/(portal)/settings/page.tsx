@@ -427,7 +427,7 @@ function OfficeLocationSettingForm({
             <iframe
               src={osmEmbedUrl}
               title="Pratinjau Peta Lokasi Kantor"
-              className="absolute inset-0 size-full border-0 dark:[filter:invert(0.88)_hue-rotate(180deg)_contrast(0.9)_saturate(0.65)]"
+              className="absolute inset-0 size-full border-0 dark:filter-[invert(0.88)_hue-rotate(180deg)_contrast(0.9)_saturate(0.65)]"
               loading="lazy"
             />
           </div>

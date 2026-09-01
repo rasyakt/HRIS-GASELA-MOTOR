@@ -6,17 +6,32 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
+import * as qrcode from 'qrcode';
+import {
+  generateOtpauthUrl,
+  generateTotpSecret,
+  verifyTotpCode,
+} from '../../common/utils/totp.util';
 import type {
   AuthUser,
   ChangePasswordInput,
   LoginInput,
   LoginResponse,
   RefreshTokenInput,
+  TwoFactorDisableInput,
+  TwoFactorEnableResponse,
+  TwoFactorRegenerateRecoveryCodesInput,
+  TwoFactorRegenerateResponse,
+  TwoFactorSetupResponse,
+  TwoFactorStatusResponse,
+  TwoFactorVerifyInput,
 } from '@gasela/shared-types';
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertPasswordComplexity } from '../../common/utils/password-validator';
 import { WinstonLoggerService } from '../../common/logger/logger.service';
+import { decrypt, encrypt } from '../../common/utils/encryption.util';
 
 interface UserWithEmployee {
   id: number;
@@ -25,8 +40,11 @@ interface UserWithEmployee {
   passwordHash: string;
   role: UserRole;
   refreshTokenHash: string | null;
+  twoFactorEnabled?: boolean;
+  twoFactorSecret?: string | null;
+  twoFactorRecoveryCodes?: string | null;
   isActive: boolean;
-  jwtVersion: number | null; // Added for JWT versioning
+  jwtVersion: number | null;
   employee: { fullName: string; departmentId: number | null };
 }
 
@@ -50,6 +68,7 @@ export class AuthService {
       role: u.role,
       fullName: u.employee?.fullName ?? u.username,
       department: null,
+      twoFactorEnabled: !!u.twoFactorEnabled,
     };
   }
 
@@ -67,7 +86,7 @@ export class AuthService {
         username: u.username,
         role: u.role,
         fullName: u.employee?.fullName ?? u.username,
-        jwtVersion: u.jwtVersion || 0, // Include JWT version for validation
+        jwtVersion: u.jwtVersion || 0,
       },
       {
         secret: this.config.getOrThrow<string>('app.jwtSecret'),
@@ -86,6 +105,34 @@ export class AuthService {
     );
   }
 
+  private signTemp2FaToken(userId: number): string {
+    return this.jwtService.sign(
+      { sub: userId, isTemp2FA: true },
+      {
+        secret: this.config.getOrThrow<string>('app.jwtSecret'),
+        expiresIn: '5m',
+      },
+    );
+  }
+
+  private generateRecoveryCodes(count = 8): {
+    rawCodes: string[];
+    hashedCodes: string[];
+  } {
+    const rawCodes: string[] = [];
+    const hashedCodes: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const part1 = crypto.randomBytes(2).toString('hex').toUpperCase();
+      const part2 = crypto.randomBytes(2).toString('hex').toUpperCase();
+      const part3 = crypto.randomBytes(2).toString('hex').toUpperCase();
+      const code = `${part1}-${part2}-${part3}`;
+      rawCodes.push(code);
+      const hashed = crypto.createHash('sha256').update(code).digest('hex');
+      hashedCodes.push(hashed);
+    }
+    return { rawCodes, hashedCodes };
+  }
+
   private async buildLoginResponse(
     user: UserWithEmployee,
   ): Promise<LoginResponse> {
@@ -95,7 +142,6 @@ export class AuthService {
     const ttlConfig = this.config.getOrThrow<string>('app.jwtAccessTtl');
     let expiresIn = 900; // default 15 minutes
 
-    // Parse TTL (e.g., "15m", "1h", "3600")
     if (typeof ttlConfig === 'string') {
       if (ttlConfig.endsWith('m')) {
         expiresIn = parseInt(ttlConfig) * 60;
@@ -121,9 +167,8 @@ export class AuthService {
       where: { username: input.username },
       include: { employee: true },
     });
-    
+
     if (!user) {
-      // SECURITY: Log failed login attempt
       this.logger.failedLogin(input.username, ipAddress || 'unknown', 'user_not_found');
       throw new UnauthorizedException('Username atau password salah');
     }
@@ -149,14 +194,10 @@ export class AuthService {
     );
 
     if (!passwordValid) {
-      // Increment failed attempts
       const failedAttempts = (user.failedLoginAttempts || 0) + 1;
-
-      // SECURITY: Log failed login attempt
       this.logger.failedLogin(input.username, ipAddress || 'unknown', 'invalid_password');
 
       if (failedAttempts >= this.MAX_FAILED_ATTEMPTS) {
-        // Lock the account
         const lockUntil = new Date();
         lockUntil.setMinutes(
           lockUntil.getMinutes() + this.LOCKOUT_DURATION_MINUTES,
@@ -170,15 +211,12 @@ export class AuthService {
           },
         });
 
-        // SECURITY: Log account lockout
         this.logger.accountLocked(user.username, ipAddress || 'unknown', lockUntil);
-
         throw new UnauthorizedException(
           `Akun dikunci selama ${this.LOCKOUT_DURATION_MINUTES} menit karena terlalu banyak percobaan login gagal.`,
         );
       }
 
-      // Update failed attempts
       await this.prisma.user.update({
         where: { id: user.id },
         data: { failedLoginAttempts: failedAttempts },
@@ -196,6 +234,16 @@ export class AuthService {
       throw new UnauthorizedException('Akun dinonaktifkan, hubungi HRD');
     }
 
+    // Two-Factor Authentication Check
+    if (user.twoFactorEnabled && user.twoFactorSecret) {
+      const tempToken = this.signTemp2FaToken(user.id);
+      return {
+        requires2FA: true,
+        tempToken,
+        user: this.toAuthUser(user),
+      };
+    }
+
     // Reset failed attempts on successful login
     await this.prisma.user.update({
       where: { id: user.id },
@@ -206,9 +254,7 @@ export class AuthService {
       select: { id: true },
     });
 
-    // SECURITY: Log successful login
     this.logger.successfulLogin(user.username, ipAddress || 'unknown', user.id);
-
     return this.buildLoginResponse(user);
   }
 
@@ -217,7 +263,6 @@ export class AuthService {
     const refreshToken = this.signRefreshToken(user);
     const refreshHash = await bcrypt.hash(refreshToken, 10);
 
-    // Set refresh token expiry (default 7 days)
     const refreshTtl = this.config.getOrThrow<string>('app.jwtRefreshTtl');
     let expiryDays = 7;
 
@@ -273,7 +318,6 @@ export class AuthService {
       );
     }
 
-    // Check if refresh token has expired
     if (user.refreshTokenExpiry && user.refreshTokenExpiry < new Date()) {
       await this.prisma.user.update({
         where: { id: user.id },
@@ -290,7 +334,6 @@ export class AuthService {
       user.refreshTokenHash,
     );
     if (!hashMatches) {
-      // Token refresh diduga dicuri → cabut seluruh sesi
       await this.prisma.user.update({
         where: { id: user.id },
         data: { refreshTokenHash: null, refreshTokenExpiry: null },
@@ -341,12 +384,9 @@ export class AuthService {
       throw new ConflictException('Password baru tidak boleh sama dengan lama');
     }
 
-    // Validate password complexity
     assertPasswordComplexity(input.newPassword);
-
     const newHash = await bcrypt.hash(input.newPassword, 10);
-    
-    // Invalidate all sessions on password change
+
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
@@ -354,9 +394,238 @@ export class AuthService {
         passwordChangedAt: new Date(),
         refreshTokenHash: null,
         refreshTokenExpiry: null,
-        jwtVersion: { increment: 1 }, // Invalidate existing JWTs
+        jwtVersion: { increment: 1 },
       },
       select: { id: true },
     });
+  }
+
+  // ===================== 2FA / MFA METHODS =====================
+
+  async get2FaStatus(userId: number): Promise<TwoFactorStatusResponse> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { twoFactorEnabled: true, twoFactorRecoveryCodes: true },
+    });
+    if (!user) throw new UnauthorizedException('User tidak ditemukan');
+
+    let hasRecoveryCodes = false;
+    if (user.twoFactorRecoveryCodes) {
+      try {
+        const codes = JSON.parse(user.twoFactorRecoveryCodes);
+        hasRecoveryCodes = Array.isArray(codes) && codes.length > 0;
+      } catch {}
+    }
+
+    return {
+      enabled: user.twoFactorEnabled,
+      hasRecoveryCodes,
+    };
+  }
+
+  async generate2FaSetup(userId: number): Promise<TwoFactorSetupResponse> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, username: true },
+    });
+    if (!user) throw new UnauthorizedException('User tidak ditemukan');
+
+    const secret = generateTotpSecret(20);
+    const otpauthUrl = generateOtpauthUrl(
+      user.username,
+      'HRIS Gasela Motor',
+      secret,
+    );
+    const qrCodeUrl = await qrcode.toDataURL(otpauthUrl);
+
+    const encryptedSecret = encrypt(secret);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorSecret: encryptedSecret },
+    });
+
+    return {
+      secret,
+      qrCodeUrl,
+      otpauthUrl,
+    };
+  }
+
+  async enable2Fa(
+    userId: number,
+    code: string,
+  ): Promise<TwoFactorEnableResponse> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, twoFactorSecret: true, twoFactorEnabled: true },
+    });
+    if (!user || !user.twoFactorSecret) {
+      throw new ConflictException('Silakan lakukan setup 2FA terlebih dahulu');
+    }
+
+    const secret = decrypt(user.twoFactorSecret);
+    if (!secret) {
+      throw new ConflictException('Gagal mendekripsi secret 2FA');
+    }
+
+    const isValid = verifyTotpCode(code.trim(), secret);
+    if (!isValid) {
+      throw new UnauthorizedException('Kode OTP 2FA salah atau kadaluarsa');
+    }
+
+    const { rawCodes, hashedCodes } = this.generateRecoveryCodes(8);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorEnabled: true,
+        twoFactorRecoveryCodes: JSON.stringify(hashedCodes),
+      },
+    });
+
+    return {
+      message: 'Autentikasi Dua Langkah (2FA) berhasil diaktifkan',
+      recoveryCodes: rawCodes,
+    };
+  }
+
+  async verify2FaLogin(
+    input: TwoFactorVerifyInput,
+    ipAddress?: string,
+  ): Promise<LoginResponse> {
+    let payload: { sub: number; isTemp2FA?: boolean };
+    try {
+      payload = await this.jwtService.verifyAsync(input.tempToken, {
+        secret: this.config.getOrThrow<string>('app.jwtSecret'),
+      });
+    } catch {
+      throw new UnauthorizedException(
+        'Sesi 2FA tidak valid atau sudah kadaluarsa',
+      );
+    }
+
+    if (!payload.isTemp2FA) {
+      throw new UnauthorizedException('Token 2FA tidak valid');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      include: { employee: true },
+    });
+
+    if (!user || !user.isActive || !user.employee.isActive) {
+      throw new UnauthorizedException('Akun tidak aktif atau tidak ditemukan');
+    }
+
+    if (!user.twoFactorEnabled || !user.twoFactorSecret) {
+      throw new ConflictException('2FA belum diaktifkan pada akun ini');
+    }
+
+    const cleanCode = input.code.trim().toUpperCase();
+    let codeValid = false;
+
+    // 1. Try TOTP code
+    const secret = decrypt(user.twoFactorSecret);
+    if (secret && cleanCode.length === 6 && /^\d{6}$/.test(cleanCode)) {
+      codeValid = verifyTotpCode(cleanCode, secret);
+    }
+
+    // 2. If not valid TOTP, try Recovery Code
+    if (!codeValid && user.twoFactorRecoveryCodes) {
+      try {
+        const hashedCodes: string[] = JSON.parse(user.twoFactorRecoveryCodes);
+        const inputHashed = crypto
+          .createHash('sha256')
+          .update(cleanCode)
+          .digest('hex');
+        const codeIndex = hashedCodes.indexOf(inputHashed);
+        if (codeIndex !== -1) {
+          codeValid = true;
+          // Consume the used recovery code
+          hashedCodes.splice(codeIndex, 1);
+          await this.prisma.user.update({
+            where: { id: user.id },
+            data: { twoFactorRecoveryCodes: JSON.stringify(hashedCodes) },
+          });
+        }
+      } catch {}
+    }
+
+    if (!codeValid) {
+      this.logger.failedLogin(
+        user.username,
+        ipAddress || 'unknown',
+        'invalid_2fa_code',
+      );
+      throw new UnauthorizedException('Kode OTP atau recovery code salah');
+    }
+
+    // Reset failed attempts
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
+    });
+
+    this.logger.successfulLogin(user.username, ipAddress || 'unknown', user.id);
+    return this.buildLoginResponse(user);
+  }
+
+  async disable2Fa(
+    userId: number,
+    input: TwoFactorDisableInput,
+  ): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, passwordHash: true },
+    });
+    if (!user) throw new UnauthorizedException('User tidak ditemukan');
+
+    const valid = await bcrypt.compare(input.password, user.passwordHash);
+    if (!valid) {
+      throw new UnauthorizedException('Password konfirmasi salah');
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        twoFactorRecoveryCodes: null,
+      },
+    });
+
+    return { message: 'Autentikasi Dua Langkah (2FA) berhasil dinonaktifkan' };
+  }
+
+  async regenerateRecoveryCodes(
+    userId: number,
+    input: TwoFactorRegenerateRecoveryCodesInput,
+  ): Promise<TwoFactorRegenerateResponse> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, passwordHash: true, twoFactorEnabled: true },
+    });
+    if (!user || !user.twoFactorEnabled) {
+      throw new ConflictException('2FA belum diaktifkan pada akun ini');
+    }
+
+    const valid = await bcrypt.compare(input.password, user.passwordHash);
+    if (!valid) {
+      throw new UnauthorizedException('Password konfirmasi salah');
+    }
+
+    const { rawCodes, hashedCodes } = this.generateRecoveryCodes(8);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorRecoveryCodes: JSON.stringify(hashedCodes) },
+    });
+
+    return {
+      message: 'Kode pemulihan baru berhasil dibuat',
+      recoveryCodes: rawCodes,
+    };
   }
 }

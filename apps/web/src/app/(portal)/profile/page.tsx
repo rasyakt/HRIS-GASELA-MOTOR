@@ -26,6 +26,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { badgeClass, fmtDate } from '@/lib/format';
+import { TwoFactorAuthCard } from '@/components/profile/TwoFactorAuthCard';
 
 export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
@@ -291,13 +292,15 @@ export default function ProfilePage() {
             </Card>
           </div>
 
-          {/* Right Column - Change Password */}
-          <div>
+          {/* Right Column - 2FA & Change Password */}
+          <div className="space-y-6">
+            <TwoFactorAuthCard />
+
             <Card className="shadow-2xs border-zinc-200 dark:border-zinc-800">
               <CardHeader className="border-b border-zinc-100 dark:border-zinc-800 pb-4">
                 <CardTitle className="flex items-center gap-2 text-base font-bold text-zinc-900 dark:text-white">
                   <Lock className="size-4.5 text-zinc-500 dark:text-zinc-400" />
-                  Keamanan & Ganti Password
+                  Ganti Password Akun
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">

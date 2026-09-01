@@ -5,6 +5,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { WinstonLoggerService } from '../../common/logger/logger.service';
 
 jest.mock('bcrypt', () => ({
   hash: jest.fn().mockResolvedValue('hashed-secret'),
@@ -23,6 +24,9 @@ const mockUser = {
   passwordHash: 'hashed-secret',
   role: 'admin',
   refreshTokenHash: null,
+  twoFactorEnabled: false,
+  twoFactorSecret: null,
+  twoFactorRecoveryCodes: null,
   isActive: true,
   employee: { fullName: 'Admin Gasela', departmentId: 1, isActive: true },
 };
@@ -54,6 +58,13 @@ describe('AuthService', () => {
     }),
   };
 
+  const loggerMock = {
+    failedLogin: jest.fn(),
+    successfulLogin: jest.fn(),
+    accountLocked: jest.fn(),
+    warn: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
     const module = await Test.createTestingModule({
@@ -62,6 +73,7 @@ describe('AuthService', () => {
         { provide: PrismaService, useValue: prismaMock },
         { provide: JwtService, useValue: jwtMock },
         { provide: ConfigService, useValue: configMock },
+        { provide: WinstonLoggerService, useValue: loggerMock },
       ],
     }).compile();
     service = module.get(AuthService);
@@ -70,7 +82,7 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('mengembalikan token & profil user', async () => {
+    it('mengembalikan token & profil user saat 2FA tidak aktif', async () => {
       prisma.user.findUnique.mockResolvedValue(mockUser);
       prisma.user.update.mockResolvedValue({ id: 1 });
       const result = await service.login({
@@ -78,15 +90,33 @@ describe('AuthService', () => {
         password: 'Admin123!',
       });
 
+      expect(result.requires2FA).toBeFalsy();
       expect(result.accessToken).toContain('signed.');
       expect(result.refreshToken).toContain('signed.');
-      expect(result.user.username).toBe('admin');
-      expect(result.user.role).toBe('admin');
+      expect(result.user?.username).toBe('admin');
+      expect(result.user?.role).toBe('admin');
       expect(prisma.user.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ refreshTokenHash: 'hashed-secret' }),
         }),
       );
+    });
+
+    it('mengembalikan requires2FA: true & tempToken jika user mengaktifkan 2FA', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        ...mockUser,
+        twoFactorEnabled: true,
+        twoFactorSecret: 'enc-secret',
+      });
+      const result = await service.login({
+        username: 'admin',
+        password: 'Admin123!',
+      });
+
+      expect(result.requires2FA).toBe(true);
+      expect(result.tempToken).toBeDefined();
+      expect(result.user?.username).toBe('admin');
+      expect(result.accessToken).toBeUndefined();
     });
 
     it('menolak saat user tidak ditemukan', async () => {
@@ -116,7 +146,7 @@ describe('AuthService', () => {
 
       const result = await service.refresh({ refreshToken: 'valid.token' });
       expect(result.accessToken).toContain('signed.');
-      expect(result.user.username).toBe('admin');
+      expect(result.user?.username).toBe('admin');
     });
 
     it('menolak saat token tidak dapat diverifikasi', async () => {
@@ -160,6 +190,38 @@ describe('AuthService', () => {
       prisma.user.findUnique.mockResolvedValue(mockUser);
       const me = await service.getMe(1);
       expect(me.fullName).toBe('Admin Gasela');
+    });
+  });
+
+  describe('2FA management', () => {
+    it('mengembalikan status 2FA aktif/nonaktif', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        twoFactorEnabled: true,
+        twoFactorRecoveryCodes: JSON.stringify(['hash1', 'hash2']),
+      });
+      const status = await service.get2FaStatus(1);
+      expect(status.enabled).toBe(true);
+      expect(status.hasRecoveryCodes).toBe(true);
+    });
+
+    it('menonaktifkan 2FA dengan password yang valid', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 1,
+        passwordHash: 'hashed-secret',
+      });
+      prisma.user.update.mockResolvedValue({ id: 1 });
+      bcryptMock.compare.mockResolvedValueOnce(true);
+
+      const res = await service.disable2Fa(1, { password: 'Admin123!' });
+      expect(res.message).toContain('berhasil dinonaktifkan');
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 1 },
+        data: {
+          twoFactorEnabled: false,
+          twoFactorSecret: null,
+          twoFactorRecoveryCodes: null,
+        },
+      });
     });
   });
 });
