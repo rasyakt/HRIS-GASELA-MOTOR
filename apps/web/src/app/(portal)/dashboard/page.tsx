@@ -18,6 +18,8 @@ import type {
   DashboardSummary,
   LeaveBalanceDto,
   ManagerDashboard,
+  PendingApprovalLeaveDto,
+  PendingApprovalOvertimeDto,
   RecentAttendanceDto,
   TodayAttendanceDto,
 } from '@gasela/shared-types';
@@ -244,7 +246,7 @@ function ApprovalsPreview({
         </Link>
       </div>
       <div className="space-y-3 text-sm">
-        {leave.slice(0, 3).map((r) => (
+        {leave.slice(0, 3).map((r: PendingApprovalLeaveDto) => (
           <div key={r.id} className="flex items-center justify-between gap-3">
             <div>
               <div className="font-medium text-zinc-900 dark:text-zinc-100">{r.employeeName}</div>
@@ -255,7 +257,7 @@ function ApprovalsPreview({
             <span className={badgeClass('pending')}>Cuti</span>
           </div>
         ))}
-        {overtime.slice(0, 3).map((r) => (
+        {overtime.slice(0, 3).map((r: PendingApprovalOvertimeDto) => (
           <div key={r.id} className="flex items-center justify-between gap-3">
             <div>
               <div className="font-medium text-zinc-900 dark:text-zinc-100">{r.employeeName}</div>

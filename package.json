@@ -6,9 +6,13 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:clean": "taskkill /F /IM node.exe 2>nul & turbo run dev",
+    "kill:node": "taskkill /F /IM node.exe",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "clean": "turbo clean",
+    "clean:cache": "turbo clean",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,prisma,md}\""
   },
   "devDependencies": {

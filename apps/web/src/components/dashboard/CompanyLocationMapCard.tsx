@@ -182,7 +182,7 @@ export function CompanyLocationMapCard({
           <iframe
             src={mapProvider === 'osm' ? osmEmbedUrl : googleEmbedUrl}
             title={`Peta Lokasi Kantor ${companyName}`}
-            className="absolute inset-0 size-full border-0 dark:[filter:invert(0.88)_hue-rotate(180deg)_contrast(0.9)_saturate(0.65)]"
+            className="absolute inset-0 size-full border-0 dark:filter-[invert(0.88)_hue-rotate(180deg)_contrast(0.9)_saturate(0.65)]"
             allowFullScreen
             loading="lazy"
             referrerPolicy="strict-origin-when-cross-origin"
