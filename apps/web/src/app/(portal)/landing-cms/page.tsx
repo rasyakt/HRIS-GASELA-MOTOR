@@ -305,7 +305,7 @@ function SectionEditor({
                   type="button"
                   size="sm"
                   onClick={() => set(key, [...value, emptyLike(value[0] ?? {})])}
-                  className="rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-amber-500 dark:hover:bg-amber-400 dark:text-zinc-950 font-semibold shadow-xs transition-colors"
+                  className="rounded-xl font-semibold shadow-xs"
                 >
                   <Plus className="size-4 mr-1.5" /> Tambah Entri
                 </Button>
@@ -563,14 +563,14 @@ export default function LandingCmsPage() {
                   }}
                   className={`flex w-full items-center justify-between rounded-xl px-3.5 py-3 text-sm font-medium transition-all text-left ${
                     isActive
-                      ? 'bg-amber-500 text-zinc-950 font-bold shadow-md shadow-amber-500/10'
+                      ? 'bg-primary text-primary-foreground font-bold shadow-xs'
                       : 'bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-850 hover:text-zinc-900 dark:hover:text-white'
                   }`}
                 >
                   <span className="truncate">{SECTION_LABELS[section]}</span>
                   {isCustom && (
                     <span 
-                      className={`h-2 w-2 rounded-full shrink-0 ${isActive ? 'bg-zinc-950' : 'bg-amber-500'}`} 
+                      className={`h-2 w-2 rounded-full shrink-0 ${isActive ? 'bg-primary-foreground' : 'bg-primary'}`} 
                       title="Telah dimodifikasi" 
                     />
                   )}
@@ -611,7 +611,7 @@ export default function LandingCmsPage() {
                   size="sm"
                   onClick={() => saveMutation.mutate(active)}
                   disabled={saveMutation.isPending}
-                  className="rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold shadow-sm shadow-amber-500/20 text-xs transition-all"
+                  className="rounded-xl font-bold shadow-xs text-xs"
                 >
                   {saveMutation.isPending ? (
                     <Loader2 className="size-3.5 mr-1.5 animate-spin" />

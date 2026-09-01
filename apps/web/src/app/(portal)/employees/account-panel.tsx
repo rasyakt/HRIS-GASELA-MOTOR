@@ -181,7 +181,6 @@ export function AccountPanel({
           <Button
             type="submit"
             disabled={createAccount.isPending}
-            className="bg-zinc-900 text-white hover:bg-zinc-800"
           >
             {createAccount.isPending && (
               <Loader2 className="mr-1.5 size-4 animate-spin" />
@@ -252,7 +251,6 @@ export function AccountPanel({
             <Button
               type="submit"
               disabled={updateAccount.isPending}
-              className="bg-zinc-900 text-white hover:bg-zinc-800"
             >
               {updateAccount.isPending && (
                 <Loader2 className="mr-1.5 size-4 animate-spin" />
@@ -279,7 +277,7 @@ export function AccountPanel({
                 <Button
                   type="submit"
                   disabled={resetPassword.isPending}
-                  className="bg-zinc-900 text-white hover:bg-zinc-800 shrink-0"
+                  className="shrink-0"
                 >
                   {resetPassword.isPending && (
                     <Loader2 className="mr-1.5 size-4 animate-spin" />

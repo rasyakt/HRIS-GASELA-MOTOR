@@ -226,7 +226,6 @@ export function TrainingPanel({ employeeId }: { employeeId: number }) {
             <Button
               type="submit"
               disabled={saveTraining.isPending}
-              className="bg-zinc-900 text-white hover:bg-zinc-800"
             >
               {saveTraining.isPending && (
                 <Loader2 className="mr-1.5 size-4 animate-spin" />

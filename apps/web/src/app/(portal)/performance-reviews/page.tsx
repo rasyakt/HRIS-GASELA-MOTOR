@@ -294,7 +294,7 @@ export default function PerformanceReviewsPage() {
             <p className="text-sm text-zinc-400">Evaluasi kinerja karyawan per periode</p>
           </div>
           {canManage && (
-            <Button onClick={openCreate} className="bg-white text-zinc-900 hover:bg-zinc-100 dark:bg-amber-600 dark:text-white dark:hover:bg-amber-700 gap-2 font-semibold shadow-2xs">
+            <Button onClick={openCreate} className="gap-2 font-semibold shadow-2xs">
               <PlusCircle className="size-4" /> Tambah Review
             </Button>
           )}
@@ -305,7 +305,7 @@ export default function PerformanceReviewsPage() {
       <div className="grid grid-cols-3 gap-4">
         <Card className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-center shadow-2xs">
           <CardContent className="pt-4 pb-3">
-            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{reviews.data?.length ?? '—'}</p>
+            <p className="text-2xl font-bold text-primary">{reviews.data?.length ?? '—'}</p>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium">Total Review</p>
           </CardContent>
         </Card>
@@ -488,7 +488,7 @@ export default function PerformanceReviewsPage() {
                 )}
 
                 <div className="flex gap-3 pt-2">
-                  <Button type="submit" disabled={isBusy} className="flex-1 bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-amber-600 dark:hover:bg-amber-700 font-semibold">
+                  <Button type="submit" disabled={isBusy} className="flex-1 font-semibold">
                     {isBusy && <Loader2 className="mr-1.5 size-4 animate-spin" />}
                     {editingId !== null ? 'Simpan Perubahan' : 'Tambah Review'}
                   </Button>

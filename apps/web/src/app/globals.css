@@ -86,6 +86,10 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-portal-primary: var(--portal-primary);
+  --color-portal-primary-hover: var(--portal-primary-hover);
+  --color-portal-sidebar-active: var(--portal-sidebar-active);
+  --color-portal-sidebar-active-fg: var(--portal-sidebar-active-fg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-geist-sans);

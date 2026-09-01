@@ -293,7 +293,6 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
             <Button
               type="submit"
               disabled={saveReview.isPending}
-              className="bg-zinc-900 text-white hover:bg-zinc-800"
             >
               {saveReview.isPending && (
                 <Loader2 className="mr-1.5 size-4 animate-spin" />

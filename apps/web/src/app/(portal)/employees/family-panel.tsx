@@ -102,10 +102,10 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
-            <Users className="size-4 text-emerald-600" /> Data Keluarga & Tanggungan BPJS
+          <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <Users className="size-4 text-primary" /> Data Keluarga & Tanggungan BPJS
           </h3>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
             Daftar anggota keluarga karyawan yang terdaftar dan/atau menjadi tanggungan BPJS.
           </p>
         </div>
@@ -113,7 +113,7 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
           <Button
             size="sm"
             onClick={() => setIsAdding(true)}
-            className="bg-zinc-900 text-white hover:bg-zinc-800 text-xs shrink-0 gap-1.5"
+            className="text-xs shrink-0 gap-1.5"
           >
             <Plus className="size-3.5" /> Tambah Anggota
           </Button>
@@ -217,7 +217,7 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
               type="submit"
               disabled={isSubmitting}
               size="sm"
-              className="bg-emerald-600 text-white hover:bg-emerald-500 text-xs gap-1.5"
+              className="text-xs gap-1.5"
             >
               {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : 'Simpan Anggota'}
             </Button>

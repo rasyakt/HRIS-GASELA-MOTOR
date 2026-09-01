@@ -252,7 +252,7 @@ export function TwoFactorAuthCard() {
                 type="button"
                 onClick={() => setupMutation.mutate()}
                 disabled={setupMutation.isPending}
-                className="w-full bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white text-xs font-semibold h-9.5"
+                className="w-full text-xs font-semibold h-9.5"
               >
                 {setupMutation.isPending ? (
                   <>
@@ -350,7 +350,7 @@ export function TwoFactorAuthCard() {
                     type="button"
                     onClick={() => enableMutation.mutate(otpInput)}
                     disabled={enableMutation.isPending || otpInput.trim().length !== 6}
-                    className="w-full bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-emerald-600 dark:text-white dark:hover:bg-emerald-500 font-semibold"
+                    className="w-full font-semibold"
                   >
                     {enableMutation.isPending ? (
                       <>
@@ -430,7 +430,7 @@ export function TwoFactorAuthCard() {
                   <Button
                     type="button"
                     onClick={() => setSetupModalOpen(false)}
-                    className="w-full bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white font-semibold"
+                    className="w-full font-semibold"
                   >
                     Saya Sudah Menyimpan Kode Cadangan
                   </Button>
@@ -562,7 +562,7 @@ export function TwoFactorAuthCard() {
                     type="button"
                     onClick={() => regenerateMutation.mutate(regeneratePassword)}
                     disabled={regenerateMutation.isPending || !regeneratePassword}
-                    className="flex-1 bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-semibold"
+                    className="flex-1 text-xs font-semibold"
                   >
                     {regenerateMutation.isPending ? (
                       <Loader2 className="size-4 animate-spin" />

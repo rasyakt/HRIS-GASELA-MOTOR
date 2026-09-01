@@ -381,7 +381,7 @@ export default function DisciplinePage() {
                   type="submit"
                   disabled={createMutation.isPending}
                   size="sm"
-                  className="bg-amber-600 text-white hover:bg-amber-500 text-xs gap-1.5"
+                  className="text-xs gap-1.5"
                 >
                   {createMutation.isPending ? <Loader2 className="size-3.5 animate-spin" /> : 'Terbitkan Surat Peringatan'}
                 </Button>

@@ -450,7 +450,7 @@ function GenerateCard({
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-zinc-900 dark:text-white">Generate Gaji</CardTitle>
           <Button variant="outline" size="sm" onClick={() => setShowCompModal(true)} className="text-xs font-semibold gap-1.5 border-zinc-200 dark:border-zinc-800">
-            <PlusCircle className="size-3.5 text-amber-600 dark:text-amber-400" />
+            <PlusCircle className="size-3.5 text-primary" />
             Kelola Komponen Gaji &amp; THR
           </Button>
         </CardHeader>
@@ -486,7 +486,7 @@ function GenerateCard({
             <Button
               onClick={() => generate.mutate()}
               disabled={generate.isPending}
-              className="bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+              className="font-semibold"
             >
               {generate.isPending ? (
                 <Loader2 data-icon="inline-start" className="animate-spin" />
