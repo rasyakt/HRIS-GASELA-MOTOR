@@ -110,14 +110,72 @@ export function PortalThemeProvider({ children }: { children: React.ReactNode })
   const fgLight = getContrastForeground(primaryLight);
   const fgDark = getContrastForeground(primaryDark);
 
-  const radiusMap: Record<string, string> = {
-    none: '0px',
-    sm: '0.25rem',
-    md: '0.5rem',
-    lg: '0.75rem',
-    full: '9999px',
+  const radiusConfigMap: Record<
+    string,
+    {
+      radius: string;
+      radiusXs: string;
+      radiusSm: string;
+      radiusMd: string;
+      radiusLg: string;
+      radiusXl: string;
+      radius2xl: string;
+      radius3xl: string;
+    }
+  > = {
+    none: {
+      radius: '0px',
+      radiusXs: '0px',
+      radiusSm: '0px',
+      radiusMd: '0px',
+      radiusLg: '0px',
+      radiusXl: '0px',
+      radius2xl: '0px',
+      radius3xl: '0px',
+    },
+    sm: {
+      radius: '0.25rem',
+      radiusXs: '2px',
+      radiusSm: '3px',
+      radiusMd: '4px',
+      radiusLg: '6px',
+      radiusXl: '8px',
+      radius2xl: '10px',
+      radius3xl: '12px',
+    },
+    md: {
+      radius: '0.5rem',
+      radiusXs: '2px',
+      radiusSm: '4px',
+      radiusMd: '6px',
+      radiusLg: '8px',
+      radiusXl: '12px',
+      radius2xl: '16px',
+      radius3xl: '20px',
+    },
+    lg: {
+      radius: '0.75rem',
+      radiusXs: '4px',
+      radiusSm: '6px',
+      radiusMd: '8px',
+      radiusLg: '12px',
+      radiusXl: '16px',
+      radius2xl: '20px',
+      radius3xl: '24px',
+    },
+    full: {
+      radius: '9999px',
+      radiusXs: '9999px',
+      radiusSm: '9999px',
+      radiusMd: '9999px',
+      radiusLg: '9999px',
+      radiusXl: '9999px',
+      radius2xl: '24px',
+      radius3xl: '28px',
+    },
   };
-  const currentRadius = radiusMap[activeConfig.radius ?? 'md'] ?? '0.5rem';
+
+  const rConfig = radiusConfigMap[activeConfig.radius ?? 'md'] ?? radiusConfigMap.md;
 
   const styleId = 'portal-theme-dynamic-styles';
 
@@ -134,7 +192,14 @@ export function PortalThemeProvider({ children }: { children: React.ReactNode })
         --primary: ${primaryLight} !important;
         --primary-foreground: ${fgLight} !important;
         --ring: ${ringColor} !important;
-        --radius: ${currentRadius} !important;
+        --radius: ${rConfig.radius} !important;
+        --radius-xs: ${rConfig.radiusXs} !important;
+        --radius-sm: ${rConfig.radiusSm} !important;
+        --radius-md: ${rConfig.radiusMd} !important;
+        --radius-lg: ${rConfig.radiusLg} !important;
+        --radius-xl: ${rConfig.radiusXl} !important;
+        --radius-2xl: ${rConfig.radius2xl} !important;
+        --radius-3xl: ${rConfig.radius3xl} !important;
         --portal-primary: ${primaryLight} !important;
         --portal-primary-hover: ${primaryHoverLight} !important;
         --portal-sidebar-active: ${primaryLight} !important;
@@ -144,7 +209,14 @@ export function PortalThemeProvider({ children }: { children: React.ReactNode })
         --primary: ${primaryDark} !important;
         --primary-foreground: ${fgDark} !important;
         --ring: ${ringColor} !important;
-        --radius: ${currentRadius} !important;
+        --radius: ${rConfig.radius} !important;
+        --radius-xs: ${rConfig.radiusXs} !important;
+        --radius-sm: ${rConfig.radiusSm} !important;
+        --radius-md: ${rConfig.radiusMd} !important;
+        --radius-lg: ${rConfig.radiusLg} !important;
+        --radius-xl: ${rConfig.radiusXl} !important;
+        --radius-2xl: ${rConfig.radius2xl} !important;
+        --radius-3xl: ${rConfig.radius3xl} !important;
         --portal-primary: ${primaryDark} !important;
         --portal-primary-hover: ${primaryHoverDark} !important;
         --portal-sidebar-active: ${primaryDark} !important;
@@ -167,7 +239,7 @@ export function PortalThemeProvider({ children }: { children: React.ReactNode })
     fgLight,
     fgDark,
     ringColor,
-    currentRadius,
+    rConfig,
   ]);
 
   return (

@@ -678,7 +678,7 @@ function PortalThemeSettingForm({
               onClick={() => handleRadiusChange(r.id as any)}
               className={`px-3 py-1.5 text-xs font-medium border transition-all ${
                 config.radius === r.id
-                  ? 'border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-950 font-semibold shadow-2xs'
+                  ? 'border-primary bg-primary text-primary-foreground font-bold shadow-2xs'
                   : 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400'
               } ${r.rClass}`}
             >

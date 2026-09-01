@@ -90,6 +90,14 @@
   --color-portal-primary-hover: var(--portal-primary-hover);
   --color-portal-sidebar-active: var(--portal-sidebar-active);
   --color-portal-sidebar-active-fg: var(--portal-sidebar-active-fg);
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-3xl: var(--radius-3xl);
+  --radius: var(--radius);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-geist-sans);

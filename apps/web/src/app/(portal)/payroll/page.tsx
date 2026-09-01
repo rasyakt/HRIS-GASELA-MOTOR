@@ -351,7 +351,6 @@ function SalaryComponentsModal({ onClose }: { onClose: () => void }) {
                         >
                           {isThr ? (
                             <>
-                              <Sparkles className="size-3.5" />
                               Set THR (Aktifkan/Ubah)
                             </>
                           ) : (
