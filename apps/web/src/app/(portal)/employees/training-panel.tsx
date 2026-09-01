@@ -6,6 +6,8 @@ import { Edit, GraduationCap, Loader2, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
+import { PositiveNumberInput } from '@/components/ui/positive-number-input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
 import { fmtDate, fmtRupiah } from '@/lib/format';
@@ -189,24 +191,21 @@ export function TrainingPanel({ employeeId }: { employeeId: number }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="tr-hours">Durasi (Jam)</Label>
-              <Input
+              <PositiveNumberInput
                 id="tr-hours"
-                type="number"
                 min={0}
                 value={form.durationHours}
-                onChange={(e) => setForm({ ...form, durationHours: e.target.value })}
+                onChangeValue={(num, raw) => setForm({ ...form, durationHours: raw })}
                 placeholder="24"
               />
             </div>
             <div>
-              <Label htmlFor="tr-cost">Biaya (Rupiah)</Label>
-              <Input
+              <Label htmlFor="tr-cost">Biaya Pelatihan</Label>
+              <CurrencyInput
                 id="tr-cost"
-                type="number"
-                min={0}
                 value={form.cost}
-                onChange={(e) => setForm({ ...form, cost: e.target.value })}
-                placeholder="500000"
+                onChangeValue={(num, raw) => setForm({ ...form, cost: raw })}
+                placeholder="500.000"
               />
             </div>
           </div>

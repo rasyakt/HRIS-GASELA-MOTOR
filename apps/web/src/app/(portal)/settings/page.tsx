@@ -22,6 +22,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
+import { PositiveNumberInput } from '@/components/ui/positive-number-input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
 import { fmtDate, roleAtLeast } from '@/lib/format';
@@ -120,13 +122,14 @@ function BpjsSettingForm({
           <div>
             <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Iuran Pekerja (%)</Label>
             <div className="relative mt-1">
-              <Input
-                type="number" step="0.1" min="0" max="100"
+              <PositiveNumberInput
+                allowDecimal={true}
+                max={100}
                 value={(rates.kesehatanRateEmployee * 100).toFixed(1)}
-                onChange={(e) => updateRate('kesehatanRateEmployee', (parseFloat(e.target.value) || 0) / 100)}
+                onChangeValue={(val) => updateRate('kesehatanRateEmployee', val / 100)}
                 className="pr-7 text-xs font-semibold"
               />
-              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+              <span className="absolute right-2.5 top-2 text-xs text-zinc-400 font-bold pointer-events-none">%</span>
             </div>
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Standar resmi: 1%</p>
           </div>
@@ -134,25 +137,27 @@ function BpjsSettingForm({
           <div>
             <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Iuran Perusahaan (%)</Label>
             <div className="relative mt-1">
-              <Input
-                type="number" step="0.1" min="0" max="100"
+              <PositiveNumberInput
+                allowDecimal={true}
+                max={100}
                 value={(rates.kesehatanRateCompany * 100).toFixed(1)}
-                onChange={(e) => updateRate('kesehatanRateCompany', (parseFloat(e.target.value) || 0) / 100)}
+                onChangeValue={(val) => updateRate('kesehatanRateCompany', val / 100)}
                 className="pr-7 text-xs font-semibold"
               />
-              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+              <span className="absolute right-2.5 top-2 text-xs text-zinc-400 font-bold pointer-events-none">%</span>
             </div>
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Standar resmi: 4%</p>
           </div>
 
           <div>
-            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Maksimal Upah Kena BPJS Kes (Rp)</Label>
-            <Input
-              type="number" step="100000" min="0"
-              value={rates.kesehatanCapSalary}
-              onChange={(e) => updateRate('kesehatanCapSalary', parseInt(e.target.value, 10) || 0)}
-              className="mt-1 text-xs font-semibold"
-            />
+            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Maksimal Upah Kena BPJS Kes</Label>
+            <div className="mt-1">
+              <CurrencyInput
+                value={rates.kesehatanCapSalary}
+                onChangeValue={(val) => updateRate('kesehatanCapSalary', val)}
+                className="text-xs font-semibold"
+              />
+            </div>
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Batas max: Rp {rates.kesehatanCapSalary.toLocaleString('id-ID')}</p>
           </div>
         </div>
@@ -165,13 +170,14 @@ function BpjsSettingForm({
           <div>
             <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">JHT Pekerja (%)</Label>
             <div className="relative mt-1">
-              <Input
-                type="number" step="0.1" min="0" max="100"
+              <PositiveNumberInput
+                allowDecimal={true}
+                max={100}
                 value={(rates.jhtRateEmployee * 100).toFixed(1)}
-                onChange={(e) => updateRate('jhtRateEmployee', (parseFloat(e.target.value) || 0) / 100)}
+                onChangeValue={(val) => updateRate('jhtRateEmployee', val / 100)}
                 className="pr-7 text-xs font-semibold"
               />
-              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+              <span className="absolute right-2.5 top-2 text-xs text-zinc-400 font-bold pointer-events-none">%</span>
             </div>
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Tabungan Hari Tua: 2%</p>
           </div>
@@ -179,13 +185,14 @@ function BpjsSettingForm({
           <div>
             <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">JHT Perusahaan (%)</Label>
             <div className="relative mt-1">
-              <Input
-                type="number" step="0.1" min="0" max="100"
+              <PositiveNumberInput
+                allowDecimal={true}
+                max={100}
                 value={(rates.jhtRateCompany * 100).toFixed(1)}
-                onChange={(e) => updateRate('jhtRateCompany', (parseFloat(e.target.value) || 0) / 100)}
+                onChangeValue={(val) => updateRate('jhtRateCompany', val / 100)}
                 className="pr-7 text-xs font-semibold"
               />
-              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+              <span className="absolute right-2.5 top-2 text-xs text-zinc-400 font-bold pointer-events-none">%</span>
             </div>
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Ditanggung Perusahaan: 3.7%</p>
           </div>
@@ -193,13 +200,14 @@ function BpjsSettingForm({
           <div>
             <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Jaminan Pensiun (JP) Pekerja (%)</Label>
             <div className="relative mt-1">
-              <Input
-                type="number" step="0.1" min="0" max="100"
+              <PositiveNumberInput
+                allowDecimal={true}
+                max={100}
                 value={(rates.jpRateEmployee * 100).toFixed(1)}
-                onChange={(e) => updateRate('jpRateEmployee', (parseFloat(e.target.value) || 0) / 100)}
+                onChangeValue={(val) => updateRate('jpRateEmployee', val / 100)}
                 className="pr-7 text-xs font-semibold"
               />
-              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+              <span className="absolute right-2.5 top-2 text-xs text-zinc-400 font-bold pointer-events-none">%</span>
             </div>
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Jaminan Pensiun: 1%</p>
           </div>
@@ -207,25 +215,27 @@ function BpjsSettingForm({
           <div>
             <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Jaminan Pensiun (JP) Perusahaan (%)</Label>
             <div className="relative mt-1">
-              <Input
-                type="number" step="0.1" min="0" max="100"
+              <PositiveNumberInput
+                allowDecimal={true}
+                max={100}
                 value={(rates.jpRateCompany * 100).toFixed(1)}
-                onChange={(e) => updateRate('jpRateCompany', (parseFloat(e.target.value) || 0) / 100)}
+                onChangeValue={(val) => updateRate('jpRateCompany', val / 100)}
                 className="pr-7 text-xs font-semibold"
               />
-              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+              <span className="absolute right-2.5 top-2 text-xs text-zinc-400 font-bold pointer-events-none">%</span>
             </div>
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Ditanggung Perusahaan: 2%</p>
           </div>
 
           <div>
-            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Maksimal Upah Kena JP (Rp)</Label>
-            <Input
-              type="number" step="100000" min="0"
-              value={rates.jpCapSalary}
-              onChange={(e) => updateRate('jpCapSalary', parseInt(e.target.value, 10) || 0)}
-              className="mt-1 text-xs font-semibold"
-            />
+            <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Maksimal Upah Kena JP</Label>
+            <div className="mt-1">
+              <CurrencyInput
+                value={rates.jpCapSalary}
+                onChangeValue={(val) => updateRate('jpCapSalary', val)}
+                className="text-xs font-semibold"
+              />
+            </div>
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Cap JP: Rp {rates.jpCapSalary.toLocaleString('id-ID')}</p>
           </div>
         </div>
@@ -238,13 +248,14 @@ function BpjsSettingForm({
           <div>
             <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">JKK (Kecelakaan Kerja) (%)</Label>
             <div className="relative mt-1">
-              <Input
-                type="number" step="0.01" min="0" max="100"
+              <PositiveNumberInput
+                allowDecimal={true}
+                max={100}
                 value={(rates.jkkRateCompany * 100).toFixed(2)}
-                onChange={(e) => updateRate('jkkRateCompany', (parseFloat(e.target.value) || 0) / 100)}
+                onChangeValue={(val) => updateRate('jkkRateCompany', val / 100)}
                 className="pr-7 text-xs font-semibold"
               />
-              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+              <span className="absolute right-2.5 top-2 text-xs text-zinc-400 font-bold pointer-events-none">%</span>
             </div>
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Risiko standar: 0.24%</p>
           </div>
@@ -252,13 +263,14 @@ function BpjsSettingForm({
           <div>
             <Label className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">JKM (Jaminan Kematian) (%)</Label>
             <div className="relative mt-1">
-              <Input
-                type="number" step="0.01" min="0" max="100"
+              <PositiveNumberInput
+                allowDecimal={true}
+                max={100}
                 value={(rates.jkmRateCompany * 100).toFixed(2)}
-                onChange={(e) => updateRate('jkmRateCompany', (parseFloat(e.target.value) || 0) / 100)}
+                onChangeValue={(val) => updateRate('jkmRateCompany', val / 100)}
                 className="pr-7 text-xs font-semibold"
               />
-              <span className="absolute right-2.5 top-2.5 text-xs text-zinc-400 font-bold">%</span>
+              <span className="absolute right-2.5 top-2 text-xs text-zinc-400 font-bold pointer-events-none">%</span>
             </div>
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Standar resmi: 0.3%</p>
           </div>

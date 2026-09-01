@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { PositiveNumberInput } from '@/components/ui/positive-number-input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
 import { fmtDate, roleAtLeast } from '@/lib/format';
@@ -433,9 +434,13 @@ export default function PerformanceReviewsPage() {
                   </div>
                   <div>
                     <Label htmlFor="pr-year">Tahun</Label>
-                    <Input id="pr-year" type="number" min={2020} max={2100}
+                    <PositiveNumberInput
+                      id="pr-year"
+                      min={2020}
+                      max={2100}
                       value={form.periodYear}
-                      onChange={(e) => setForm((f) => ({ ...f, periodYear: e.target.value }))} />
+                      onChangeValue={(num, raw) => setForm((f) => ({ ...f, periodYear: raw }))}
+                    />
                   </div>
                 </div>
                 <div>
@@ -445,9 +450,14 @@ export default function PerformanceReviewsPage() {
                 </div>
                 <div>
                   <Label htmlFor="pr-score">Skor Keseluruhan (0–100, opsional)</Label>
-                  <Input id="pr-score" type="number" min={0} max={100} placeholder="mis: 85"
+                  <PositiveNumberInput
+                    id="pr-score"
+                    min={0}
+                    max={100}
+                    placeholder="mis: 85"
                     value={form.overallScore}
-                    onChange={(e) => setForm((f) => ({ ...f, overallScore: e.target.value }))} />
+                    onChangeValue={(num, raw) => setForm((f) => ({ ...f, overallScore: raw }))}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="pr-status">Status</Label>

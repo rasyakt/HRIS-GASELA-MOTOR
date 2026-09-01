@@ -35,6 +35,7 @@ import {
 } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PositiveNumberInput } from '@/components/ui/positive-number-input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
 import {
@@ -206,7 +207,14 @@ function PayrollFilters({
       </div>
       <div>
         <Label htmlFor="pay-year" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Tahun</Label>
-        <Input id="pay-year" type="number" min={2000} max={2100} value={payYear} onChange={(e) => setPayYear(e.target.value)} className="mt-1.5" />
+        <PositiveNumberInput
+          id="pay-year"
+          min={2000}
+          max={2100}
+          value={payYear}
+          onChangeValue={(num, raw) => setPayYear(raw)}
+          className="mt-1.5"
+        />
       </div>
       <div>
         <Label htmlFor="pay-status" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Status</Label>

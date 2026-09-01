@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
 import { badgeClass, fmtDate, roleAtLeast } from '@/lib/format';
@@ -990,14 +991,13 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="basicSalary">Gaji Pokok (Rupiah)</Label>
-                            <Input
+                            <Label htmlFor="basicSalary">Gaji Pokok</Label>
+                            <CurrencyInput
                               id="basicSalary"
-                              type="number"
                               disabled={!isEditMode}
                               value={formData.basicSalary}
-                              onChange={(e) => handleInputChange('basicSalary', e.target.value)}
-                              placeholder="5000000"
+                              onChangeValue={(num) => handleInputChange('basicSalary', String(num))}
+                              placeholder="5.000.000"
                             />
                           </div>
                           <div>

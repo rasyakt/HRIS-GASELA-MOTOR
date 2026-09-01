@@ -6,6 +6,7 @@ import { Award, Edit, Loader2, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PositiveNumberInput } from '@/components/ui/positive-number-input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
 import { fmtDate } from '@/lib/format';
@@ -225,13 +226,12 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
             </div>
             <div>
               <Label htmlFor="rev-year">Tahun</Label>
-              <Input
+              <PositiveNumberInput
                 id="rev-year"
-                type="number"
                 min={2000}
                 max={2100}
                 value={form.periodYear}
-                onChange={(e) => setForm({ ...form, periodYear: e.target.value })}
+                onChangeValue={(num, raw) => setForm({ ...form, periodYear: raw })}
                 placeholder="2026"
               />
             </div>
@@ -246,13 +246,12 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
             </div>
             <div>
               <Label htmlFor="rev-score">Skor (0-100)</Label>
-              <Input
+              <PositiveNumberInput
                 id="rev-score"
-                type="number"
                 min={0}
                 max={100}
                 value={form.overallScore}
-                onChange={(e) => setForm({ ...form, overallScore: e.target.value })}
+                onChangeValue={(num, raw) => setForm({ ...form, overallScore: raw })}
                 placeholder="85"
               />
             </div>
