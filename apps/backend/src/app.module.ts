@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import { ConfigModule } from '@nestjs/config';
@@ -38,6 +39,7 @@ import configuration from './config/configuration';
       validate: validateEnv,
       load: [configuration],
     }),
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([
       {
         name: 'global',

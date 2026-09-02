@@ -36,4 +36,6 @@ export class UpdateShiftDto
   gracePeriodMinutes?: number;
   @ApiPropertyOptional()
   workHours?: number;
+  @ApiPropertyOptional({ description: 'Status aktif shift' })
+  isActive?: boolean;
 }

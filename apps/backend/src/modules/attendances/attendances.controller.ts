@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { AuthUser } from '@gasela/shared-types';
 import { AttendancesService } from './attendances.service';
+import { AttendanceRetentionService } from './attendance-retention.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
@@ -14,7 +15,10 @@ import {
 @ApiTags('Kehadiran')
 @Controller('attendances')
 export class AttendancesController {
-  constructor(private readonly attendancesService: AttendancesService) {}
+  constructor(
+    private readonly attendancesService: AttendancesService,
+    private readonly retentionService: AttendanceRetentionService,
+  ) {}
 
   @Post('check-in')
   @ApiOperation({ summary: 'Check-in (validasi geofence kantor)' })
@@ -46,5 +50,14 @@ export class AttendancesController {
   })
   list(@Query(new ZodValidationPipe()) query: AttendanceQueryDto) {
     return this.attendancesService.list(query);
+  }
+
+  @Roles('admin', 'hrd')
+  @Post('cleanup-photos')
+  @ApiOperation({
+    summary: 'Pembersihan otomatis file foto presensi lama (auto-retention)',
+  })
+  cleanupPhotos(@Body('days') days?: number) {
+    return this.retentionService.cleanupOldPhotos(days);
   }
 }

@@ -5,19 +5,27 @@ import {
   CalendarPlus,
   Check,
   CheckCircle2,
+  Clock,
   Crosshair,
   ExternalLink,
+  HardDrive,
   Loader2,
   MapPin,
+  MoreHorizontal,
   Palette,
   Paintbrush,
+  Pencil,
+  Plus,
+  Power,
   RotateCcw,
   Save,
   ShieldCheck,
   Sparkles,
   Trash2,
+  X,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +51,7 @@ const SETTING_HINTS: Record<string, string> = {
   'office.location': 'Koordinat lokasi kantor pusat (Format JSON: {"lat":-6.9,"lng":107.6})',
   'office.radius_meters': 'Radius geofence presensi check-in/out karyawan (dalam meter)',
   'overtime.rate_multiplier_weekday': 'Pengali upah lembur pada hari kerja (misal: 1.5)',
+  'attendance.photo_retention_days': 'Batas waktu penyimpanan foto selfie presensi sebelum dibersihkan otomatis (hari, standar: 60)',
 };
 
 const DEFAULT_BPJS_CONFIG = {
@@ -750,6 +759,649 @@ function PortalThemeSettingForm({
   );
 }
 
+function PhotoRetentionSettingCard({
+  setting,
+  onSave,
+  saving,
+}: {
+  setting?: CompanySettingDto;
+  onSave: (value: string) => void;
+  saving: boolean;
+}) {
+  const authApi = useAuthApi();
+  const [days, setDays] = useState<number>(() =>
+    setting?.value ? parseInt(setting.value, 10) || 60 : 60,
+  );
+  const [cleanupStatus, setCleanupStatus] = useState<string | null>(null);
+
+  const cleanupMutation = useMutation({
+    mutationFn: () =>
+      authApi<{ message: string; deletedFilesCount: number; freedBytesEstimated: number }>(
+        '/api/attendances/cleanup-photos',
+        {
+          method: 'POST',
+          body: JSON.stringify({ days }),
+        },
+      ),
+    onSuccess: (data) => {
+      setCleanupStatus(data.message);
+    },
+    onError: (err) => {
+      setCleanupStatus(
+        err instanceof Error ? err.message : 'Gagal menjalankan pembersihan foto.',
+      );
+    },
+  });
+
+  const isDirty = (setting?.value ? parseInt(setting.value, 10) : 60) !== days;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between text-zinc-900 dark:text-white">
+          <span className="flex items-center gap-2">
+            <HardDrive className="size-4 text-zinc-700 dark:text-zinc-300" />
+            Penyimpanan &amp; Retensi Foto Presensi (Auto-Retention)
+          </span>
+          <Badge>
+            Otomatis 02:00 WIB
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          Sistem secara otomatis menghapus file foto selfie lama di server disk untuk menghemat ruang penyimpanan. Seluruh data rekap jam, menit keterlambatan, dan status presensi karyawan di database tetap tersimpan selamanya.
+        </p>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="space-y-1">
+            <Label htmlFor="retention-days" className="text-xs font-semibold">
+              Masa Retensi Foto (Hari)
+            </Label>
+            <p className="text-[11px] text-zinc-400">
+              Foto yang lebih lama dari jumlah hari ini akan dibersihkan secara otomatis.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              id="retention-days"
+              type="number"
+              min={7}
+              max={365}
+              value={days}
+              onChange={(e) => setDays(Math.max(1, parseInt(e.target.value, 10) || 60))}
+              className="w-24 text-center font-bold"
+            />
+            <Button
+              size="sm"
+              disabled={!isDirty || saving}
+              onClick={() => onSave(days.toString())}
+              className="text-xs"
+            >
+              {saving ? <Loader2 className="size-3.5 animate-spin mr-1" /> : <Save className="size-3.5 mr-1" />}
+              Simpan
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+          <div>
+            <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+              Pembersihan Manual
+            </p>
+            <p className="text-[11px] text-zinc-400">
+              Jalankan proses pembersihan sekarang tanpa menunggu jadwal cron harian.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setCleanupStatus(null);
+              cleanupMutation.mutate();
+            }}
+            disabled={cleanupMutation.isPending}
+            className="text-xs"
+          >
+            {cleanupMutation.isPending ? (
+              <Loader2 className="size-3.5 animate-spin mr-1" />
+            ) : (
+              <Trash2 className="size-3.5 mr-1 text-red-500" />
+            )}
+            Jalankan Pembersihan Sekarang
+          </Button>
+        </div>
+
+        {cleanupStatus && (
+          <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 p-3 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+            <CheckCircle2 className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span>{cleanupStatus}</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+interface ShiftItem {
+  id: number;
+  name: string;
+  startTime: string;
+  endTime: string;
+  gracePeriodMinutes: number;
+  workHours: number;
+  isActive: boolean;
+}
+
+function ShiftsManagementCard() {
+  const authApi = useAuthApi();
+  const queryClient = useQueryClient();
+
+  const [isCreating, setIsCreating] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  // Form State
+  const [formName, setFormName] = useState('');
+  const [formStart, setFormStart] = useState('08:00');
+  const [formEnd, setFormEnd] = useState('17:00');
+  const [formGrace, setFormGrace] = useState(15);
+  const [formHours, setFormHours] = useState(8);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const shifts = useQuery({
+    queryKey: ['shifts-list'],
+    queryFn: () => authApi<ShiftItem[]>('/api/shifts?includeInactive=true'),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: () =>
+      authApi('/api/shifts', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: formName,
+          startTime: formStart,
+          endTime: formEnd,
+          gracePeriodMinutes: Number(formGrace),
+          workHours: Number(formHours),
+        }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shifts-list'] });
+      resetForm();
+    },
+    onError: (err) => {
+      setFormError(err instanceof Error ? err.message : 'Gagal membuat shift');
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (id: number) =>
+      authApi(`/api/shifts/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          name: formName,
+          startTime: formStart,
+          endTime: formEnd,
+          gracePeriodMinutes: Number(formGrace),
+          workHours: Number(formHours),
+        }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shifts-list'] });
+      resetForm();
+    },
+    onError: (err) => {
+      setFormError(err instanceof Error ? err.message : 'Gagal memperbarui shift');
+    },
+  });
+
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [openMenu, setOpenMenu] = useState<{ id: number; top: number; right: number } | null>(null);
+
+  // Close ellipsis menu when clicking anywhere outside or scrolling
+  useEffect(() => {
+    if (!openMenu) return;
+    const handleClose = () => setOpenMenu(null);
+    const handleScroll = () => setOpenMenu(null);
+    window.addEventListener('click', handleClose);
+    window.addEventListener('scroll', handleScroll, true);
+    return () => {
+      window.removeEventListener('click', handleClose);
+      window.removeEventListener('scroll', handleScroll, true);
+    };
+  }, [openMenu]);
+
+  const handleOpenMenu = (e: React.MouseEvent<HTMLButtonElement>, shift: ShiftItem) => {
+    e.stopPropagation();
+    if (openMenu?.id === shift.id) {
+      setOpenMenu(null);
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    setOpenMenu({
+      id: shift.id,
+      top: rect.bottom + 6,
+      right: Math.max(12, window.innerWidth - rect.right),
+    });
+  };
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) =>
+      authApi(`/api/shifts/${id}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shifts-list'] });
+      setDeleteConfirmId(null);
+    },
+    onError: (err) => {
+      setFormError(err instanceof Error ? err.message : 'Gagal menghapus shift');
+      setDeleteConfirmId(null);
+    },
+  });
+
+  const toggleStatusMutation = useMutation({
+    mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) =>
+      authApi(`/api/shifts/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ isActive }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shifts-list'] });
+    },
+  });
+
+  // Helper kalkulasi Jam Keluar otomatis dari Jam Masuk + Jam Kerja
+  const calcEndTime = (startStr: string, workHours: number): string => {
+    const [sh, sm] = startStr.split(':').map(Number);
+    const startMin = (sh || 0) * 60 + (sm || 0);
+    // Jam kerja penuh (>= 8 jam) diberi 1 jam standar istirahat makan siang/sholat
+    const breakHours = workHours >= 8 ? 1 : 0;
+    const totalMinutes = Math.round((workHours + breakHours) * 60);
+    const endTotalMinutes = (startMin + totalMinutes) % (24 * 60);
+    const endH = Math.floor(endTotalMinutes / 60);
+    const endM = endTotalMinutes % 60;
+    return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+  };
+
+  // Helper kalkulasi Durasi Kerja jika Jam Keluar diedit manual
+  const calcHoursFromEnd = (startStr: string, endStr: string): number => {
+    const [sh, sm] = startStr.split(':').map(Number);
+    const [eh, em] = endStr.split(':').map(Number);
+    const startMin = (sh || 0) * 60 + (sm || 0);
+    let endMin = (eh || 0) * 60 + (em || 0);
+    if (endMin <= startMin) {
+      endMin += 24 * 60; // Lintas malam
+    }
+    const diffHours = (endMin - startMin) / 60;
+    // Jika rentang tepat 9 jam (misal 08:00 - 17:00), durasi kerja efektif adalah 8 jam
+    if (diffHours === 9) return 8;
+    return Number(diffHours.toFixed(1));
+  };
+
+  const handleStartChange = (val: string) => {
+    setFormStart(val);
+    setFormEnd(calcEndTime(val, formHours));
+  };
+
+  const handleHoursChange = (val: number) => {
+    setFormHours(val);
+    setFormEnd(calcEndTime(formStart, val));
+  };
+
+  const handleEndChange = (val: string) => {
+    setFormEnd(val);
+    setFormHours(calcHoursFromEnd(formStart, val));
+  };
+
+  const resetForm = () => {
+    setIsCreating(false);
+    setEditingId(null);
+    setFormName('');
+    setFormStart('08:00');
+    setFormEnd('17:00');
+    setFormGrace(15);
+    setFormHours(8);
+    setFormError(null);
+  };
+
+  const handleStartEdit = (s: ShiftItem) => {
+    setEditingId(s.id);
+    setIsCreating(false);
+    setFormName(s.name);
+    setFormStart(s.startTime.slice(0, 5));
+    setFormEnd(s.endTime.slice(0, 5));
+    setFormGrace(s.gracePeriodMinutes);
+    setFormHours(Number(s.workHours) || 8);
+    setFormError(null);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    if (!formName.trim()) {
+      setFormError('Nama shift wajib diisi');
+      return;
+    }
+    if (editingId) {
+      updateMutation.mutate(editingId);
+    } else {
+      createMutation.mutate();
+    }
+  };
+
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between text-zinc-900 dark:text-white">
+          <span className="flex items-center gap-2">
+            <Clock className="size-4 text-zinc-700 dark:text-zinc-300" />
+            Jadwal Shift Kerja &amp; Toleransi Keterlambatan
+          </span>
+          {!isCreating && !editingId && (
+            <Button
+              size="sm"
+              onClick={() => {
+                resetForm();
+                setIsCreating(true);
+              }}
+              className="text-xs gap-1.5"
+            >
+              <Plus className="size-3.5" />
+              Tambah Shift
+            </Button>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          Atur jam mulai kerja, durasi jam kerja, jam selesai, dan toleransi keterlambatan (grace period) untuk masing-masing shift.
+        </p>
+
+        {/* Form Tambah/Edit Shift */}
+        {(isCreating || editingId) && (
+          <form
+            onSubmit={handleSubmit}
+            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-850 p-4 space-y-4 animate-in fade-in duration-150"
+          >
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2">
+              <h4 className="text-xs font-bold text-zinc-900 dark:text-white">
+                {editingId ? 'Edit Jadwal Shift' : 'Tambah Shift Kerja Baru'}
+              </h4>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
+              <div className="space-y-1 md:col-span-2">
+                <Label htmlFor="shift-name" className="text-xs">Nama Shift</Label>
+                <Input
+                  id="shift-name"
+                  placeholder="Contoh: Shift Pagi, Shift Malam"
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  required
+                  className="text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="shift-start" className="text-xs">Jam Masuk</Label>
+                <Input
+                  id="shift-start"
+                  type="time"
+                  value={formStart}
+                  onChange={(e) => handleStartChange(e.target.value)}
+                  required
+                  className="text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="shift-hours" className="text-xs">Durasi Kerja (Jam)</Label>
+                <Input
+                  id="shift-hours"
+                  type="number"
+                  step="0.5"
+                  min={1}
+                  max={24}
+                  value={formHours}
+                  onChange={(e) => handleHoursChange(parseFloat(e.target.value) || 0)}
+                  className="text-xs text-center font-bold"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="shift-end" className="text-xs">Jam Keluar</Label>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Otomatis</span>
+                </div>
+                <Input
+                  id="shift-end"
+                  type="time"
+                  value={formEnd}
+                  onChange={(e) => handleEndChange(e.target.value)}
+                  required
+                  className="text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="shift-grace" className="text-xs">Toleransi (Mnt)</Label>
+                <Input
+                  id="shift-grace"
+                  type="number"
+                  min={0}
+                  max={120}
+                  value={formGrace}
+                  onChange={(e) => setFormGrace(parseInt(e.target.value, 10) || 0)}
+                  className="text-xs text-center font-bold"
+                />
+              </div>
+            </div>
+
+            {formError && (
+              <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 p-2 rounded-md border border-red-200 dark:border-red-900/40">
+                {formError}
+              </p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={resetForm}
+                disabled={isSaving}
+                className="text-xs"
+              >
+                Batal
+              </Button>
+              <Button type="submit" size="sm" disabled={isSaving} className="text-xs gap-1.5">
+                {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
+                {editingId ? 'Simpan Perubahan' : 'Buat Shift'}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Tabel / List Shift */}
+        {shifts.isLoading ? (
+          <p className="text-xs text-zinc-400">Memuat data shift…</p>
+        ) : shifts.data && shifts.data.length > 0 ? (
+          <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+            <table className="w-full text-xs text-left">
+              <thead className="bg-zinc-50 dark:bg-zinc-850 text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 font-semibold">
+                <tr>
+                  <th className="px-3.5 py-2.5">Nama Shift</th>
+                  <th className="px-3.5 py-2.5">Jam Masuk</th>
+                  <th className="px-3.5 py-2.5">Jam Keluar</th>
+                  <th className="px-3.5 py-2.5">Toleransi Terlambat</th>
+                  <th className="px-3.5 py-2.5">Durasi Kerja</th>
+                  <th className="px-3.5 py-2.5">Status</th>
+                  <th className="px-3.5 py-2.5 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                {shifts.data.map((s) => (
+                  <tr key={s.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-850/50 transition-colors">
+                    <td className="px-3.5 py-2.5 font-bold text-zinc-900 dark:text-zinc-100">
+                      {s.name}
+                    </td>
+                    <td className="px-3.5 py-2.5 font-mono text-zinc-700 dark:text-zinc-300">
+                      {s.startTime.slice(0, 5)} WIB
+                    </td>
+                    <td className="px-3.5 py-2.5 font-mono text-zinc-700 dark:text-zinc-300">
+                      {s.endTime.slice(0, 5)} WIB
+                    </td>
+                    <td className="px-3.5 py-2.5 text-zinc-700 dark:text-zinc-300 font-medium">
+                      +{s.gracePeriodMinutes} menit
+                    </td>
+                    <td className="px-3.5 py-2.5 text-zinc-700 dark:text-zinc-300 font-mono">
+                      {s.workHours} jam
+                    </td>
+                    <td className="px-3.5 py-2.5">
+                      <button
+                        type="button"
+                        onClick={() => toggleStatusMutation.mutate({ id: s.id, isActive: !s.isActive })}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold transition-colors ${
+                          s.isActive
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/50'
+                            : 'bg-zinc-100 text-zinc-600 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700'
+                        }`}
+                        title="Klik untuk mengubah status aktif/nonaktif"
+                      >
+                        {s.isActive ? 'Aktif' : 'Nonaktif'}
+                      </button>
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right whitespace-nowrap">
+                      <div className="relative inline-block text-left" onClick={(e) => e.stopPropagation()}>
+                        {deleteConfirmId === s.id ? (
+                          <div className="inline-flex items-center gap-1 bg-red-50 dark:bg-red-950/60 p-1 rounded-lg border border-red-200 dark:border-red-900/50 shadow-xs">
+                            <span className="text-[11px] text-red-600 dark:text-red-400 font-semibold px-1">
+                              Hapus Shift?
+                            </span>
+                            <Button
+                              variant="destructive"
+                              size="xs"
+                              onClick={() => deleteMutation.mutate(s.id)}
+                              disabled={deleteMutation.isPending}
+                              className="h-6 px-2 text-[10px] rounded"
+                            >
+                              {deleteMutation.isPending ? (
+                                <Loader2 className="size-3 animate-spin" />
+                              ) : (
+                                'Ya, Hapus'
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => setDeleteConfirmId(null)}
+                              className="h-6 px-1.5 text-[10px] text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 rounded"
+                            >
+                              Batal
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => handleOpenMenu(e, s)}
+                            className={`size-7 rounded-lg transition-colors ${
+                              openMenu?.id === s.id
+                                ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white'
+                                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                            }`}
+                            title="Menu Opsi Shift"
+                          >
+                            <MoreHorizontal className="size-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-xs text-zinc-500">Belum ada shift yang terdaftar.</p>
+        )}
+
+        {/* Floating Portal Dropdown Menu */}
+        {typeof document !== 'undefined' &&
+          openMenu &&
+          (() => {
+            const targetShift = shifts.data?.find((s) => s.id === openMenu.id);
+            if (!targetShift) return null;
+            return createPortal(
+              <div
+                style={{
+                  position: 'fixed',
+                  top: `${openMenu.top}px`,
+                  right: `${openMenu.right}px`,
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-38 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xl ring-1 ring-black/5 z-9999 py-1 text-xs divide-y divide-zinc-100 dark:divide-zinc-800 animate-in fade-in zoom-in-95 duration-100"
+              >
+                <div className="py-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenMenu(null);
+                      handleStartEdit(targetShift);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-1.5 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-850 text-left font-medium transition-colors"
+                  >
+                    <Pencil className="size-3.5 text-zinc-500" />
+                    <span>Edit Shift</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenMenu(null);
+                      toggleStatusMutation.mutate({
+                        id: targetShift.id,
+                        isActive: !targetShift.isActive,
+                      });
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-1.5 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-850 text-left font-medium transition-colors"
+                  >
+                    <Power className="size-3.5 text-zinc-500" />
+                    <span>{targetShift.isActive ? 'Nonaktifkan' : 'Aktifkan'}</span>
+                  </button>
+                </div>
+                <div className="py-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenMenu(null);
+                      setDeleteConfirmId(targetShift.id);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 text-left font-medium transition-colors"
+                  >
+                    <Trash2 className="size-3.5 text-red-500" />
+                    <span>Hapus Shift</span>
+                  </button>
+                </div>
+              </div>,
+              document.body,
+            );
+          })()}
+      </CardContent>
+    </Card>
+  );
+}
+
 function SettingRow({
   setting,
   onSave,
@@ -901,13 +1553,23 @@ export default function SettingsPage() {
       )}
 
       {isAdmin && (
+        <PhotoRetentionSettingCard
+          setting={settings.data?.find((s) => s.key === 'attendance.photo_retention_days')}
+          saving={saveSetting.isPending}
+          onSave={(value) => saveSetting.mutate({ key: 'attendance.photo_retention_days', value })}
+        />
+      )}
+
+      {isAdmin && <ShiftsManagementCard />}
+
+      {isAdmin && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Pengaturan Perusahaan</span>
               <Badge>
                 {settings.data
-                  ? `${settings.data.filter((s) => s.key !== 'portal.theme_config').length} item`
+                  ? `${settings.data.filter((s) => s.key !== 'portal.theme_config' && s.key !== 'attendance.photo_retention_days').length} item`
                   : '…'}
               </Badge>
             </CardTitle>
@@ -919,7 +1581,7 @@ export default function SettingsPage() {
               <>
                 <div className="space-y-3">
                   {settings.data
-                    .filter((s) => s.key !== 'portal.theme_config')
+                    .filter((s) => s.key !== 'portal.theme_config' && s.key !== 'attendance.photo_retention_days')
                     .map((s) => (
                       <SettingRow
                         key={s.key}
