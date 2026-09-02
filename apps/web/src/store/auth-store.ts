@@ -7,6 +7,8 @@ interface AuthState {
   refreshToken: string | null;
   user: AuthUser | null;
   tokenExpiresAt: number | null;
+  _hasHydrated: boolean;
+  setHasHydrated: (val: boolean) => void;
   setSession: (session: {
     accessToken: string;
     refreshToken: string;
@@ -26,6 +28,8 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       user: null,
       tokenExpiresAt: null,
+      _hasHydrated: false,
+      setHasHydrated: (val) => set({ _hasHydrated: val }),
       setSession: ({ accessToken, refreshToken, user, expiresIn = 900 }) => {
         const expiresAt = Date.now() + expiresIn * 1000;
         set({ accessToken, refreshToken, user, tokenExpiresAt: expiresAt });
@@ -48,6 +52,11 @@ export const useAuthStore = create<AuthState>()(
         return Date.now() > expiresAt - 120000;
       },
     }),
-    { name: 'gasela-auth' },
+    {
+      name: 'gasela-auth',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
+    },
   ),
 );
