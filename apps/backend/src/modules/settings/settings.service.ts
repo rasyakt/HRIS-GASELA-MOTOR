@@ -45,6 +45,21 @@ export class SettingsService {
       where: { key: input.key },
     });
     if (!row) {
+      if (input.key === 'portal.theme_config') {
+        const created = await this.prisma.companySetting.create({
+          data: {
+            key: input.key,
+            value: input.value,
+            description: 'Konfigurasi tema & warna portal HRIS GaselaPulse',
+          },
+        });
+        return {
+          key: created.key,
+          value: created.value,
+          description: created.description,
+          updatedAt: created.updatedAt.toISOString(),
+        } satisfies CompanySettingDto;
+      }
       throw new NotFoundException(`Setting '${input.key}' tidak ditemukan`);
     }
     const updated = await this.prisma.companySetting.update({

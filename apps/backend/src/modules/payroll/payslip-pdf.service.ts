@@ -3,6 +3,21 @@ import { PassThrough } from 'stream';
 import PDFDocument from 'pdfkit';
 import { PrismaService } from '../../prisma/prisma.service';
 
+import { decryptNumber, isEncrypted } from '../../common/utils/encryption.util';
+
+function parseSalary(val: unknown): number {
+  if (val === null || val === undefined) return 0;
+  if (typeof val === 'number') return isNaN(val) ? 0 : val;
+  const str = String(val).trim();
+  if (!str) return 0;
+  if (isEncrypted(str)) {
+    const num = decryptNumber(str);
+    return num !== null && !isNaN(num) ? num : 0;
+  }
+  const parsed = parseFloat(str);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
 export interface PayslipPdfData {
   payrollNumber: string;
   employeeName: string;
@@ -77,20 +92,20 @@ export class PayslipPdfService {
       department: payroll.employee.department?.name ?? null,
       companyName: companyNameSetting?.value ?? 'PT Gasela Motor',
       periodLabel: `${monthName(payroll.month)} ${payroll.year}`,
-      basicSalary: Number(payroll.basicSalary),
-      overtimePay: Number(payroll.overtimePay),
-      totalAllowance: Number(payroll.totalAllowance),
-      grossSalary: Number(payroll.grossSalary),
-      bpjsKesehatanEmployee: Number(payroll.bpjsKesehatanEmployee),
-      bpjsKetenagakerjaanEmployee: Number(payroll.bpjsKetenagakerjaanEmployee),
-      taxPph21: Number(payroll.taxPph21),
-      totalDeduction: Number(payroll.totalDeduction),
-      netSalary: Number(payroll.netSalary),
+      basicSalary: parseSalary(payroll.basicSalary),
+      overtimePay: parseSalary(payroll.overtimePay),
+      totalAllowance: parseSalary(payroll.totalAllowance),
+      grossSalary: parseSalary(payroll.grossSalary),
+      bpjsKesehatanEmployee: parseSalary(payroll.bpjsKesehatanEmployee),
+      bpjsKetenagakerjaanEmployee: parseSalary(payroll.bpjsKetenagakerjaanEmployee),
+      taxPph21: parseSalary(payroll.taxPph21),
+      totalDeduction: parseSalary(payroll.totalDeduction),
+      netSalary: parseSalary(payroll.netSalary),
       components: payroll.components.map((c) => ({
         code: c.salaryComponent.code,
         name: c.salaryComponent.name,
         type: c.type,
-        amount: Number(c.amount),
+        amount: parseSalary(c.amount),
       })),
       paymentDate: payroll.paymentDate
         ? payroll.paymentDate.toISOString().slice(0, 10)

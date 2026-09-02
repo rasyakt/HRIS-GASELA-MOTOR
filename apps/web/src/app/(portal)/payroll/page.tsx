@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
+import { PositiveNumberInput } from '@/components/ui/positive-number-input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
 import { downloadWithAuth } from '@/lib/download';
@@ -351,7 +353,6 @@ function SalaryComponentsModal({ onClose }: { onClose: () => void }) {
                         >
                           {isThr ? (
                             <>
-                              <Sparkles className="size-3.5" />
                               Set THR (Aktifkan/Ubah)
                             </>
                           ) : (
@@ -360,17 +361,34 @@ function SalaryComponentsModal({ onClose }: { onClose: () => void }) {
                         </Button>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1">
-                            <Input
-                              type="number"
-                              className="w-24 h-8 text-xs font-bold"
-                              value={editAmount}
-                              onChange={(e) => setEditAmount(e.target.value)}
-                            />
+                          <div className="flex items-center gap-1.5">
+                            {editType === 'fixed' ? (
+                              <CurrencyInput
+                                className="w-36 h-8 text-xs font-bold"
+                                value={editAmount}
+                                onChangeValue={(num, raw) => setEditAmount(raw)}
+                                placeholder="0"
+                              />
+                            ) : (
+                              <div className="relative">
+                                <PositiveNumberInput
+                                  allowDecimal={true}
+                                  max={100}
+                                  className="w-24 h-8 pr-6 text-xs font-bold"
+                                  value={editAmount}
+                                  onChangeValue={(num, raw) => setEditAmount(raw)}
+                                  placeholder="0"
+                                />
+                                <span className="absolute right-2 top-2 text-[11px] font-bold text-zinc-400 pointer-events-none">%</span>
+                              </div>
+                            )}
                             <select
                               value={editType}
-                              onChange={(e) => setEditType(e.target.value as any)}
-                              className="h-8 rounded border border-zinc-300 bg-white px-2 text-xs font-semibold"
+                              onChange={(e) => {
+                                const newType = e.target.value as any;
+                                setEditType(newType);
+                              }}
+                              className="h-8 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-2 text-xs font-semibold"
                             >
                               <option value="percentage">% (Persentase)</option>
                               <option value="fixed">Rp (Nominal Tetap)</option>
@@ -450,7 +468,7 @@ function GenerateCard({
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-zinc-900 dark:text-white">Generate Gaji</CardTitle>
           <Button variant="outline" size="sm" onClick={() => setShowCompModal(true)} className="text-xs font-semibold gap-1.5 border-zinc-200 dark:border-zinc-800">
-            <PlusCircle className="size-3.5 text-amber-600 dark:text-amber-400" />
+            <PlusCircle className="size-3.5 text-primary" />
             Kelola Komponen Gaji &amp; THR
           </Button>
         </CardHeader>
@@ -473,20 +491,19 @@ function GenerateCard({
             </div>
             <div className="space-y-1">
               <Label htmlFor="gen-year" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Tahun</Label>
-              <Input
+              <PositiveNumberInput
                 id="gen-year"
-                type="number"
                 min={2020}
                 max={2100}
                 value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
+                onChangeValue={(val) => setYear(val)}
                 className="w-28"
               />
             </div>
             <Button
               onClick={() => generate.mutate()}
               disabled={generate.isPending}
-              className="bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+              className="font-semibold"
             >
               {generate.isPending ? (
                 <Loader2 data-icon="inline-start" className="animate-spin" />
@@ -654,15 +671,14 @@ export default function PayrollPage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="f-year" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Tahun</Label>
-                  <Input
+                  <PositiveNumberInput
                     id="f-year"
-                    type="number"
                     placeholder="Semua"
+                    min={2000}
+                    max={2100}
                     value={year ?? ''}
-                    onChange={(e) => {
-                      setYear(
-                        e.target.value ? Number(e.target.value) : undefined,
-                      );
+                    onChangeValue={(val, raw) => {
+                      setYear(raw ? val : undefined);
                       setPage(1);
                       setSelected(new Set());
                     }}

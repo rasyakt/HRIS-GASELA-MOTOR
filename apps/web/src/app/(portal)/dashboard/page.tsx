@@ -35,7 +35,7 @@ function TodayCard({ attendance }: { attendance: TodayAttendanceDto | null }) {
     return (
       <div className="flex flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 p-6 text-center">
         <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Belum ada kehadiran hari ini</p>
-        <Link href="/attendance" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+        <Link href="/attendance" className="text-sm text-primary hover:underline font-medium">
           Lakukan check-in di halaman Kehadiran
         </Link>
       </div>
@@ -218,7 +218,7 @@ function EmployeeView({ data }: { data: DashboardSummary }) {
       <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950 shadow-2xs">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Riwayat Kehadiran (7 hari terakhir)</h3>
-          <Link href="/attendance" className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline">
+          <Link href="/attendance" className="flex items-center gap-1 text-xs text-primary hover:underline font-medium">
             Selengkapnya <ArrowRight className="size-3" />
           </Link>
         </div>
@@ -241,7 +241,7 @@ function ApprovalsPreview({
     <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950 shadow-2xs">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Persetujuan Menunggu</h3>
-        <Link href="/approvals" className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline">
+        <Link href="/approvals" className="flex items-center gap-1 text-xs text-primary hover:underline font-medium">
           {count} belum diproses <ArrowRight className="size-3" />
         </Link>
       </div>
@@ -459,7 +459,7 @@ function DepartmentChart({ departments }: { departments: AdminDashboard['departm
                   return null;
                 }}
               />
-              <Bar dataKey="count" fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={16} />
+              <Bar dataKey="count" fill="var(--primary)" radius={[0, 4, 4, 0]} barSize={16} />
             </BarChart>
           </ResponsiveContainer>
         </div>

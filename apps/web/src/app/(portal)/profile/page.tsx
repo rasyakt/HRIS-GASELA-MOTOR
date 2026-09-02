@@ -355,7 +355,7 @@ export default function ProfilePage() {
                   <Button
                     type="submit"
                     disabled={changePasswordMut.isPending}
-                    className="w-full bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-amber-500 dark:text-zinc-950 dark:hover:bg-amber-400 font-semibold"
+                    className="w-full font-semibold"
                   >
                     {changePasswordMut.isPending ? (
                       <>

@@ -166,18 +166,20 @@ export function CommandPalette() {
               onClick={() => navigate(cmd.href)}
               onMouseEnter={() => setSelected(idx)}
               className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${
-                idx === selected ? 'bg-zinc-900 text-white' : 'text-zinc-700 hover:bg-zinc-50'
+                idx === selected
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800'
               }`}
             >
               <cmd.icon
-                className={`size-4 shrink-0 ${idx === selected ? 'text-white' : 'text-zinc-400'}`}
+                className={`size-4 shrink-0 ${idx === selected ? 'text-primary-foreground' : 'text-zinc-400'}`}
               />
               <div className="min-w-0 flex-1">
-                <p className={`text-sm font-medium truncate ${idx === selected ? 'text-white' : 'text-zinc-900'}`}>
+                <p className={`text-sm font-medium truncate ${idx === selected ? 'text-primary-foreground font-semibold' : 'text-zinc-900 dark:text-zinc-100'}`}>
                   {cmd.label}
                 </p>
                 {cmd.description && (
-                  <p className={`text-[11px] truncate ${idx === selected ? 'text-zinc-300' : 'text-zinc-400'}`}>
+                  <p className={`text-[11px] truncate ${idx === selected ? 'text-primary-foreground/80' : 'text-zinc-400 dark:text-zinc-500'}`}>
                     {cmd.description}
                   </p>
                 )}

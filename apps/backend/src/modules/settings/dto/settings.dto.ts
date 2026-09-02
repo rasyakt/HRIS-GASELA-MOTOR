@@ -25,6 +25,7 @@ export class UpdateCompanySettingDto
       'office.radius_meters',
       'bpjs.rates',
       'overtime.rate_multiplier_weekday',
+      'portal.theme_config',
     ] as const,
   })
   key: UpdateCompanySettingInput['key'];

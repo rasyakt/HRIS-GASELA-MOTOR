@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { PositiveNumberInput } from '@/components/ui/positive-number-input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
 import { fmtDate, roleAtLeast } from '@/lib/format';
@@ -294,7 +295,7 @@ export default function PerformanceReviewsPage() {
             <p className="text-sm text-zinc-400">Evaluasi kinerja karyawan per periode</p>
           </div>
           {canManage && (
-            <Button onClick={openCreate} className="bg-white text-zinc-900 hover:bg-zinc-100 dark:bg-amber-600 dark:text-white dark:hover:bg-amber-700 gap-2 font-semibold shadow-2xs">
+            <Button onClick={openCreate} className="gap-2 font-semibold shadow-2xs">
               <PlusCircle className="size-4" /> Tambah Review
             </Button>
           )}
@@ -305,7 +306,7 @@ export default function PerformanceReviewsPage() {
       <div className="grid grid-cols-3 gap-4">
         <Card className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-center shadow-2xs">
           <CardContent className="pt-4 pb-3">
-            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{reviews.data?.length ?? '—'}</p>
+            <p className="text-2xl font-bold text-primary">{reviews.data?.length ?? '—'}</p>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium">Total Review</p>
           </CardContent>
         </Card>
@@ -433,9 +434,13 @@ export default function PerformanceReviewsPage() {
                   </div>
                   <div>
                     <Label htmlFor="pr-year">Tahun</Label>
-                    <Input id="pr-year" type="number" min={2020} max={2100}
+                    <PositiveNumberInput
+                      id="pr-year"
+                      min={2020}
+                      max={2100}
                       value={form.periodYear}
-                      onChange={(e) => setForm((f) => ({ ...f, periodYear: e.target.value }))} />
+                      onChangeValue={(num, raw) => setForm((f) => ({ ...f, periodYear: raw }))}
+                    />
                   </div>
                 </div>
                 <div>
@@ -445,9 +450,14 @@ export default function PerformanceReviewsPage() {
                 </div>
                 <div>
                   <Label htmlFor="pr-score">Skor Keseluruhan (0–100, opsional)</Label>
-                  <Input id="pr-score" type="number" min={0} max={100} placeholder="mis: 85"
+                  <PositiveNumberInput
+                    id="pr-score"
+                    min={0}
+                    max={100}
+                    placeholder="mis: 85"
                     value={form.overallScore}
-                    onChange={(e) => setForm((f) => ({ ...f, overallScore: e.target.value }))} />
+                    onChangeValue={(num, raw) => setForm((f) => ({ ...f, overallScore: raw }))}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="pr-status">Status</Label>
@@ -488,7 +498,7 @@ export default function PerformanceReviewsPage() {
                 )}
 
                 <div className="flex gap-3 pt-2">
-                  <Button type="submit" disabled={isBusy} className="flex-1 bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-amber-600 dark:hover:bg-amber-700 font-semibold">
+                  <Button type="submit" disabled={isBusy} className="flex-1 font-semibold">
                     {isBusy && <Loader2 className="mr-1.5 size-4 animate-spin" />}
                     {editingId !== null ? 'Simpan Perubahan' : 'Tambah Review'}
                   </Button>

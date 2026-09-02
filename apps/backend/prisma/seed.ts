@@ -199,6 +199,15 @@ const COMPANY_SETTINGS: Array<{ key: string; value: string; description: string 
     value: 'PT Gasela Motor',
     description: 'Nama perusahaan untuk header payslip/dokumen',
   },
+  {
+    key: 'portal.theme_config',
+    value: JSON.stringify({
+      presetId: 'emerald',
+      radius: 'md',
+      sidebarContrast: 'default',
+    }),
+    description: 'Konfigurasi tema & warna portal HRIS GaselaPulse',
+  },
 ];
 
 async function main() {

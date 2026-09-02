@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
 import { badgeClass, fmtDate, roleAtLeast } from '@/lib/format';
@@ -416,7 +417,7 @@ export default function EmployeesPage() {
             Daftar, kelola, dan simpan dokumen karyawan GASELA MOTOR.
           </p>
         </div>
-        <Button onClick={handleOpenCreate} className="bg-zinc-900 text-white hover:bg-zinc-800">
+        <Button onClick={handleOpenCreate}>
           <Plus className="mr-1.5 size-4" />
           Karyawan Baru
         </Button>
@@ -449,7 +450,7 @@ export default function EmployeesPage() {
                 }}
                 className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
                   selectedRole === tab.value
-                    ? 'border-zinc-900 text-zinc-950 bg-zinc-50 dark:border-amber-500 dark:text-white dark:bg-zinc-900'
+                    ? 'border-primary text-primary bg-primary/5 dark:border-primary dark:text-primary dark:bg-primary/10'
                     : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
                 }`}
               >
@@ -682,8 +683,8 @@ export default function EmployeesPage() {
                       onClick={() => setDrawerTab('profile')}
                       className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
                         drawerTab === 'profile'
-                          ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
-                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
+                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
                       }`}
                     >
                       <User className="size-3.5" />
@@ -693,8 +694,8 @@ export default function EmployeesPage() {
                       onClick={() => setDrawerTab('job')}
                       className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
                         drawerTab === 'job'
-                          ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
-                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
+                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
                       }`}
                     >
                       <Briefcase className="size-3.5" />
@@ -704,8 +705,8 @@ export default function EmployeesPage() {
                       onClick={() => setDrawerTab('documents')}
                       className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
                         drawerTab === 'documents'
-                          ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
-                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
+                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
                       }`}
                     >
                       <FileText className="size-3.5" />
@@ -715,8 +716,8 @@ export default function EmployeesPage() {
                       onClick={() => setDrawerTab('review')}
                       className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
                         drawerTab === 'review'
-                          ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
-                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
+                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
                       }`}
                     >
                       <Award className="size-3.5" />
@@ -726,8 +727,8 @@ export default function EmployeesPage() {
                       onClick={() => setDrawerTab('training')}
                       className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
                         drawerTab === 'training'
-                          ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
-                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
+                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
                       }`}
                     >
                       <GraduationCap className="size-3.5" />
@@ -737,8 +738,8 @@ export default function EmployeesPage() {
                       onClick={() => setDrawerTab('asset')}
                       className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
                         drawerTab === 'asset'
-                          ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
-                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
+                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
                       }`}
                     >
                       <Package className="size-3.5" />
@@ -748,8 +749,8 @@ export default function EmployeesPage() {
                       onClick={() => setDrawerTab('family' as any)}
                       className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
                         (drawerTab as string) === 'family'
-                          ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50'
-                          : 'border-transparent text-zinc-600 hover:text-emerald-700 hover:bg-emerald-50/30'
+                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
                       }`}
                     >
                       <HeartHandshake className="size-3.5" />
@@ -760,8 +761,8 @@ export default function EmployeesPage() {
                         onClick={() => setDrawerTab('account')}
                         className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
                           drawerTab === 'account'
-                            ? 'border-zinc-900 text-zinc-900 bg-zinc-50/50'
-                            : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30'
+                            ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                            : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
                         }`}
                       >
                         <Shield className="size-3.5" />
@@ -990,14 +991,13 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="basicSalary">Gaji Pokok (Rupiah)</Label>
-                            <Input
+                            <Label htmlFor="basicSalary">Gaji Pokok</Label>
+                            <CurrencyInput
                               id="basicSalary"
-                              type="number"
                               disabled={!isEditMode}
                               value={formData.basicSalary}
-                              onChange={(e) => handleInputChange('basicSalary', e.target.value)}
-                              placeholder="5000000"
+                              onChangeValue={(num) => handleInputChange('basicSalary', String(num))}
+                              placeholder="5.000.000"
                             />
                           </div>
                           <div>
@@ -1146,7 +1146,7 @@ export default function EmployeesPage() {
                             type="button"
                             disabled={uploadingFile || uploadDoc.isPending}
                             onClick={() => fileInputRef.current?.click()}
-                            className="bg-zinc-900 text-white hover:bg-zinc-800 w-full"
+                            className="w-full"
                           >
                             {uploadingFile ? (
                               <>
@@ -1285,7 +1285,6 @@ export default function EmployeesPage() {
                       type="submit"
                       form="employee-form"
                       disabled={createEmployee.isPending || updateEmployee.isPending}
-                      className="bg-zinc-900 text-white hover:bg-zinc-800"
                     >
                       {(createEmployee.isPending || updateEmployee.isPending) && (
                         <Loader2 className="mr-1.5 size-4 animate-spin" />

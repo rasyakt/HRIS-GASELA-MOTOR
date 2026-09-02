@@ -35,6 +35,7 @@ import {
 } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PositiveNumberInput } from '@/components/ui/positive-number-input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
 import {
@@ -206,7 +207,14 @@ function PayrollFilters({
       </div>
       <div>
         <Label htmlFor="pay-year" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Tahun</Label>
-        <Input id="pay-year" type="number" min={2000} max={2100} value={payYear} onChange={(e) => setPayYear(e.target.value)} className="mt-1.5" />
+        <PositiveNumberInput
+          id="pay-year"
+          min={2000}
+          max={2100}
+          value={payYear}
+          onChangeValue={(num, raw) => setPayYear(raw)}
+          className="mt-1.5"
+        />
       </div>
       <div>
         <Label htmlFor="pay-status" className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Status</Label>
@@ -578,11 +586,11 @@ export default function ReportsPage() {
               onClick={() => { setActiveTab(tab.key); setCsvMsg(null); }}
               className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all focus:outline-none whitespace-nowrap ${
                 active
-                  ? 'border-zinc-900 text-zinc-900 dark:border-amber-500 dark:text-white'
+                  ? 'border-primary text-primary font-bold dark:border-primary dark:text-primary bg-primary/5 dark:bg-primary/10'
                   : 'border-transparent text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700'
               }`}
             >
-              <Icon className={`size-4 ${active ? 'text-zinc-900 dark:text-amber-500' : 'text-zinc-400'}`} />
+              <Icon className={`size-4 ${active ? 'text-primary' : 'text-zinc-400'}`} />
               {tab.label}
             </button>
           );
@@ -634,7 +642,7 @@ export default function ReportsPage() {
               <span>Export PDF</span>
             </Button>
             <Button
-              className="bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-amber-600 dark:hover:bg-amber-700 dark:text-white text-xs font-semibold gap-1.5 px-4 py-2.5 h-auto shadow-2xs"
+              className="text-xs font-semibold gap-1.5 px-4 py-2.5 h-auto shadow-2xs"
               disabled={downloading !== null}
               onClick={() => downloadCsv(activeTab)}
             >
@@ -652,7 +660,7 @@ export default function ReportsPage() {
       {/* ── LOADING STATE ── */}
       {isLoading && (
         <div className="flex flex-col items-center justify-center py-24 gap-3">
-          <Loader2 className="size-8 animate-spin text-zinc-900 dark:text-amber-500" />
+          <Loader2 className="size-8 animate-spin text-primary" />
           <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">Memuat data laporan…</p>
         </div>
       )}
@@ -981,7 +989,7 @@ export default function ReportsPage() {
                             ) : null
                           }
                         />
-                        <Bar dataKey="value" fill="#10b981" radius={[0, 6, 6, 0]} maxBarSize={28} />
+                        <Bar dataKey="value" fill="var(--primary)" radius={[0, 6, 6, 0]} maxBarSize={28} />
                       </ReBarChart>
                     </ResponsiveContainer>
                   )}
@@ -998,7 +1006,7 @@ export default function ReportsPage() {
                   .slice(0, 5)
                   .map((r: any, i: number) => (
                     <div key={i} className="flex items-center gap-3 py-2 border-b border-zinc-50 dark:border-zinc-850/80 last:border-0">
-                      <span className="size-6 flex items-center justify-center rounded-full bg-zinc-900 dark:bg-amber-500 text-white dark:text-zinc-950 text-[10px] font-extrabold shrink-0">
+                      <span className="size-6 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-extrabold shrink-0">
                         {i + 1}
                       </span>
                       <div className="min-w-0 flex-1">

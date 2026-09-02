@@ -25,6 +25,20 @@ import {
   type BpjsRates,
 } from '@gasela/shared-utils';
 import { PrismaService } from '../../prisma/prisma.service';
+import { decryptNumber, isEncrypted } from '../../common/utils/encryption.util';
+
+function parseSalary(val: unknown): number {
+  if (val === null || val === undefined) return 0;
+  if (typeof val === 'number') return isNaN(val) ? 0 : val;
+  const str = String(val).trim();
+  if (!str) return 0;
+  if (isEncrypted(str)) {
+    const num = decryptNumber(str);
+    return num !== null && !isNaN(num) ? num : 0;
+  }
+  const parsed = parseFloat(str);
+  return isNaN(parsed) ? 0 : parsed;
+}
 
 const MONTHS_ID = [
   'Januari',
@@ -205,7 +219,7 @@ export class PayrollService {
         continue;
       }
 
-      const basicSalary = Number(emp.basicSalary);
+      const basicSalary = parseSalary(emp.basicSalary);
       let totalAllowance = 0;
       let totalDeduction = 0;
       const componentRows: Array<{
@@ -310,17 +324,20 @@ export class PayrollService {
         ? emp.ptkpStatus as keyof typeof PTKP_TO_TER_CATEGORY
         : 'TK0'; // default TK0 jika belum diset
 
-      const bracket = await this.prisma.terRate.findFirst({
-        where: {
-          category: PTKP_TO_TER_CATEGORY[effectivePtkp],
-          incomeFrom: { lt: pph21Gross },
-          OR: [{ incomeTo: null }, { incomeTo: { gte: pph21Gross } }],
-        },
-        orderBy: { incomeFrom: 'desc' },
-      });
-      const taxPph21 = bracket
-        ? Math.round(pph21Gross * (Number(bracket.ratePercent) / 100))
-        : 0;
+      let taxPph21 = 0;
+      if (pph21Gross > 0 && !isNaN(pph21Gross)) {
+        const bracket = await this.prisma.terRate.findFirst({
+          where: {
+            category: PTKP_TO_TER_CATEGORY[effectivePtkp],
+            incomeFrom: { lte: pph21Gross },
+            OR: [{ incomeTo: null }, { incomeTo: { gte: pph21Gross } }],
+          },
+          orderBy: { incomeFrom: 'desc' },
+        });
+        taxPph21 = bracket
+          ? Math.round(pph21Gross * (Number(bracket.ratePercent) / 100))
+          : 0;
+      }
 
       const bpjsEmployeeTotal = Math.round(
         bpjs.kesehatanEmployee + bpjs.jhtEmployee + bpjs.jpEmployee,
@@ -607,17 +624,17 @@ export class PayrollService {
       department: r.employee.department?.name ?? null,
       month: r.month,
       year: r.year,
-      basicSalary: Number(r.basicSalary),
-      totalAllowance: Number(r.totalAllowance),
-      totalDeduction: Number(r.totalDeduction),
-      overtimePay: Number(r.overtimePay),
-      grossSalary: Number(r.grossSalary),
-      bpjsKesehatanEmployee: Number(r.bpjsKesehatanEmployee),
-      bpjsKesehatanCompany: Number(r.bpjsKesehatanCompany),
-      bpjsKetenagakerjaanEmployee: Number(r.bpjsKetenagakerjaanEmployee),
-      bpjsKetenagakerjaanCompany: Number(r.bpjsKetenagakerjaanCompany),
-      taxPph21: Number(r.taxPph21),
-      netSalary: Number(r.netSalary),
+      basicSalary: parseSalary(r.basicSalary),
+      totalAllowance: parseSalary(r.totalAllowance),
+      totalDeduction: parseSalary(r.totalDeduction),
+      overtimePay: parseSalary(r.overtimePay),
+      grossSalary: parseSalary(r.grossSalary),
+      bpjsKesehatanEmployee: parseSalary(r.bpjsKesehatanEmployee),
+      bpjsKesehatanCompany: parseSalary(r.bpjsKesehatanCompany),
+      bpjsKetenagakerjaanEmployee: parseSalary(r.bpjsKetenagakerjaanEmployee),
+      bpjsKetenagakerjaanCompany: parseSalary(r.bpjsKetenagakerjaanCompany),
+      taxPph21: parseSalary(r.taxPph21),
+      netSalary: parseSalary(r.netSalary),
       status: r.status,
       approvedByName: r.approvedBy?.fullName ?? null,
       approvedAt: r.approvedAt ? r.approvedAt.toISOString() : null,

@@ -12,3 +12,4 @@ export * from './settings.schema';
 export * from './common.schema';
 export * from './advanced.schema';
 export * from './landing.schema';
+export * from './theme.schema';
