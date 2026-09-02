@@ -97,7 +97,7 @@ export class AuthService {
 
   private signRefreshToken(u: UserWithEmployee, rememberMe = false): string {
     return this.jwtService.sign(
-      { sub: u.id, username: u.username },
+      { sub: u.id, username: u.username, rememberMe },
       {
         secret: this.config.getOrThrow<string>('app.jwtRefreshSecret'),
         expiresIn: rememberMe ? '30d' : this.tokenTtl('app.jwtRefreshTtl'),
@@ -295,7 +295,7 @@ export class AuthService {
   }
 
   async refresh(input: RefreshTokenInput): Promise<LoginResponse> {
-    let payload: { sub: number; username: string };
+    let payload: { sub: number; username: string; rememberMe?: boolean };
     try {
       payload = await this.jwtService.verifyAsync(input.refreshToken, {
         secret: this.config.getOrThrow<string>('app.jwtRefreshSecret'),
@@ -347,7 +347,7 @@ export class AuthService {
       );
     }
 
-    return this.buildLoginResponse(user);
+    return this.buildLoginResponse(user, payload.rememberMe ?? false);
   }
 
   async logout(userId: number): Promise<void> {

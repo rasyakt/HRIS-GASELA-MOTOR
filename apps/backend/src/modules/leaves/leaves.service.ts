@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import {
   BadRequestException,
   ConflictException,
@@ -121,12 +122,12 @@ export class LeavesService {
 
   async deactivateType(id: number) {
     await this.getTypeById(id);
-    const usage = await this.prisma.leaveRequest.count({
-      where: { leaveTypeId: id },
+    const activeUsage = await this.prisma.leaveRequest.count({
+      where: { leaveTypeId: id, status: { in: ['pending', 'approved'] } },
     });
-    if (usage > 0) {
+    if (activeUsage > 0) {
       throw new ConflictException(
-        `Jenis cuti sudah dipakai ${usage} pengajuan, tidak bisa dinonaktifkan`,
+        `Jenis cuti masih memiliki ${activeUsage} pengajuan aktif (pending/approved), tidak bisa dinonaktifkan`,
       );
     }
     return this.prisma.leaveType.update({
@@ -145,27 +146,41 @@ export class LeavesService {
       where: { isActive: true, annualQuota: { gt: 0 } },
     });
 
-    for (const type of activeQuotaTypes) {
-      const exists = await this.prisma.leaveBalance.findUnique({
+    if (activeQuotaTypes.length > 0) {
+      const existingBalances = await this.prisma.leaveBalance.findMany({
         where: {
-          employeeId_leaveTypeId_year: {
-            employeeId,
-            leaveTypeId: type.id,
-            year,
-          },
+          employeeId,
+          year,
+          leaveTypeId: { in: activeQuotaTypes.map((t) => t.id) },
         },
+        select: { leaveTypeId: true },
       });
-      if (!exists) {
-        await this.prisma.leaveBalance.create({
-          data: {
-            employeeId,
-            leaveTypeId: type.id,
-            year,
-            quota: type.annualQuota,
-            used: 0,
-            remaining: type.annualQuota,
-          },
-        });
+      const existingTypeIds = new Set(existingBalances.map((b) => b.leaveTypeId));
+      const missingTypes = activeQuotaTypes.filter((t) => !existingTypeIds.has(t.id));
+
+      if (missingTypes.length > 0) {
+        await this.prisma.$transaction(
+          missingTypes.map((type) =>
+            this.prisma.leaveBalance.upsert({
+              where: {
+                employeeId_leaveTypeId_year: {
+                  employeeId,
+                  leaveTypeId: type.id,
+                  year,
+                },
+              },
+              create: {
+                employeeId,
+                leaveTypeId: type.id,
+                year,
+                quota: type.annualQuota,
+                used: 0,
+                remaining: type.annualQuota,
+              },
+              update: {},
+            }),
+          ),
+        );
       }
     }
 
@@ -304,10 +319,10 @@ export class LeavesService {
       }
     }
 
+    const datePrefix = dayKey(new Date()).replace(/-/g, '');
+    const randSuffix = crypto.randomBytes(2).toString('hex').toUpperCase();
     const count = await this.prisma.leaveRequest.count();
-    const requestNumber = `LV-${dayKey(new Date()).replace(/-/g, '')}-${String(
-      count + 1,
-    ).padStart(4, '0')}`;
+    const requestNumber = `LV-${datePrefix}-${String(count + 1).padStart(3, '0')}${randSuffix}`;
 
     return this.toRequestDto(
       await this.prisma.leaveRequest.create({
@@ -356,6 +371,7 @@ export class LeavesService {
       total,
       page,
       limit,
+      totalPages: Math.ceil(total / limit),
     };
   }
 
