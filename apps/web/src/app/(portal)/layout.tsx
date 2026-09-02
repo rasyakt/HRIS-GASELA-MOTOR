@@ -117,6 +117,7 @@ export default function PortalLayout({
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.accessToken);
+  const hasHydrated = useAuthStore((s) => s._hasHydrated);
   const clearSession = useAuthStore((s) => s.clearSession);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -153,8 +154,10 @@ export default function PortalLayout({
   };
 
   useEffect(() => {
-    if (!token) router.replace('/login');
-  }, [token, router]);
+    if (hasHydrated && !token) {
+      router.replace('/login');
+    }
+  }, [hasHydrated, token, router]);
 
   const visibleGroups = useMemo(() => {
     if (!user) return [];
@@ -197,10 +200,13 @@ export default function PortalLayout({
     }
   }
 
-  if (!user) {
+  if (!hasHydrated || !user) {
     return (
-      <div className="flex min-h-full flex-1 items-center justify-center bg-zinc-50">
-        <p className="text-sm text-zinc-400">Memuat…</p>
+      <div className="flex min-h-screen flex-1 items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <div className="flex flex-col items-center gap-3">
+          <div className="size-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-800 dark:border-zinc-700 dark:border-t-zinc-200" />
+          <p className="text-xs font-medium text-zinc-400">Memuat…</p>
+        </div>
       </div>
     );
   }

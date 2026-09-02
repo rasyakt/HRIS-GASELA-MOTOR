@@ -25,6 +25,7 @@ export default function LoginPage() {
   const router = useRouter();
   const accessToken = useAuthStore((s) => s.accessToken);
   const user = useAuthStore((s) => s.user);
+  const hasHydrated = useAuthStore((s) => s._hasHydrated);
   const setSession = useAuthStore((s) => s.setSession);
 
   // States
@@ -48,8 +49,8 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    if (accessToken) router.replace(homePath);
-  }, [accessToken, router, homePath]);
+    if (hasHydrated && accessToken) router.replace(homePath);
+  }, [hasHydrated, accessToken, router, homePath]);
 
   async function onSubmit(values: { username: string; password: string }) {
     setError(null);
@@ -121,6 +122,16 @@ export default function LoginPage() {
     setPendingUser(null);
     setOtpCode('');
     setError(null);
+  }
+
+  if (!hasHydrated || accessToken) {
+    return (
+      <main className="flex min-h-screen w-full items-center justify-center bg-white dark:bg-zinc-950">
+        <div className="flex flex-col items-center gap-3">
+          <div className="size-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-800 dark:border-zinc-700 dark:border-t-zinc-200" />
+        </div>
+      </main>
+    );
   }
 
   return (
