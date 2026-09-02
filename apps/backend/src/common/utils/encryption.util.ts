@@ -10,19 +10,38 @@ const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
 const SALT_LENGTH = 64;
 
+// Default dummy key ONLY for local development & unit tests fallback.
+// In production (NODE_ENV=production), a unique ENCRYPTION_KEY in .env is strictly enforced.
+const DEFAULT_DEV_KEY =
+  '8166209d72886574447e6c7da4f790a1ba990096e0e76ff71717571b823a31db';
+
 /**
  * Get encryption key from environment
  * Key should be 64 hex characters (32 bytes)
  */
 function getEncryptionKey(): Buffer {
+  const isProduction = process.env.NODE_ENV === 'production';
   const key = process.env.ENCRYPTION_KEY;
-  if (!key) {
-    throw new Error('ENCRYPTION_KEY not set in environment variables');
+
+  if (isProduction) {
+    if (!key) {
+      throw new Error(
+        'SECURITY ERROR: ENCRYPTION_KEY must be explicitly set in environment variables for production environment.'
+      );
+    }
+    if (key === DEFAULT_DEV_KEY) {
+      throw new Error(
+        'SECURITY ERROR: Default development ENCRYPTION_KEY cannot be used in production. Generate a unique 64-hex key.'
+      );
+    }
   }
-  if (key.length !== 64) {
+
+  const effectiveKey = key || DEFAULT_DEV_KEY;
+
+  if (effectiveKey.length !== 64) {
     throw new Error('ENCRYPTION_KEY must be 64 hex characters (32 bytes)');
   }
-  return Buffer.from(key, 'hex');
+  return Buffer.from(effectiveKey, 'hex');
 }
 
 /**
@@ -59,13 +78,14 @@ export function decrypt(ciphertext: string | null): string | null {
   if (!ciphertext) return null;
   
   try {
-    const key = getEncryptionKey();
     const parts = ciphertext.split(':');
     
+    // If not in standard iv:authTag:encrypted format, return as plaintext
     if (parts.length !== 3) {
-      throw new Error('Invalid encrypted data format');
+      return ciphertext;
     }
     
+    const key = getEncryptionKey();
     const iv = Buffer.from(parts[0], 'base64');
     const authTag = Buffer.from(parts[1], 'base64');
     const encrypted = parts[2];
@@ -79,7 +99,7 @@ export function decrypt(ciphertext: string | null): string | null {
     return decrypted;
   } catch (error) {
     console.error('Decryption error:', error);
-    throw new Error('Failed to decrypt data');
+    return null;
   }
 }
 

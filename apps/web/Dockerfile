@@ -5,18 +5,28 @@ FROM node:22-alpine AS builder
 RUN corepack enable
 WORKDIR /app
 
+# 1. Salin konfigurasi workspace & package.json saja (Layer Cache)
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY packages/shared-config/ ./packages/shared-config/
+COPY packages/shared-types/package.json ./packages/shared-types/
+COPY packages/shared-utils/package.json ./packages/shared-utils/
+COPY apps/web/package.json ./apps/web/
+
+# 2. Install dependensi dengan BuildKit cache mount pnpm store
+RUN pnpm config set fetch-timeout 600000 && \
+    pnpm config set fetch-retries 5
+
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --filter @gasela/web...
+
+# 3. Salin seluruh kode sumber setelah node_modules selesai di-cache
 COPY packages/ packages/
 COPY apps/web/ apps/web/
 
 # API diakses dari server (SSR) via proxy internal compose
 ENV NEXT_PUBLIC_API_URL=http://backend:3001
 
-# Optimasi timeout koneksi & hanya install dependensi web (abaikan mobile/backend)
-RUN pnpm config set fetch-timeout 600000 && \
-    pnpm config set fetch-retries 5 && \
-    pnpm install --frozen-lockfile --filter @gasela/web...
-
+# 4. Build paket
 RUN pnpm --filter @gasela/shared-types build
 RUN pnpm --filter @gasela/shared-utils build
 RUN pnpm --filter @gasela/web build
