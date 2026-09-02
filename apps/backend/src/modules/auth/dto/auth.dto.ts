@@ -18,6 +18,12 @@ export class LoginDto extends createZodDto(loginSchema) {
     description: 'Password (min 8, ada huruf besar & angka)',
   })
   password: string;
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Ingat saya',
+    default: false,
+  })
+  rememberMe?: boolean;
 }
 
 export class RefreshTokenDto extends createZodDto(refreshTokenSchema) {
@@ -42,6 +48,12 @@ export class TwoFactorVerifyDto extends createZodDto(twoFactorVerifySchema) {
   tempToken: string;
   @ApiProperty({ description: 'Kode OTP 6 digit dari Authenticator atau recovery code' })
   code: string;
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Ingat saya',
+    default: false,
+  })
+  rememberMe?: boolean;
 }
 
 export class TwoFactorEnableDto extends createZodDto(twoFactorEnableSchema) {

@@ -44,7 +44,7 @@ export default function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(loginSchema),
-    defaultValues: { username: '', password: '' },
+    defaultValues: { username: '', password: '', rememberMe: true },
   });
 
   useEffect(() => {
@@ -96,6 +96,7 @@ export default function LoginPage() {
         body: JSON.stringify({
           tempToken,
           code: otpCode.trim(),
+          rememberMe: true,
         }),
       });
 
@@ -240,6 +241,20 @@ export default function LoginPage() {
                   {errors.password && (
                     <p className="text-xs font-medium text-red-500">{errors.password.message}</p>
                   )}
+                </div>
+
+                {/* Remember Me Checkbox */}
+                <div className="flex items-center justify-between pt-0.5 pb-1">
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none group">
+                    <input
+                      type="checkbox"
+                      className="size-4 rounded border-zinc-300 bg-zinc-50 text-zinc-950 focus:ring-zinc-950 accent-zinc-950 cursor-pointer transition-colors"
+                      {...register('rememberMe')}
+                    />
+                    <span className="text-xs font-medium text-zinc-600 group-hover:text-zinc-900 transition-colors">
+                      Ingat saya
+                    </span>
+                  </label>
                 </div>
 
                 {error && (
