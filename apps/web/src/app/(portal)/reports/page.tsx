@@ -765,57 +765,57 @@ export default function ReportsPage() {
               <EmptyState message="Tidak ada data kehadiran yang sesuai filter." />
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-xs md:text-sm whitespace-nowrap">
                   <thead>
                     <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 text-left">
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Tanggal</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Karyawan</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell">Departemen</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell">Shift</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Masuk / Keluar</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Lokasi GPS (Presensi)</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Status</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider text-right">Terlambat</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Tanggal</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Karyawan</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell whitespace-nowrap">Departemen</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell whitespace-nowrap">Shift</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Masuk / Keluar</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Lokasi GPS (Presensi)</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Status</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider text-right whitespace-nowrap">Terlambat</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-50 dark:divide-zinc-850/80">
                     {attRecs.slice(0, 15).map((r: any, i: number) => (
                       <tr key={i} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors">
-                        <td className="px-5 py-3.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 whitespace-nowrap">{fmtDate(r.attendanceDate)}</td>
-                        <td className="px-5 py-3.5">
-                          <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{r.employee?.fullName}</div>
-                          <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">{r.employee?.employeeNumber}</div>
+                        <td className="px-3.5 py-2.5 text-xs md:text-sm font-medium text-zinc-900 dark:text-zinc-100 whitespace-nowrap">{fmtDate(r.attendanceDate)}</td>
+                        <td className="px-3.5 py-2.5 whitespace-nowrap">
+                          <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs md:text-sm whitespace-nowrap">{r.employee?.fullName}</div>
+                          <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5 whitespace-nowrap">{r.employee?.employeeNumber}</div>
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400 hidden md:table-cell">{r.employee?.department?.name ?? '—'}</td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400 hidden lg:table-cell">{r.shift?.name ?? '—'}</td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-700 dark:text-zinc-300 whitespace-nowrap font-mono">
+                        <td className="px-3.5 py-2.5 text-xs md:text-sm text-zinc-500 dark:text-zinc-400 hidden md:table-cell whitespace-nowrap">{r.employee?.department?.name ?? '—'}</td>
+                        <td className="px-3.5 py-2.5 text-xs md:text-sm text-zinc-500 dark:text-zinc-400 hidden lg:table-cell whitespace-nowrap">{r.shift?.name ?? '—'}</td>
+                        <td className="px-3.5 py-2.5 text-xs md:text-sm text-zinc-700 dark:text-zinc-300 whitespace-nowrap font-mono">
                           {r.checkInTime ? fmtTime(r.checkInTime) : '—'}&nbsp;/&nbsp;{r.checkOutTime ? fmtTime(r.checkOutTime) : '—'}
                         </td>
-                        <td className="px-5 py-3.5 whitespace-nowrap">
+                        <td className="px-3.5 py-2.5 whitespace-nowrap">
                           {r.checkInLat && r.checkInLng ? (
                             <a
                               href={`https://www.google.com/maps?q=${r.checkInLat},${r.checkInLng}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/80 dark:border-emerald-900/50 px-2.5 py-1 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors shadow-2xs"
+                              className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/80 dark:border-emerald-900/50 px-2 py-0.5 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors shadow-2xs whitespace-nowrap"
                               title="Buka lokasi persis check-in di Google Maps"
                             >
-                              <MapPin className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                              <MapPin className="size-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                               <span>{Number(r.checkInLat).toFixed(4)}, {Number(r.checkInLng).toFixed(4)}</span>
-                              <ExternalLink className="size-3 text-emerald-500 ml-0.5 shrink-0" />
+                              <ExternalLink className="size-2.5 text-emerald-500 ml-0.5 shrink-0" />
                             </a>
                           ) : (
                             <span className="text-xs text-zinc-400 font-mono">—</span>
                           )}
                         </td>
-                        <td className="px-5 py-3.5">
+                        <td className="px-3.5 py-2.5 whitespace-nowrap">
                           <span className={badgeClass(r.status)}>{statusLabel(r.status)}</span>
                         </td>
-                        <td className="px-5 py-3.5 text-right">
+                        <td className="px-3.5 py-2.5 text-right whitespace-nowrap">
                           {Number(r.lateMinutes) > 0 ? (
-                            <span className="text-amber-600 dark:text-amber-400 font-semibold text-xs">{r.lateMinutes} mnt</span>
+                            <span className="text-amber-600 dark:text-amber-400 font-bold text-xs whitespace-nowrap">{r.lateMinutes} mnt</span>
                           ) : (
-                            <span className="text-zinc-300 dark:text-zinc-600 text-xs">—</span>
+                            <span className="text-zinc-300 dark:text-zinc-600 text-xs whitespace-nowrap">—</span>
                           )}
                         </td>
                       </tr>
@@ -910,34 +910,34 @@ export default function ReportsPage() {
               <EmptyState message="Tidak ada data cuti yang sesuai filter." />
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-xs md:text-sm whitespace-nowrap">
                   <thead>
                     <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 text-left">
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">No. Pengajuan</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Karyawan</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell">Jenis Cuti</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell">Tanggal</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Jumlah Hari</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Status</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">No. Pengajuan</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Karyawan</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell whitespace-nowrap">Jenis Cuti</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell whitespace-nowrap">Tanggal</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Jumlah Hari</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-50 dark:divide-zinc-850/80">
                     {leaveRecs.slice(0, 15).map((r: any, i: number) => (
                       <tr key={i} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors">
-                        <td className="px-5 py-3.5 text-xs font-mono font-medium text-zinc-500 dark:text-zinc-400">{r.requestNumber}</td>
-                        <td className="px-5 py-3.5">
-                          <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{r.employee?.fullName}</div>
-                          <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">{r.employee?.employeeNumber}</div>
+                        <td className="px-3.5 py-2.5 text-xs font-mono font-medium text-zinc-500 dark:text-zinc-400 whitespace-nowrap">{r.requestNumber}</td>
+                        <td className="px-3.5 py-2.5 whitespace-nowrap">
+                          <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs md:text-sm whitespace-nowrap">{r.employee?.fullName}</div>
+                          <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5 whitespace-nowrap">{r.employee?.employeeNumber}</div>
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-600 dark:text-zinc-300 hidden md:table-cell">{r.leaveType?.name}</td>
-                        <td className="px-5 py-3.5 text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap hidden lg:table-cell">
+                        <td className="px-3.5 py-2.5 text-xs md:text-sm text-zinc-600 dark:text-zinc-300 hidden md:table-cell whitespace-nowrap">{r.leaveType?.name}</td>
+                        <td className="px-3.5 py-2.5 text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap hidden lg:table-cell">
                           {fmtDate(r.startDate)} – {fmtDate(r.endDate)}
                         </td>
-                        <td className="px-5 py-3.5">
-                          <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{r.totalDays}</span>
-                          <span className="text-xs text-zinc-400 ml-1">hari</span>
+                        <td className="px-3.5 py-2.5 whitespace-nowrap">
+                          <span className="text-xs md:text-sm font-bold text-zinc-900 dark:text-zinc-100">{r.totalDays}</span>
+                          <span className="text-[11px] text-zinc-400 ml-1">hari</span>
                         </td>
-                        <td className="px-5 py-3.5">
+                        <td className="px-3.5 py-2.5 whitespace-nowrap">
                           <span className={badgeClass(r.status)}>{statusLabel(r.status)}</span>
                         </td>
                       </tr>
@@ -1030,31 +1030,31 @@ export default function ReportsPage() {
               <EmptyState message="Belum ada data penggajian yang di-generate untuk bulan/tahun ini. Silakan generate gaji terlebih dahulu di menu Penggajian (Payroll)." />
             ) : (
               <div className="overflow-x-auto max-h-90 overflow-y-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-xs md:text-sm whitespace-nowrap">
                   <thead className="sticky top-0 z-10">
                     <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 text-left">
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Karyawan</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell">Departemen</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Gaji Pokok</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell">Tunjangan</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell">Potongan</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Gaji Bersih</th>
-                      <th className="px-5 py-3 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Status</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Karyawan</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell whitespace-nowrap">Departemen</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Gaji Pokok</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell whitespace-nowrap">Tunjangan</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell whitespace-nowrap">Potongan</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Gaji Bersih</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-50 dark:divide-zinc-850/80">
                     {payRecs.map((r: any, i: number) => (
                       <tr key={i} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors">
-                        <td className="px-5 py-3.5">
-                          <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{r.employeeName ?? r.employee?.fullName}</div>
-                          <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">{r.payrollNumber}</div>
+                        <td className="px-3.5 py-2.5 whitespace-nowrap">
+                          <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs md:text-sm whitespace-nowrap">{r.employeeName ?? r.employee?.fullName}</div>
+                          <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5 whitespace-nowrap">{r.payrollNumber}</div>
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400 hidden md:table-cell">{r.department ?? r.employee?.department?.name ?? '—'}</td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-700 dark:text-zinc-300">{fmtRupiah(r.basicSalary)}</td>
-                        <td className="px-5 py-3.5 text-sm text-zinc-500 dark:text-zinc-400 hidden lg:table-cell">{fmtRupiah(r.totalAllowance)}</td>
-                        <td className="px-5 py-3.5 text-sm text-red-500 hidden lg:table-cell">−{fmtRupiah(r.totalAllDeductions ?? 0)}</td>
-                        <td className="px-5 py-3.5 text-sm font-extrabold text-zinc-900 dark:text-zinc-100">{fmtRupiah(r.netSalary)}</td>
-                        <td className="px-5 py-3.5">
+                        <td className="px-3.5 py-2.5 text-xs md:text-sm text-zinc-500 dark:text-zinc-400 hidden md:table-cell whitespace-nowrap">{r.department ?? r.employee?.department?.name ?? '—'}</td>
+                        <td className="px-3.5 py-2.5 text-xs md:text-sm text-zinc-700 dark:text-zinc-300 whitespace-nowrap">{fmtRupiah(r.basicSalary)}</td>
+                        <td className="px-3.5 py-2.5 text-xs md:text-sm text-zinc-500 dark:text-zinc-400 hidden lg:table-cell whitespace-nowrap">{fmtRupiah(r.totalAllowance)}</td>
+                        <td className="px-3.5 py-2.5 text-xs md:text-sm text-red-500 hidden lg:table-cell whitespace-nowrap">−{fmtRupiah(r.totalAllDeductions ?? 0)}</td>
+                        <td className="px-3.5 py-2.5 text-xs md:text-sm font-extrabold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">{fmtRupiah(r.netSalary)}</td>
+                        <td className="px-3.5 py-2.5 whitespace-nowrap">
                           <span className={badgeClass(r.status)}>{statusLabel(r.status)}</span>
                         </td>
                       </tr>
