@@ -10,7 +10,7 @@ export const checkInSchema = z.object({
   notes: z.string().max(500).optional(),
   photoUrl: z
     .string()
-    .url('URL foto tidak valid')
+    .max(500)
     .optional()
     .describe('URL hasil upload kategori attendance'),
 });
@@ -21,7 +21,7 @@ export const checkOutSchema = z.object({
   notes: z.string().max(500).optional(),
   photoUrl: z
     .string()
-    .url('URL foto tidak valid')
+    .max(500)
     .optional()
     .describe('URL hasil upload kategori attendance'),
 });
