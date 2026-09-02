@@ -95,19 +95,19 @@ export class AuthService {
     );
   }
 
-  private signRefreshToken(u: UserWithEmployee): string {
+  private signRefreshToken(u: UserWithEmployee, rememberMe = false): string {
     return this.jwtService.sign(
       { sub: u.id, username: u.username },
       {
         secret: this.config.getOrThrow<string>('app.jwtRefreshSecret'),
-        expiresIn: this.tokenTtl('app.jwtRefreshTtl'),
+        expiresIn: rememberMe ? '30d' : this.tokenTtl('app.jwtRefreshTtl'),
       },
     );
   }
 
-  private signTemp2FaToken(userId: number): string {
+  private signTemp2FaToken(userId: number, rememberMe = false): string {
     return this.jwtService.sign(
-      { sub: userId, isTemp2FA: true },
+      { sub: userId, isTemp2FA: true, rememberMe },
       {
         secret: this.config.getOrThrow<string>('app.jwtSecret'),
         expiresIn: '5m',
@@ -135,8 +135,9 @@ export class AuthService {
 
   private async buildLoginResponse(
     user: UserWithEmployee,
+    rememberMe = false,
   ): Promise<LoginResponse> {
-    const tokens = await this.issueTokens(user);
+    const tokens = await this.issueTokens(user, rememberMe);
 
     // Get access token TTL in seconds
     const ttlConfig = this.config.getOrThrow<string>('app.jwtAccessTtl');
@@ -236,7 +237,7 @@ export class AuthService {
 
     // Two-Factor Authentication Check
     if (user.twoFactorEnabled && user.twoFactorSecret) {
-      const tempToken = this.signTemp2FaToken(user.id);
+      const tempToken = this.signTemp2FaToken(user.id, input.rememberMe);
       return {
         requires2FA: true,
         tempToken,
@@ -255,24 +256,26 @@ export class AuthService {
     });
 
     this.logger.successfulLogin(user.username, ipAddress || 'unknown', user.id);
-    return this.buildLoginResponse(user);
+    return this.buildLoginResponse(user, input.rememberMe);
   }
 
-  private async issueTokens(user: UserWithEmployee) {
+  private async issueTokens(user: UserWithEmployee, rememberMe = false) {
     const accessToken = this.signAccessToken(user);
-    const refreshToken = this.signRefreshToken(user);
+    const refreshToken = this.signRefreshToken(user, rememberMe);
     const refreshHash = await bcrypt.hash(refreshToken, 10);
 
-    const refreshTtl = this.config.getOrThrow<string>('app.jwtRefreshTtl');
-    let expiryDays = 7;
+    let expiryDays = rememberMe ? 30 : 7;
 
-    if (typeof refreshTtl === 'string') {
-      if (refreshTtl.endsWith('d')) {
-        expiryDays = parseInt(refreshTtl);
-      } else if (refreshTtl.endsWith('h')) {
-        expiryDays = parseInt(refreshTtl) / 24;
-      } else if (refreshTtl.endsWith('m')) {
-        expiryDays = parseInt(refreshTtl) / (24 * 60);
+    if (!rememberMe) {
+      const refreshTtl = this.config.getOrThrow<string>('app.jwtRefreshTtl');
+      if (typeof refreshTtl === 'string') {
+        if (refreshTtl.endsWith('d')) {
+          expiryDays = parseInt(refreshTtl);
+        } else if (refreshTtl.endsWith('h')) {
+          expiryDays = parseInt(refreshTtl) / 24;
+        } else if (refreshTtl.endsWith('m')) {
+          expiryDays = parseInt(refreshTtl) / (24 * 60);
+        }
       }
     }
 
@@ -493,7 +496,7 @@ export class AuthService {
     input: TwoFactorVerifyInput,
     ipAddress?: string,
   ): Promise<LoginResponse> {
-    let payload: { sub: number; isTemp2FA?: boolean };
+    let payload: { sub: number; isTemp2FA?: boolean; rememberMe?: boolean };
     try {
       payload = await this.jwtService.verifyAsync(input.tempToken, {
         secret: this.config.getOrThrow<string>('app.jwtSecret'),
@@ -569,8 +572,9 @@ export class AuthService {
       },
     });
 
+    const rememberMe = input.rememberMe ?? payload.rememberMe ?? false;
     this.logger.successfulLogin(user.username, ipAddress || 'unknown', user.id);
-    return this.buildLoginResponse(user);
+    return this.buildLoginResponse(user, rememberMe);
   }
 
   async disable2Fa(

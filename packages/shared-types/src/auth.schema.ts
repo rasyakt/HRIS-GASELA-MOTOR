@@ -8,6 +8,7 @@ export const loginSchema = z.object({
     .min(8)
     .regex(/[A-Z]/, 'Password harus mengandung huruf besar')
     .regex(/[0-9]/, 'Password harus mengandung angka'),
+  rememberMe: z.boolean().optional(),
 });
 
 export const refreshTokenSchema = z.object({
@@ -27,6 +28,7 @@ export const changePasswordSchema = z
 export const twoFactorVerifySchema = z.object({
   tempToken: z.string().min(1, 'Temporary token wajib diisi'),
   code: z.string().min(6, 'Kode harus minimal 6 karakter').max(30, 'Kode tidak valid'),
+  rememberMe: z.boolean().optional(),
 });
 
 export const twoFactorEnableSchema = z.object({
