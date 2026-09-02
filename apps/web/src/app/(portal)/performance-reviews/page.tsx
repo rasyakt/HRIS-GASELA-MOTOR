@@ -180,11 +180,12 @@ export default function PerformanceReviewsPage() {
   const router = useRouter();
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
+  const canView = !!user && (roleAtLeast(user.role, 'manager') || user.role === 'owner');
   const canManage = !!user && roleAtLeast(user.role, 'manager');
 
   useEffect(() => {
-    if (user && !canManage) router.replace('/dashboard');
-  }, [user, canManage, router]);
+    if (user && !canView) router.replace('/dashboard');
+  }, [user, canView, router]);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -194,7 +195,7 @@ export default function PerformanceReviewsPage() {
   const reviews = useQuery<PerformanceReviewItem[]>({
     queryKey: ['performance-reviews'],
     queryFn: () => authApi<PerformanceReviewItem[]>('/api/performance-reviews'),
-    enabled: canManage,
+    enabled: canView,
   });
 
   const employees = useQuery<EmployeeItem[]>({
@@ -203,7 +204,7 @@ export default function PerformanceReviewsPage() {
       const res = await authApi<{ items: EmployeeItem[] }>('/api/employees?limit=100');
       return res.items ?? [];
     },
-    enabled: canManage,
+    enabled: canView,
   });
 
   const createMut = useMutation({
@@ -278,7 +279,7 @@ export default function PerformanceReviewsPage() {
 
   const isBusy = createMut.isPending || updateMut.isPending;
 
-  if (!user || !canManage) return null;
+  if (!user || !canView) return null;
 
   const selectCls = 'mt-1 block w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400';
 

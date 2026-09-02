@@ -49,6 +49,8 @@ interface NavItem {
   minRole?: UserRole;
   /** Role TEPAT (bukan hierarki) — untuk peran terisolasi seperti landing_admin */
   exactRole?: UserRole;
+  /** Daftar role eksplisit yang diizinkan mengakses menu ini */
+  allowedRoles?: UserRole[];
 }
 
 interface NavGroup {
@@ -60,35 +62,40 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Overview',
     items: [
-      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minRole: 'employee' },
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, allowedRoles: ['employee', 'manager', 'hrd', 'admin', 'owner'] },
+    ],
+  },
+  {
+    label: 'Laporan & Eksekutif',
+    items: [
+      { href: '/reports', label: 'Laporan', icon: BarChart3, allowedRoles: ['manager', 'hrd', 'admin', 'owner'] },
+      { href: '/performance-reviews', label: 'Kinerja', icon: TrendingUp, allowedRoles: ['manager', 'hrd', 'admin', 'owner'] },
+      { href: '/audit-logs', label: 'Audit Log', icon: ShieldCheck, allowedRoles: ['admin', 'owner'] },
     ],
   },
   {
     label: 'Karyawan Mandiri',
     items: [
-      { href: '/attendance', label: 'Kehadiran', icon: Clock, minRole: 'employee' },
-      { href: '/leave', label: 'Cuti', icon: CalendarDays, minRole: 'employee' },
-      { href: '/overtime', label: 'Lembur', icon: Timer, minRole: 'employee' },
-      { href: '/payroll', label: 'Penggajian', icon: ReceiptText, minRole: 'employee' },
-      { href: '/announcements', label: 'Pengumuman', icon: Megaphone, minRole: 'employee' },
-      { href: '/discipline', label: 'Disiplin & SP', icon: ShieldAlert, minRole: 'employee' },
+      { href: '/attendance', label: 'Kehadiran', icon: Clock, allowedRoles: ['employee', 'manager', 'hrd', 'admin'] },
+      { href: '/leave', label: 'Cuti', icon: CalendarDays, allowedRoles: ['employee', 'manager', 'hrd', 'admin'] },
+      { href: '/overtime', label: 'Lembur', icon: Timer, allowedRoles: ['employee', 'manager', 'hrd', 'admin'] },
+      { href: '/payroll', label: 'Penggajian', icon: ReceiptText, allowedRoles: ['employee', 'manager', 'hrd', 'admin'] },
+      { href: '/announcements', label: 'Pengumuman', icon: Megaphone, allowedRoles: ['employee', 'manager', 'hrd', 'admin', 'owner'] },
+      { href: '/discipline', label: 'Disiplin & SP', icon: ShieldAlert, allowedRoles: ['employee', 'manager', 'hrd', 'admin'] },
     ],
   },
   {
     label: 'Manajemen & Review',
     items: [
-      { href: '/approvals', label: 'Persetujuan', icon: CheckCheck, minRole: 'manager' },
-      { href: '/performance-reviews', label: 'Kinerja', icon: TrendingUp, minRole: 'manager' },
-      { href: '/reports', label: 'Laporan', icon: BarChart3, minRole: 'manager' },
+      { href: '/approvals', label: 'Persetujuan', icon: CheckCheck, allowedRoles: ['manager', 'hrd', 'admin'] },
     ],
   },
   {
     label: 'Sistem Admin',
     items: [
-      { href: '/employees', label: 'Karyawan', icon: Users, minRole: 'admin' },
+      { href: '/employees', label: 'Karyawan', icon: Users, allowedRoles: ['admin', 'hrd', 'owner'] },
       { href: '/landing-cms', label: 'Landing Page CMS', icon: Globe, exactRole: 'landing_admin' },
-      { href: '/audit-logs', label: 'Audit Log', icon: ShieldCheck, minRole: 'admin' },
-      { href: '/settings', label: 'Pengaturan', icon: Settings, minRole: 'admin' },
+      { href: '/settings', label: 'Pengaturan', icon: Settings, allowedRoles: ['admin', 'hrd'] },
     ],
   },
 ];
@@ -163,10 +170,11 @@ export default function PortalLayout({
     if (!user) return [];
     return NAV_GROUPS.map((group) => ({
       ...group,
-      items: group.items.filter(
-        (item) =>
-          item.exactRole ? user.role === item.exactRole : roleAtLeast(user.role, item.minRole ?? 'employee'),
-      ),
+      items: group.items.filter((item) => {
+        if (item.allowedRoles) return item.allowedRoles.includes(user.role);
+        if (item.exactRole) return user.role === item.exactRole;
+        return roleAtLeast(user.role, item.minRole ?? 'employee');
+      }),
     })).filter((group) => group.items.length > 0);
   }, [user]);
 

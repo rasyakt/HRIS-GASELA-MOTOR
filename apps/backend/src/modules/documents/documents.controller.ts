@@ -45,7 +45,7 @@ export class DocumentsController {
 
   @Post()
   @ApiOperation({ summary: 'Tambah dokumen karyawan' })
-  @Roles('admin', 'hrd', 'owner')
+  @Roles('admin', 'hrd')
   async create(
     @Body(new ZodValidationPipe()) dto: CreateDocumentDto,
   ): Promise<DocumentItem> {

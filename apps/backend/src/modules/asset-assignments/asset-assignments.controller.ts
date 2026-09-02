@@ -49,15 +49,15 @@ export class AssetAssignmentsController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Tambah penugasan aset (admin/hrd/owner)' })
-  @Roles('admin', 'hrd', 'owner')
+  @ApiOperation({ summary: 'Tambah penugasan aset (admin/hrd)' })
+  @Roles('admin', 'hrd')
   async create(@Body(new ZodValidationPipe()) dto: CreateAssetAssignmentDto) {
     return this.assetAssignmentsService.create(dto);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Perbarui penugasan aset (admin/hrd/owner)' })
-  @Roles('admin', 'hrd', 'owner')
+  @ApiOperation({ summary: 'Perbarui penugasan aset (admin/hrd)' })
+  @Roles('admin', 'hrd')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body(new ZodValidationPipe()) dto: UpdateAssetAssignmentDto,
@@ -67,7 +67,7 @@ export class AssetAssignmentsController {
 
   @Patch(':id/return')
   @ApiOperation({ summary: 'Kembalikan aset (tandai status returned dengan tanggal hari ini)' })
-  @Roles('admin', 'hrd', 'owner')
+  @Roles('admin', 'hrd')
   async returnAsset(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: { conditionNotes?: string },
@@ -76,8 +76,8 @@ export class AssetAssignmentsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Hapus penugasan aset (admin/hrd/owner)' })
-  @Roles('admin', 'hrd', 'owner')
+  @ApiOperation({ summary: 'Hapus penugasan aset (admin/hrd)' })
+  @Roles('admin', 'hrd')
   async delete(@Param('id', ParseIntPipe) id: number) {
     await this.assetAssignmentsService.delete(id);
   }
