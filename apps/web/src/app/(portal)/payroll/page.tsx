@@ -710,10 +710,10 @@ export default function PayrollPage() {
               ) : data && data.items.length > 0 ? (
                 <>
                   <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
-                    <table className="w-full text-sm">
+                    <table className="w-full text-xs md:text-sm whitespace-nowrap">
                       <thead>
                         <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400">
-                          <th className="p-3">
+                          <th className="px-3.5 py-3 w-8 whitespace-nowrap">
                             <input
                               type="checkbox"
                               className="size-4 accent-zinc-900 dark:accent-amber-500 disabled:opacity-30 disabled:cursor-not-allowed"
@@ -733,29 +733,29 @@ export default function PayrollPage() {
                               }}
                             />
                           </th>
-                          <th className="p-3">No.</th>
-                          <th className="p-3">Nama</th>
-                          <th className="p-3">Periode</th>
-                          <th className="p-3 text-right">
+                          <th className="px-3.5 py-3 whitespace-nowrap">No.</th>
+                          <th className="px-3.5 py-3 whitespace-nowrap">Nama</th>
+                          <th className="px-3.5 py-3 whitespace-nowrap">Periode</th>
+                          <th className="px-3.5 py-3 text-right whitespace-nowrap">
                             Gaji Bruto
                           </th>
-                          <th className="p-3 text-right">
+                          <th className="px-3.5 py-3 text-right whitespace-nowrap">
                             Gaji Bersih
                           </th>
-                          <th className="p-3">Status</th>
-                          <th className="p-3">Aksi</th>
+                          <th className="px-3.5 py-3 whitespace-nowrap">Status</th>
+                          <th className="px-3.5 py-3 whitespace-nowrap">Aksi</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/80">
                         {data.items.map((r) => {
                           const selectable =
                             r.status === 'draft' || r.status === 'approved';
                           return (
                             <tr
                               key={r.id}
-                              className="border-b border-zinc-100 dark:border-zinc-800/80 hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors last:border-0"
+                              className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors"
                             >
-                              <td className="p-3">
+                              <td className="px-3.5 py-2.5 whitespace-nowrap">
                                 {selectable && (
                                   <input
                                     type="checkbox"
@@ -765,27 +765,27 @@ export default function PayrollPage() {
                                   />
                                 )}
                               </td>
-                              <td className="p-3 font-medium text-zinc-900 dark:text-zinc-100">
+                              <td className="px-3.5 py-2.5 font-medium text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
                                 {r.payrollNumber}
                               </td>
-                              <td className="p-3 text-zinc-900 dark:text-zinc-100 font-medium">
+                              <td className="px-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 font-medium whitespace-nowrap">
                                 {r.employeeName}
                               </td>
-                              <td className="p-3 text-zinc-600 dark:text-zinc-300">
+                              <td className="px-3.5 py-2.5 text-zinc-600 dark:text-zinc-300 whitespace-nowrap">
                                 {fmtMonthYear(r.month, r.year)}
                               </td>
-                              <td className="p-3 text-right text-zinc-600 dark:text-zinc-300 font-mono">
+                              <td className="px-3.5 py-2.5 text-right text-zinc-600 dark:text-zinc-300 font-mono whitespace-nowrap">
                                 {fmtRupiah(r.grossSalary)}
                               </td>
-                              <td className="p-3 text-right font-semibold text-zinc-900 dark:text-zinc-100 font-mono">
+                              <td className="px-3.5 py-2.5 text-right font-semibold text-zinc-900 dark:text-zinc-100 font-mono whitespace-nowrap">
                                 {fmtRupiah(r.netSalary)}
                               </td>
-                              <td className="p-3">
-                                <Badge className={badgeClass(r.status)}>
+                              <td className="px-3.5 py-2.5 whitespace-nowrap">
+                                <Badge className={`${badgeClass(r.status)} whitespace-nowrap`}>
                                   {statusLabel(r.status)}
                                 </Badge>
                               </td>
-                              <td className="p-3">
+                              <td className="px-3.5 py-2.5 whitespace-nowrap">
                                 <Button
                                   variant="outline"
                                   size="sm"

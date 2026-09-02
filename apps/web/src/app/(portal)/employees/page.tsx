@@ -574,42 +574,42 @@ export default function EmployeesPage() {
 
               {/* Desktop View (Table) */}
               <div className="hidden lg:block overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
-                <table className="w-full text-sm">
+                <table className="w-full text-xs md:text-sm whitespace-nowrap">
                   <thead>
                     <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400">
-                      <th className="p-3">NIK</th>
-                      <th className="p-3">Nama</th>
-                      <th className="p-3">Email</th>
-                      <th className="p-3">Departemen</th>
-                      <th className="p-3">Posisi</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3">Tipe</th>
-                      <th className="p-3">Bergabung</th>
+                      <th className="px-3.5 py-3 whitespace-nowrap">NIK</th>
+                      <th className="px-3.5 py-3 whitespace-nowrap">Nama</th>
+                      <th className="px-3.5 py-3 whitespace-nowrap">Email</th>
+                      <th className="px-3.5 py-3 whitespace-nowrap">Departemen</th>
+                      <th className="px-3.5 py-3 whitespace-nowrap">Posisi</th>
+                      <th className="px-3.5 py-3 whitespace-nowrap">Status</th>
+                      <th className="px-3.5 py-3 whitespace-nowrap">Tipe</th>
+                      <th className="px-3.5 py-3 whitespace-nowrap">Bergabung</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-zinc-50 dark:divide-zinc-850/80">
                     {data.items.map((e) => (
                       <tr
                         key={e.id}
                         onClick={() => handleOpenDetail(e)}
-                        className="cursor-pointer border-b border-zinc-100 dark:border-zinc-800/80 hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors last:border-0"
+                        className="cursor-pointer hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors"
                       >
-                        <td className="p-3 font-semibold text-zinc-900 dark:text-zinc-100">{e.employeeNumber}</td>
-                        <td className="p-3 font-medium text-zinc-900 dark:text-zinc-100">{e.fullName}</td>
-                        <td className="p-3 text-zinc-500 dark:text-zinc-400">{e.email}</td>
-                        <td className="p-3 text-zinc-600 dark:text-zinc-300">{e.department?.name ?? '—'}</td>
-                        <td className="p-3 text-zinc-600 dark:text-zinc-300">{e.position?.name ?? '—'}</td>
-                        <td className="p-3">
-                          <Badge className={`${badgeClass(e.employmentStatus)} border-0`}>
+                        <td className="px-3.5 py-2.5 font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">{e.employeeNumber}</td>
+                        <td className="px-3.5 py-2.5 font-medium text-zinc-900 dark:text-zinc-100 whitespace-nowrap">{e.fullName}</td>
+                        <td className="px-3.5 py-2.5 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">{e.email ?? '—'}</td>
+                        <td className="px-3.5 py-2.5 text-zinc-600 dark:text-zinc-300 whitespace-nowrap">{e.department?.name ?? '—'}</td>
+                        <td className="px-3.5 py-2.5 text-zinc-600 dark:text-zinc-300 whitespace-nowrap">{e.position?.name ?? '—'}</td>
+                        <td className="px-3.5 py-2.5 whitespace-nowrap">
+                          <Badge className={`${badgeClass(e.employmentStatus)} border-0 whitespace-nowrap`}>
                             {e.employmentStatus}
                           </Badge>
                         </td>
-                        <td className="p-3">
-                          <Badge className={`${badgeClass(e.employmentType)} border-0`}>
+                        <td className="px-3.5 py-2.5 whitespace-nowrap">
+                          <Badge className={`${badgeClass(e.employmentType)} border-0 whitespace-nowrap`}>
                             {e.employmentType}
                           </Badge>
                         </td>
-                        <td className="p-3 text-zinc-500 dark:text-zinc-400">{fmtDate(e.joinDate)}</td>
+                        <td className="px-3.5 py-2.5 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">{fmtDate(e.joinDate)}</td>
                       </tr>
                     ))}
                   </tbody>
