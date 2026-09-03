@@ -52,10 +52,10 @@ export class AttendancesController {
     return this.attendancesService.list(query);
   }
 
-  @Roles('admin', 'hrd')
+  @Roles('superadmin')
   @Post('cleanup-photos')
   @ApiOperation({
-    summary: 'Pembersihan otomatis file foto presensi lama (auto-retention)',
+    summary: 'Pembersihan otomatis file foto presensi lama (khusus superadmin developer)',
   })
   cleanupPhotos(@Body('days') days?: number) {
     return this.retentionService.cleanupOldPhotos(days);

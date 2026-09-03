@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { 
+  ArrowLeft,
   User, 
   Lock, 
   Key, 
@@ -29,8 +31,17 @@ import { badgeClass, fmtDate } from '@/lib/format';
 import { TwoFactorAuthCard } from '@/components/profile/TwoFactorAuthCard';
 
 export default function ProfilePage() {
+  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const authApi = useAuthApi();
+
+  const handleBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/dashboard');
+    }
+  };
 
   // Change Password Form States
   const [oldPassword, setOldPassword] = useState('');
@@ -98,6 +109,20 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
+      {/* Tombol Navigasi Kembali */}
+      <div className="flex items-center justify-between">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleBack}
+          className="group inline-flex items-center gap-2 rounded-xl border-zinc-200/80 bg-white px-3.5 py-2 text-xs font-semibold text-zinc-700 shadow-2xs hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-white transition-all cursor-pointer"
+        >
+          <ArrowLeft className="size-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
+          <span>Kembali ke Halaman Sebelumnya</span>
+        </Button>
+      </div>
+
       {/* Upper Welcome Banner */}
       <div className="relative overflow-hidden rounded-xl bg-zinc-900 p-6 text-white shadow-md lg:p-8">
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

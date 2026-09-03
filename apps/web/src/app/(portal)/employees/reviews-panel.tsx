@@ -343,7 +343,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
                   <p className="text-xs text-zinc-600 mt-1 truncate">{r.strengths}</p>
                 )}
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-1 shrink-0">
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
                     r.status === 'completed'

@@ -25,6 +25,13 @@ const EMPLOYEE_INCLUDE = {
 } satisfies Prisma.EmployeeInclude;
 
 import { sanitizeSearchString } from '../../common/utils/sanitize-search';
+import type {
+  CreateUserAccountInput,
+  UpdateUserAccountInput,
+  ResetUserPasswordInput,
+  CreateFamilyMemberInput,
+  UpdateFamilyMemberInput,
+} from './dto/employee.dto';
 
 @Injectable()
 export class EmployeesService {
@@ -33,7 +40,13 @@ export class EmployeesService {
   async list(query: EmployeeQuery): Promise<Paginated<unknown>> {
     const page = query.page ?? 1;
     const limit = Math.min(query.limit ?? 20, 100);
-    const where: Prisma.EmployeeWhereInput = { isActive: true };
+
+    // BUG-009 FIX: Tambah dukungan includeInactive agar HRD bisa melihat
+    // karyawan yang sudah resign/nonaktif untuk audit historis
+    const where: Prisma.EmployeeWhereInput = {};
+    if (!(query as any).includeInactive) {
+      where.isActive = true;
+    }
 
     const search = sanitizeSearchString(query.search);
     if (search) {
@@ -214,9 +227,17 @@ export class EmployeesService {
   }
 
   async deactivate(id: number) {
-    const employee = await this.prisma.employee.findUnique({ where: { id } });
+    const employee = await this.prisma.employee.findUnique({
+      where: { id },
+      include: { user: true },
+    });
     if (!employee) {
       throw new NotFoundException(`Karyawan #${id} tidak ditemukan`);
+    }
+    if ((employee.user?.role as string) === 'superadmin') {
+      throw new ForbiddenException(
+        'Akun Superadmin bersifat permanen dan tidak dapat dihapus atau dinonaktifkan',
+      );
     }
     if (employee.isActive === false) {
       return employee;
@@ -235,9 +256,20 @@ export class EmployeesService {
     return this.getById(id);
   }
 
-  async createAccount(employeeId: number, input: any, currentUser?: AuthUser) {
-    if (input.role === 'owner' && currentUser?.role !== 'owner') {
-      throw new ForbiddenException('Hanya Owner yang dapat menetapkan peran Owner');
+  // BUG-019 FIX: Gunakan tipe eksplisit dari DTO, bukan any
+  // Sebelumnya input: any menghilangkan type safety dan IDE support
+  async createAccount(
+    employeeId: number,
+    input: CreateUserAccountInput,
+    currentUser?: AuthUser,
+  ) {
+    if ((input.role as string) === 'superadmin') {
+      throw new ForbiddenException(
+        'Role superadmin bersifat permanen dan tidak dapat dibuat akun baru',
+      );
+    }
+    if (input.role === 'owner' && currentUser?.role !== 'owner' && currentUser?.role !== 'superadmin') {
+      throw new ForbiddenException('Hanya Owner atau Superadmin yang dapat menetapkan peran Owner');
     }
 
     const employee = await this.prisma.employee.findUnique({
@@ -267,7 +299,7 @@ export class EmployeesService {
         employeeId,
         username: input.username,
         passwordHash,
-        role: input.role,
+        role: input.role as any,
       },
       select: {
         id: true,
@@ -278,7 +310,12 @@ export class EmployeesService {
     });
   }
 
-  async updateAccount(employeeId: number, input: any, currentUser?: AuthUser) {
+  // BUG-019 FIX: Gunakan tipe eksplisit
+  async updateAccount(
+    employeeId: number,
+    input: UpdateUserAccountInput,
+    currentUser?: AuthUser,
+  ) {
     const employee = await this.prisma.employee.findUnique({
       where: { id: employeeId },
       include: { user: true },
@@ -287,11 +324,35 @@ export class EmployeesService {
       throw new NotFoundException(`Akun karyawan #${employeeId} tidak ditemukan`);
     }
 
-    if (employee.user.role === 'owner' && currentUser?.role !== 'owner') {
-      throw new ForbiddenException('Hanya Owner yang dapat memodifikasi akun Owner');
+    if ((input.role as string) === 'superadmin') {
+      throw new ForbiddenException(
+        'Role superadmin bersifat permanen dan tidak dapat ditetapkan ke akun lain',
+      );
     }
-    if (input.role === 'owner' && currentUser?.role !== 'owner') {
-      throw new ForbiddenException('Hanya Owner yang dapat menetapkan peran Owner');
+
+    if ((employee.user.role as string) === 'superadmin') {
+      if (input.isActive === false) {
+        throw new ForbiddenException(
+          'Akun Superadmin bersifat permanen dan tidak dapat dinonaktifkan',
+        );
+      }
+      if (input.role && (input.role as string) !== 'superadmin') {
+        throw new ForbiddenException(
+          'Role Superadmin bersifat permanen dan tidak dapat diubah',
+        );
+      }
+      if (currentUser?.role !== 'superadmin') {
+        throw new ForbiddenException(
+          'Hanya Superadmin itu sendiri yang dapat memodifikasi akun Superadmin',
+        );
+      }
+    }
+
+    if (employee.user.role === 'owner' && currentUser?.role !== 'owner' && currentUser?.role !== 'superadmin') {
+      throw new ForbiddenException('Hanya Owner atau Superadmin yang dapat memodifikasi akun Owner');
+    }
+    if (input.role === 'owner' && currentUser?.role !== 'owner' && currentUser?.role !== 'superadmin') {
+      throw new ForbiddenException('Hanya Owner atau Superadmin yang dapat menetapkan peran Owner');
     }
 
     if (input.username && input.username !== employee.user.username) {
@@ -304,7 +365,12 @@ export class EmployeesService {
     }
 
     // SECURITY: Invalidate JWT if role changes
-    const updateData = { ...input };
+    // Gunakan tipe Prisma.UserUpdateInput untuk menampung semua field yang mungkin
+    const updateData: Record<string, unknown> = {
+      ...(input.username !== undefined && { username: input.username }),
+      ...(input.role !== undefined && { role: input.role as any }),
+      ...(input.isActive !== undefined && { isActive: input.isActive }),
+    };
     if (input.role && input.role !== employee.user.role) {
       updateData.jwtVersion = { increment: 1 };
       updateData.refreshTokenHash = null;
@@ -313,7 +379,7 @@ export class EmployeesService {
 
     return this.prisma.user.update({
       where: { employeeId },
-      data: updateData,
+      data: updateData as any,
       select: {
         id: true,
         username: true,
@@ -323,7 +389,12 @@ export class EmployeesService {
     });
   }
 
-  async resetPassword(employeeId: number, input: any, currentUser?: AuthUser) {
+  // BUG-019 FIX: Gunakan tipe eksplisit
+  async resetPassword(
+    employeeId: number,
+    input: ResetUserPasswordInput,
+    currentUser?: AuthUser,
+  ) {
     const employee = await this.prisma.employee.findUnique({
       where: { id: employeeId },
       include: { user: true },
@@ -332,8 +403,14 @@ export class EmployeesService {
       throw new NotFoundException(`Akun karyawan #${employeeId} tidak ditemukan`);
     }
 
-    if (employee.user.role === 'owner' && currentUser?.role !== 'owner') {
-      throw new ForbiddenException('Hanya Owner yang dapat mereset password akun Owner');
+    if ((employee.user.role as string) === 'superadmin' && currentUser?.role !== 'superadmin') {
+      throw new ForbiddenException(
+        'Hanya Superadmin itu sendiri yang dapat mereset password akun Superadmin',
+      );
+    }
+
+    if (employee.user.role === 'owner' && currentUser?.role !== 'owner' && currentUser?.role !== 'superadmin') {
+      throw new ForbiddenException('Hanya Owner atau Superadmin yang dapat mereset password akun Owner');
     }
 
     // Validate password complexity
@@ -406,7 +483,7 @@ export class EmployeesService {
     }
   }
 
-  async addFamilyMember(employeeId: number, input: any) {
+  async addFamilyMember(employeeId: number, input: CreateFamilyMemberInput) {
     await this.getById(employeeId);
     return this.prisma.familyMember.create({
       data: {
@@ -421,7 +498,7 @@ export class EmployeesService {
     });
   }
 
-  async updateFamilyMember(familyId: number, input: any) {
+  async updateFamilyMember(familyId: number, input: UpdateFamilyMemberInput) {
     const family = await this.prisma.familyMember.findUnique({ where: { id: familyId } });
     if (!family) throw new NotFoundException(`Anggota keluarga #${familyId} tidak ditemukan`);
     return this.prisma.familyMember.update({

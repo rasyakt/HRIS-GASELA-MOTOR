@@ -5,12 +5,14 @@ export const ROLE_ORDER: Partial<Record<UserRole, number>> = {
   manager: 1,
   hrd: 2,
   admin: 3,
+  owner: 4,
+  superadmin: 5,
 };
 
 export function roleAtLeast(role: UserRole, min: UserRole): boolean {
+  if (role === 'superadmin') return true;
   const r = ROLE_ORDER[role];
   const m = ROLE_ORDER[min];
-  // Role di luar hierarki HRIS operasional (owner, landing_admin) tidak lolos hierarki operasional
   if (r === undefined || m === undefined) return false;
   return r >= m;
 }
@@ -19,12 +21,17 @@ export function isOwner(role?: UserRole): boolean {
   return role === 'owner';
 }
 
+export function isSuperAdmin(role?: UserRole): boolean {
+  return role === 'superadmin';
+}
+
 export const ROLE_LABEL: Record<UserRole, string> = {
   employee: 'Karyawan',
   manager: 'Manager',
   hrd: 'HRD',
   admin: 'Admin',
   owner: 'Owner (Executive)',
+  superadmin: 'Superadmin (Developer)',
   landing_admin: 'Admin Landing',
 };
 

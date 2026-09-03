@@ -86,8 +86,15 @@ export class OvertimeService {
 
     const datePrefix = dayKey(new Date()).replace(/-/g, '');
     const randSuffix = crypto.randomBytes(2).toString('hex').toUpperCase();
-    const count = await this.prisma.overtimeRequest.count();
-    const requestNumber = `OT-${datePrefix}-${String(count + 1).padStart(3, '0')}${randSuffix}`;
+    // BUG-004 FIX: Gunakan ID terakhir bukan count() untuk penomoran
+    // count() bermasalah jika ada record yang di-delete (cancel → delete):
+    // count=3 setelah hapus 2 dari 5 → nomor OT-XXXX-004 bisa duplikat!
+    const lastOt = await this.prisma.overtimeRequest.findFirst({
+      orderBy: { id: 'desc' },
+      select: { id: true },
+    });
+    const nextSeq = (lastOt?.id ?? 0) + 1;
+    const requestNumber = `OT-${datePrefix}-${String(nextSeq).padStart(3, '0')}${randSuffix}`;
 
     return this.toRequestDto(
       await this.prisma.overtimeRequest.create({

@@ -445,7 +445,7 @@ export default function LandingCmsPage() {
 
   if (!user || !isAdmin) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
+      <div className="flex min-h-100 items-center justify-center">
         <div className="flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-6 py-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
           <AlertTriangle className="size-5 shrink-0" />
           Akses ditolak — halaman ini khusus akun Admin Landing Page (landing_admin).
@@ -456,7 +456,7 @@ export default function LandingCmsPage() {
 
   if (contentQuery.isLoading) {
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center gap-3">
+      <div className="flex min-h-100 flex-col items-center justify-center gap-3">
         <Loader2 className="size-8 animate-spin text-amber-500" />
         <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Memuat data konten landing page…</p>
       </div>
@@ -465,7 +465,7 @@ export default function LandingCmsPage() {
 
   if (contentQuery.isError || !loadedDraft) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
+      <div className="flex min-h-100 items-center justify-center">
         <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
           Gagal memuat konten landing page dari server. Pastikan koneksi backend aktif.
         </div>
@@ -482,9 +482,6 @@ export default function LandingCmsPage() {
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
               Landing Page CMS
             </h1>
-            <Badge className="bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300 border-amber-300 dark:border-amber-500/30">
-              <Sparkles className="size-3 mr-1" /> Live Sync
-            </Badge>
           </div>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl">
             Kelola teks, foto, dan struktur publik{' '}

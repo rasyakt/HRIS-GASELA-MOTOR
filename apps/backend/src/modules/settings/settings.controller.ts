@@ -14,6 +14,8 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { SettingsService } from './settings.service';
+import type { AuthUser } from '@gasela/shared-types';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import {
   CreateHolidayDto,
   HolidayQueryDto,
@@ -36,10 +38,13 @@ export class SettingsController {
   @Roles('admin', 'hrd')
   @Put('company')
   @ApiOperation({
-    summary: 'Perbarui satu pengaturan perusahaan (admin/hrd)',
+    summary: 'Perbarui satu pengaturan perusahaan (admin/hrd/superadmin)',
   })
-  updateCompanySetting(@Body() body: UpdateCompanySettingDto) {
-    return this.settingsService.updateCompanySetting(body);
+  updateCompanySetting(
+    @CurrentUser() user: AuthUser,
+    @Body() body: UpdateCompanySettingDto,
+  ) {
+    return this.settingsService.updateCompanySetting(body, user);
   }
 
   @Roles('admin', 'hrd')

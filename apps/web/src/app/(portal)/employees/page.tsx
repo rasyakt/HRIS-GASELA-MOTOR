@@ -141,7 +141,7 @@ export default function EmployeesPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (user && !roleAtLeast(user.role, 'admin') && user.role !== 'owner') {
+    if (user && !roleAtLeast(user.role, 'hrd') && user.role !== 'owner') {
       router.replace('/dashboard');
     }
   }, [user, router]);
@@ -402,7 +402,7 @@ export default function EmployeesPage() {
     }
   };
 
-  if (!user || (!roleAtLeast(user.role, 'admin') && user.role !== 'owner')) {
+  if (!user || (!roleAtLeast(user.role, 'hrd') && user.role !== 'owner')) {
     return null;
   }
 
@@ -417,7 +417,7 @@ export default function EmployeesPage() {
             Daftar, kelola, dan simpan dokumen karyawan GASELA MOTOR.
           </p>
         </div>
-        {user && roleAtLeast(user.role, 'admin') && (
+        {user && (roleAtLeast(user.role, 'hrd') || user.role === 'owner') && (
           <Button onClick={handleOpenCreate}>
             <Plus className="mr-1.5 size-4" />
             Karyawan Baru
@@ -665,7 +665,7 @@ export default function EmployeesPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                  {selectedEmployeeId && !isEditMode && user && roleAtLeast(user.role, 'admin') && (
+                  {selectedEmployeeId && !isEditMode && user && (roleAtLeast(user.role, 'hrd') || user.role === 'owner') && (
                     <Button onClick={() => setIsEditMode(true)} variant="outline" size="sm">
                       <Edit className="mr-1.5 size-4" />
                       Ubah
@@ -1260,7 +1260,7 @@ export default function EmployeesPage() {
               </div>
 
               {/* Bottom Actions footer */}
-              {isEditMode && user && roleAtLeast(user.role, 'admin') && (drawerTab === 'profile' || drawerTab === 'job' || !selectedEmployeeId) && (
+              {isEditMode && user && (roleAtLeast(user.role, 'hrd') || user.role === 'owner') && (drawerTab === 'profile' || drawerTab === 'job' || !selectedEmployeeId) && (
                 <div className="border-t border-zinc-100 bg-zinc-50/50 p-6 flex items-center justify-between gap-3 shrink-0">
                   {selectedEmployeeId ? (
                     <Button

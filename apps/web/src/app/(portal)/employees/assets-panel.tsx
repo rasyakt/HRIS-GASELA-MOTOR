@@ -293,7 +293,7 @@ export function AssetPanel({ employeeId }: { employeeId: number }) {
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-1 shrink-0">
                 {a.status === 'assigned' && (
                   <button
                     type="button"

@@ -319,24 +319,55 @@ export class LeavesService {
       }
     }
 
+    // BUG-004 FIX: Gunakan ID terakhir bukan count() untuk penomoran
+    // count() akan bermasalah jika ada record yang dihapus (cancel)
+    // karena nomor bisa duplikat setelah delete
     const datePrefix = dayKey(new Date()).replace(/-/g, '');
     const randSuffix = crypto.randomBytes(2).toString('hex').toUpperCase();
-    const count = await this.prisma.leaveRequest.count();
-    const requestNumber = `LV-${datePrefix}-${String(count + 1).padStart(3, '0')}${randSuffix}`;
+    const lastRequest = await this.prisma.leaveRequest.findFirst({
+      orderBy: { id: 'desc' },
+      select: { id: true },
+    });
+    const nextSeq = (lastRequest?.id ?? 0) + 1;
+    const requestNumber = `LV-${datePrefix}-${String(nextSeq).padStart(3, '0')}${randSuffix}`;
 
+    // BUG-003 FIX: Gunakan transaksi agar tidak ada race condition
+    // Sebelumnya: read balance → jeda → bisa submit 2 cuti sekaligus → keduanya lolos
+    // Sekarang: operasi atomik dalam $transaction
     return this.toRequestDto(
-      await this.prisma.leaveRequest.create({
-        data: {
-          requestNumber,
-          employeeId,
-          leaveTypeId: type.id,
-          startDate: start,
-          endDate: end,
-          totalDays: days,
-          reason: input.reason,
-          documentUrl: input.documentUrl,
-        },
-        include: this.requestInclude,
+      await this.prisma.$transaction(async (tx) => {
+        // Re-check balance di dalam transaksi untuk memastikan tidak ada race condition
+        if (type.annualQuota > 0) {
+          const currentBalance = await tx.leaveBalance.findUnique({
+            where: {
+              employeeId_leaveTypeId_year: {
+                employeeId,
+                leaveTypeId: type.id,
+                year: start.getUTCFullYear(),
+              },
+            },
+          });
+          const remainingBalance = currentBalance?.remaining ?? type.annualQuota;
+          if (remainingBalance < days) {
+            throw new ConflictException(
+              `Saldo tidak cukup (tersisa ${remainingBalance} hari)`,
+            );
+          }
+        }
+
+        return tx.leaveRequest.create({
+          data: {
+            requestNumber,
+            employeeId,
+            leaveTypeId: type.id,
+            startDate: start,
+            endDate: end,
+            totalDays: days,
+            reason: input.reason,
+            documentUrl: input.documentUrl,
+          },
+          include: this.requestInclude,
+        });
       }),
     );
   }

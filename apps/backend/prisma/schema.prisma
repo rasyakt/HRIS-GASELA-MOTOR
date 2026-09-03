@@ -94,6 +94,7 @@ enum UserRole {
   employee
   owner
   landing_admin
+  superadmin
 }
 
 enum DocumentType {

@@ -29,7 +29,7 @@ describe('PayrollService', () => {
       },
       overtimeRequest: { findMany: jest.fn(), aggregate: jest.fn() },
       holiday: { findMany: jest.fn() },
-      terRate: { findFirst: jest.fn() },
+      terRate: { findFirst: jest.fn(), findMany: jest.fn() },
       $transaction: jest.fn(),
     };
     const module = await Test.createTestingModule({
@@ -122,16 +122,22 @@ describe('PayrollService', () => {
       prisma.payroll.count.mockResolvedValue(0);
       prisma.overtimeRequest.findMany.mockResolvedValue([
         {
+          id: 1,
+          employeeId: 2,
           overtimeDate: new Date('2026-08-10'),
           hours: 10,
         },
       ]);
-      prisma.terRate.findFirst.mockResolvedValue({
-        category: 'A',
-        incomeFrom: 6_300_000,
-        incomeTo: 6_750_000,
-        ratePercent: 1,
-      });
+      const mockTer = [
+        {
+          category: 'A',
+          incomeFrom: 6_300_000,
+          incomeTo: 6_750_000,
+          ratePercent: 1,
+        },
+      ];
+      prisma.terRate.findMany.mockResolvedValue(mockTer);
+      prisma.terRate.findFirst.mockResolvedValue(mockTer[0]);
       prisma.payroll.create.mockImplementation(
         ({ data }: { data: Record<string, unknown> }) =>
           Promise.resolve({
