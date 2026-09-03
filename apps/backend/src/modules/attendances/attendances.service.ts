@@ -15,9 +15,21 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 const TIME_RE = /^(\d{2}):(\d{2})(?::(\d{2}))?$/;
 
+/** Mengubah Date ke representasi waktu WIB 1970-01-01THH:mm:ssZ untuk kolom @db.Time() Prisma */
+function nowToWibTimeDate(date: Date = new Date()): Date {
+  const wib = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+  const hh = String(wib.getUTCHours()).padStart(2, '0');
+  const mm = String(wib.getUTCMinutes()).padStart(2, '0');
+  const ss = String(wib.getUTCSeconds()).padStart(2, '0');
+  return new Date(`1970-01-01T${hh}:${mm}:${ss}Z`);
+}
+
 function toMinutes(value: unknown): number | null {
   if (value === null || value === undefined) return null;
   if (value instanceof Date) {
+    if (value.getUTCFullYear() <= 1970) {
+      return value.getUTCHours() * 60 + value.getUTCMinutes();
+    }
     const wib = new Date(value.getTime() + 7 * 60 * 60 * 1000);
     return wib.getUTCHours() * 60 + wib.getUTCMinutes();
   }
@@ -29,6 +41,12 @@ function toMinutes(value: unknown): number | null {
 
 function toTimeString(value: unknown): string | null {
   if (value instanceof Date) {
+    if (value.getUTCFullYear() <= 1970) {
+      const hh = String(value.getUTCHours()).padStart(2, '0');
+      const mm = String(value.getUTCMinutes()).padStart(2, '0');
+      const ss = String(value.getUTCSeconds()).padStart(2, '0');
+      return `${hh}:${mm}:${ss}`;
+    }
     const wib = new Date(value.getTime() + 7 * 60 * 60 * 1000);
     const hh = String(wib.getUTCHours()).padStart(2, '0');
     const mm = String(wib.getUTCMinutes()).padStart(2, '0');
@@ -118,12 +136,14 @@ export class AttendancesService {
       throw new ConflictException('Anda sudah check-in hari ini');
     }
 
+    const wibTime = nowToWibTimeDate(now);
+
     const attendance = await this.prisma.attendance.upsert({
       where: {
         uq_employee_date: { employeeId, attendanceDate: today },
       },
       update: {
-        checkInTime: now,
+        checkInTime: wibTime,
         checkInLat: input.latitude,
         checkInLng: input.longitude,
         shiftId: shift?.id ?? null,
@@ -135,7 +155,7 @@ export class AttendancesService {
       create: {
         employeeId,
         attendanceDate: today,
-        checkInTime: now,
+        checkInTime: wibTime,
         checkInLat: input.latitude,
         checkInLng: input.longitude,
         shiftId: shift?.id ?? null,
@@ -150,7 +170,7 @@ export class AttendancesService {
       attendanceId: attendance.id,
       status,
       checkInTime:
-        toTimeString(attendance.checkInTime) ?? toTimeString(now) ?? '',
+        toTimeString(attendance.checkInTime) ?? toTimeString(wibTime) ?? '',
       lateMinutes,
       distanceFromOfficeMeters: Math.round(distance),
     };
@@ -184,8 +204,9 @@ export class AttendancesService {
     }
 
     const now = new Date();
+    const wibTime = nowToWibTimeDate(now);
     const checkInMin = toMinutes(attendance.checkInTime) ?? 0;
-    const checkOutMin = toMinutes(now) ?? (now.getHours() * 60 + now.getMinutes());
+    const checkOutMin = toMinutes(now) ?? 0;
     const workedMinutes = Math.max(0, checkOutMin - checkInMin);
     const shiftEnd = toMinutes(
       attendance.shiftId
@@ -203,7 +224,7 @@ export class AttendancesService {
     const updated = await this.prisma.attendance.update({
       where: { id: attendance.id },
       data: {
-        checkOutTime: now,
+        checkOutTime: wibTime,
         checkOutLat: input.latitude,
         checkOutLng: input.longitude,
         earlyLeaveMinutes,
@@ -218,7 +239,7 @@ export class AttendancesService {
       attendanceId: updated.id,
       status: updated.status,
       checkOutTime:
-        toTimeString(updated.checkOutTime) ?? toTimeString(now) ?? '',
+        toTimeString(updated.checkOutTime) ?? toTimeString(wibTime) ?? '',
       workHours: updated.workHours,
       earlyLeaveMinutes,
       distanceFromOfficeMeters: Math.round(distance),

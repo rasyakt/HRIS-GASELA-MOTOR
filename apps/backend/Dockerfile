@@ -37,8 +37,12 @@ RUN cp -r /app/apps/backend/dist /prod/backend/dist && \
     cp -r /app/apps/backend/prisma /prod/backend/prisma
 
 FROM node:22-alpine AS runner
+RUN apk add --no-cache tzdata && \
+    cp /usr/share/zoneinfo/Asia/Jakarta /etc/localtime && \
+    echo "Asia/Jakarta" > /etc/timezone
 RUN corepack enable
 ENV NODE_ENV=production
+ENV TZ=Asia/Jakarta
 WORKDIR /app
 
 COPY --from=builder /prod/backend ./

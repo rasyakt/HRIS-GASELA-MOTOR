@@ -20,6 +20,12 @@ function dayKey(d: Date): string {
 
 function timeToString(value: unknown): string | null {
   if (value instanceof Date) {
+    if (value.getUTCFullYear() <= 1970) {
+      const hh = String(value.getUTCHours()).padStart(2, '0');
+      const mm = String(value.getUTCMinutes()).padStart(2, '0');
+      const ss = String(value.getUTCSeconds()).padStart(2, '0');
+      return `${hh}:${mm}:${ss}`;
+    }
     const hh = String(value.getHours()).padStart(2, '0');
     const mm = String(value.getMinutes()).padStart(2, '0');
     const ss = String(value.getSeconds()).padStart(2, '0');
