@@ -200,6 +200,11 @@ const COMPANY_SETTINGS: Array<{ key: string; value: string; description: string 
     description: 'Nama perusahaan untuk header payslip/dokumen',
   },
   {
+    key: 'attendance.checkout_earliest_buffer_minutes',
+    value: '30',
+    description: 'Batas waktu tercepat check-out sebelum jam shift berakhir (dalam menit)',
+  },
+  {
     key: 'portal.theme_config',
     value: JSON.stringify({
       presetId: 'emerald',

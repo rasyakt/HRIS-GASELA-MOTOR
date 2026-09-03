@@ -208,18 +208,48 @@ export class AttendancesService {
     const checkInMin = toMinutes(attendance.checkInTime) ?? 0;
     const checkOutMin = toMinutes(now) ?? 0;
     const workedMinutes = Math.max(0, checkOutMin - checkInMin);
-    const shiftEnd = toMinutes(
-      attendance.shiftId
-        ? (
-            await this.prisma.shift.findUnique({
-              where: { id: attendance.shiftId },
-            })
-          )?.endTime
-        : null,
-    );
-    const earlyLeaveMinutes = shiftEnd
+
+    const shift = attendance.shiftId
+      ? await this.prisma.shift.findUnique({
+          where: { id: attendance.shiftId },
+        })
+      : null;
+    const shiftEnd = toMinutes(shift?.endTime);
+
+    // Ambil batas buffer waktu check-out sebelum jam shift selesai (dinamis diatur admin)
+    const bufferSetting = await this.prisma.companySetting.findUnique({
+      where: { key: 'attendance.checkout_earliest_buffer_minutes' },
+    });
+    const bufferMinutes = bufferSetting
+      ? parseInt(bufferSetting.value, 10) || 0
+      : 30;
+
+    const isEarlyLeave =
+      shiftEnd !== null && checkOutMin < shiftEnd - bufferMinutes;
+    const earlyLeaveMinutes = isEarlyLeave
       ? Math.max(0, shiftEnd - checkOutMin)
       : 0;
+
+    if (isEarlyLeave) {
+      const earliestCheckoutMin = shiftEnd - bufferMinutes;
+      const hh = String(Math.floor(earliestCheckoutMin / 60)).padStart(2, '0');
+      const mm = String(earliestCheckoutMin % 60).padStart(2, '0');
+      const earliestTimeStr = `${hh}:${mm}`;
+
+      // Jika belum masuk jam checkout dan tidak ada catatan alasan
+      if (!input.notes || input.notes.trim().length < 3) {
+        throw new ForbiddenException(
+          `Check-out shift ${shift?.name ?? 'kerja'} baru dibuka pukul ${earliestTimeStr} (${bufferMinutes} menit sebelum shift selesai). Jika izin pulang awal, wajib isi alasan pada catatan.`,
+        );
+      }
+    }
+
+    const finalStatus =
+      attendance.status === 'late'
+        ? 'late'
+        : isEarlyLeave
+          ? 'early_leave'
+          : 'present';
 
     const updated = await this.prisma.attendance.update({
       where: { id: attendance.id },
@@ -227,6 +257,7 @@ export class AttendancesService {
         checkOutTime: wibTime,
         checkOutLat: input.latitude,
         checkOutLng: input.longitude,
+        status: finalStatus,
         earlyLeaveMinutes,
         workHours: Number((workedMinutes / 60).toFixed(2)),
         notes: input.notes ?? attendance.notes,

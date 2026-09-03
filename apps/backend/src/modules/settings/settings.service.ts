@@ -50,7 +50,9 @@ export class SettingsService {
           ? 'Konfigurasi tema & warna portal HRIS GaselaPulse'
           : input.key === 'attendance.photo_retention_days'
             ? 'Batas waktu retensi foto presensi (hari)'
-            : `Pengaturan ${input.key}`;
+            : input.key === 'attendance.checkout_earliest_buffer_minutes'
+              ? 'Batas waktu tercepat check-out sebelum jam shift berakhir (dalam menit)'
+              : `Pengaturan ${input.key}`;
       const created = await this.prisma.companySetting.create({
         data: {
           key: input.key,

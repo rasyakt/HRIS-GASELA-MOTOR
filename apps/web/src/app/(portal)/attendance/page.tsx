@@ -3,7 +3,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { DashboardSummary, Paginated } from '@gasela/shared-types';
 import {
+  AlertCircle,
   Camera,
+  Clock,
   ExternalLink,
   Eye,
   Loader2,
@@ -18,6 +20,7 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { FaceCameraModal } from '@/components/face-camera-modal';
 import { useAuthApi } from '@/lib/auth-api';
 import { badgeClass, fmtDate, fmtHours, fmtTime, statusLabel } from '@/lib/format';
@@ -88,6 +91,11 @@ export default function AttendancePage() {
   const [cameraAction, setCameraAction] = useState<'in' | 'out'>('in');
   const [viewPhotoUrl, setViewPhotoUrl] = useState<{ url: string; title: string } | null>(null);
 
+  // Early Leave Confirmation Modal State
+  const [earlyLeaveModalOpen, setEarlyLeaveModalOpen] = useState(false);
+  const [earlyLeaveReason, setEarlyLeaveReason] = useState('');
+  const [checkoutNotes, setCheckoutNotes] = useState('');
+
   const dashboard = useQuery({
     queryKey: ['dashboard-summary'],
     queryFn: () => authApi<DashboardSummary>('/api/dashboard/summary'),
@@ -125,7 +133,7 @@ export default function AttendancePage() {
   });
 
   const checkOut = useMutation({
-    mutationFn: async (photoUrl?: string) => {
+    mutationFn: async ({ photoUrl, notes }: { photoUrl?: string; notes?: string }) => {
       setActionError(null);
       const pos = await getPosition();
       return authApi('/api/attendances/check-out', {
@@ -134,6 +142,7 @@ export default function AttendancePage() {
           latitude: pos.latitude,
           longitude: pos.longitude,
           photoUrl: photoUrl || undefined,
+          notes: notes || undefined,
         }),
       });
     },
@@ -146,7 +155,21 @@ export default function AttendancePage() {
 
   const handleStartCheck = (action: 'in' | 'out') => {
     setActionError(null);
+    if (action === 'out' && today && today.canCheckoutNow === false) {
+      setEarlyLeaveReason('');
+      setEarlyLeaveModalOpen(true);
+      return;
+    }
+    setCheckoutNotes('');
     setCameraAction(action);
+    setCameraOpen(true);
+  };
+
+  const handleConfirmEarlyLeave = () => {
+    if (!earlyLeaveReason.trim()) return;
+    setCheckoutNotes(earlyLeaveReason.trim());
+    setEarlyLeaveModalOpen(false);
+    setCameraAction('out');
     setCameraOpen(true);
   };
 
@@ -154,7 +177,7 @@ export default function AttendancePage() {
     if (cameraAction === 'in') {
       checkIn.mutate(photoUrl);
     } else {
-      checkOut.mutate(photoUrl);
+      checkOut.mutate({ photoUrl, notes: checkoutNotes });
     }
   };
 
@@ -281,19 +304,31 @@ export default function AttendancePage() {
                   </Button>
                 )}
                 {today.checkInTime && !today.checkOutTime && (
-                  <Button
-                    size="lg"
-                    onClick={() => handleStartCheck('out')}
-                    disabled={busy}
-                    className="gap-2"
-                  >
-                    {checkOut.isPending ? (
-                      <Loader2 className="animate-spin size-4" />
-                    ) : (
-                      <LogOut className="size-4" />
-                    )}
-                    Check-out Sekarang
-                  </Button>
+                  <div className="space-y-3 pt-2">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Button
+                        size="lg"
+                        onClick={() => handleStartCheck('out')}
+                        disabled={busy}
+                        className="gap-2"
+                      >
+                        {checkOut.isPending ? (
+                          <Loader2 className="animate-spin size-4" />
+                        ) : (
+                          <LogOut className="size-4" />
+                        )}
+                        Check-out Sekarang
+                      </Button>
+                      {!today.canCheckoutNow && today.earliestCheckoutTime && (
+                        <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/50 px-3 py-2 rounded-lg">
+                          <Clock className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                          <span>
+                            Jam shift kerja berakhir pukul <strong>{today.shiftEndTime || '17:00'}</strong> (Check-out normal dibuka mulai <strong>{today.earliestCheckoutTime}</strong>). Check-out sebelum jam ini wajib mengisi alasan izin.
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -546,6 +581,64 @@ export default function AttendancePage() {
           )}
         </CardContent>
       </Card>
+      {/* Modal Izin Pulang Lebih Awal */}
+      {earlyLeaveModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md rounded-xl bg-white dark:bg-zinc-900 p-5 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-semibold">
+                <AlertCircle className="size-5 shrink-0" />
+                <h3 className="text-base">Konfirmasi Pulang Lebih Awal</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEarlyLeaveModalOpen(false)}
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed">
+              Jam kerja shift Anda belum selesai (jam kepulangan <strong>{today?.shiftEndTime || '17:00'}</strong>, batas check-out normal <strong>{today?.earliestCheckoutTime || '—'}</strong>).
+              <br className="mb-1" />
+              Untuk melakukan check-out lebih awal, Anda <strong>wajib menyertakan alasan izin</strong> (misal: sakit, keperluan keluarga darurat). Presensi akan otomatis tercatat sebagai <strong>Pulang Cepat</strong>.
+            </p>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="early-reason" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                Alasan Pulang Lebih Awal <span className="text-red-500">*</span>
+              </Label>
+              <textarea
+                id="early-reason"
+                rows={3}
+                value={earlyLeaveReason}
+                onChange={(e) => setEarlyLeaveReason(e.target.value)}
+                placeholder="Contoh: Izin pulang lebih awal karena demam / ada urusan keluarga mendesak"
+                className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEarlyLeaveModalOpen(false)}
+              >
+                Batal
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleConfirmEarlyLeave}
+                disabled={!earlyLeaveReason.trim() || earlyLeaveReason.trim().length < 3}
+                className="bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                Lanjut Foto Wajah &amp; Check-out
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
