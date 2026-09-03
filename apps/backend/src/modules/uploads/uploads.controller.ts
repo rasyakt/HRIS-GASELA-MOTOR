@@ -83,8 +83,9 @@ export class UploadsController {
     });
   }
 
+  @Public()
   @Get(':category/:fileName')
-  @ApiOperation({ summary: 'Ambil file yang diunggah (auth, cache 1 jam)' })
+  @ApiOperation({ summary: 'Ambil file yang diunggah (publik via UUID, cache 1 jam)' })
   getFile(
     @Param('category') category: string,
     @Param('fileName') fileName: string,

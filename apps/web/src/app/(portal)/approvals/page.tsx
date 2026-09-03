@@ -83,7 +83,12 @@ export default function ApprovalsPage() {
         method: 'POST',
         body: JSON.stringify({ status }),
       }),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      setRejectingId(null);
+      setRejectReason('');
+      setRejectError(null);
+      invalidate();
+    },
   });
 
   function submitReject(id: number, kind: 'leave' | 'overtime') {
@@ -258,15 +263,38 @@ export default function ApprovalsPage() {
                         <Check data-icon="inline-start" />
                         Setujui
                       </Button>
-                      <Button
-                        size="xs"
-                        variant="destructive"
-                        onClick={() => decideOvertime.mutate({ id: r.id, status: 'rejected' })}
-                        disabled={busy}
-                      >
-                        <X data-icon="inline-start" />
-                        Tolak
-                      </Button>
+                      {rejectingId !== r.id ? (
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={() => {
+                            setRejectingId(r.id);
+                            setRejectError(null);
+                          }}
+                          disabled={busy}
+                        >
+                          <X data-icon="inline-start" />
+                          Tolak
+                        </Button>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="xs"
+                            variant="destructive"
+                            onClick={() => submitReject(r.id, 'overtime')}
+                            disabled={busy}
+                          >
+                            Konfirmasi Tolak
+                          </Button>
+                          <Button
+                            size="xs"
+                            variant="ghost"
+                            onClick={() => setRejectingId(null)}
+                          >
+                            Batal
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -65,7 +65,7 @@ export function encrypt(plaintext: string | null): string | null {
     // Format: iv:authTag:encryptedData (all base64)
     return `${iv.toString('base64')}:${authTag.toString('base64')}:${encrypted}`;
   } catch (error) {
-    console.error('Encryption error:', error);
+    console.error('Encryption error: Operation failed');
     throw new Error('Failed to encrypt data');
   }
 }
@@ -78,13 +78,11 @@ export function decrypt(ciphertext: string | null): string | null {
   if (!ciphertext) return null;
   
   try {
-    const parts = ciphertext.split(':');
-    
-    // If not in standard iv:authTag:encrypted format, return as plaintext
-    if (parts.length !== 3) {
+    if (!isEncrypted(ciphertext)) {
       return ciphertext;
     }
     
+    const parts = ciphertext.split(':');
     const key = getEncryptionKey();
     const iv = Buffer.from(parts[0], 'base64');
     const authTag = Buffer.from(parts[1], 'base64');
@@ -98,7 +96,7 @@ export function decrypt(ciphertext: string | null): string | null {
     
     return decrypted;
   } catch (error) {
-    console.error('Decryption error:', error);
+    console.error('Decryption error: Operation failed or key mismatch');
     return null;
   }
 }
@@ -117,7 +115,7 @@ export function hash(value: string | null): string | null {
       .update(value)
       .digest('hex');
   } catch (error) {
-    console.error('Hashing error:', error);
+    console.error('Hashing error: Operation failed');
     throw new Error('Failed to hash data');
   }
 }
@@ -142,9 +140,22 @@ export function decryptNumber(ciphertext: string | null): number | null {
 
 /**
  * Check if a value is encrypted (has our format)
+ * Requires 3 colon-separated base64 components where IV and authTag are 16 bytes (~22-24 base64 chars)
  */
 export function isEncrypted(value: string | null): boolean {
-  if (!value) return false;
+  if (!value || typeof value !== 'string') return false;
   const parts = value.split(':');
-  return parts.length === 3;
+  if (parts.length !== 3) return false;
+  // IV and authTag are 16 bytes -> 22-24 Base64 chars
+  const base64Regex = /^[A-Za-z0-9+/=]+$/;
+  return (
+    parts[0].length >= 22 &&
+    parts[0].length <= 24 &&
+    parts[1].length >= 22 &&
+    parts[1].length <= 24 &&
+    parts[2].length > 0 &&
+    base64Regex.test(parts[0]) &&
+    base64Regex.test(parts[1]) &&
+    base64Regex.test(parts[2])
+  );
 }

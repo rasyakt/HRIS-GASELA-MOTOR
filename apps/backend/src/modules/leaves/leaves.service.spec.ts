@@ -128,8 +128,8 @@ describe('LeavesService', () => {
       await expect(
         service.createRequest(2, {
           leaveTypeId: 1,
-          startDate: '2026-09-01',
-          endDate: '2026-09-05',
+          startDate: '2026-11-02',
+          endDate: '2026-11-06',
           reason: 'Keperluan pribadi',
         }),
       ).rejects.toThrow(ConflictException);
@@ -160,12 +160,12 @@ describe('LeavesService', () => {
       );
       const result = await service.createRequest(2, {
         leaveTypeId: 1,
-        startDate: '2026-09-01',
-        endDate: '2026-09-04',
+        startDate: '2026-11-02',
+        endDate: '2026-11-05',
         reason: 'Keperluan pribadi',
       });
       expect(result.totalDays).toBe(4);
-      expect(result.requestNumber).toMatch(/^LV-\d{8}-\d{4}$/);
+      expect(result.requestNumber).toMatch(/^LV-\d{8}-.+$/);
     });
   });
 

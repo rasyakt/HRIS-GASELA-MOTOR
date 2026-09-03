@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import type {
@@ -16,6 +16,16 @@ export interface CsvOptions {
 @Injectable()
 export class ReportsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private validateDateRange(from: Date, to: Date) {
+    if (to < from) {
+      throw new BadRequestException('Tanggal akhir tidak boleh sebelum tanggal awal');
+    }
+    const diffDays = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays > 366) {
+      throw new BadRequestException('Rentang tanggal laporan maksimal 1 tahun (366 hari)');
+    }
+  }
 
   private escapeCell(v: string | number | null | undefined): string {
     if (v === null || v === undefined) return '';
@@ -42,6 +52,7 @@ export class ReportsService {
   ): Promise<{ filename: string; content: string }> {
     const from = new Date(`${params.from}T00:00:00Z`);
     const to = new Date(`${params.to}T00:00:00Z`);
+    this.validateDateRange(from, to);
     to.setUTCDate(to.getUTCDate() + 1);
     const departmentId = params.departmentId ? Number(params.departmentId) : undefined;
 
@@ -99,6 +110,7 @@ export class ReportsService {
   ): Promise<{ filename: string; content: string }> {
     const from = new Date(`${params.from}T00:00:00Z`);
     const to = new Date(`${params.to}T00:00:00Z`);
+    this.validateDateRange(from, to);
     to.setUTCDate(to.getUTCDate() + 1);
 
     const records = await this.prisma.leaveRequest.findMany({

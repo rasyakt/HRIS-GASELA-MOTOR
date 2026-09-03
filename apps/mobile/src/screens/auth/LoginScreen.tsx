@@ -72,7 +72,9 @@ export function LoginScreen() {
   });
 
   async function handleLogin() {
-    if (!username || !password) {
+    const cleanUsername = username.trim();
+    const cleanPassword = password.trim();
+    if (!cleanUsername || !cleanPassword) {
       setError('Username dan password wajib diisi.');
       return;
     }
@@ -81,7 +83,7 @@ export function LoginScreen() {
     try {
       const session = await api<LoginResponse>('/api/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: cleanUsername, password: cleanPassword }),
       });
       if (session.requires2FA) {
         setError('Akun Anda memerlukan verifikasi 2FA. Silakan gunakan Web Portal.');

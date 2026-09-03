@@ -46,9 +46,6 @@ interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  minRole?: UserRole;
-  /** Role TEPAT (bukan hierarki) — untuk peran terisolasi seperti landing_admin */
-  exactRole?: UserRole;
 }
 
 interface NavGroup {
@@ -56,42 +53,130 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const NAV_GROUPS: NavGroup[] = [
-  {
-    label: 'Overview',
-    items: [
-      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minRole: 'employee' },
-    ],
-  },
-  {
-    label: 'Karyawan Mandiri',
-    items: [
-      { href: '/attendance', label: 'Kehadiran', icon: Clock, minRole: 'employee' },
-      { href: '/leave', label: 'Cuti', icon: CalendarDays, minRole: 'employee' },
-      { href: '/overtime', label: 'Lembur', icon: Timer, minRole: 'employee' },
-      { href: '/payroll', label: 'Penggajian', icon: ReceiptText, minRole: 'employee' },
-      { href: '/announcements', label: 'Pengumuman', icon: Megaphone, minRole: 'employee' },
-      { href: '/discipline', label: 'Disiplin & SP', icon: ShieldAlert, minRole: 'employee' },
-    ],
-  },
-  {
-    label: 'Manajemen & Review',
-    items: [
-      { href: '/approvals', label: 'Persetujuan', icon: CheckCheck, minRole: 'manager' },
-      { href: '/performance-reviews', label: 'Kinerja', icon: TrendingUp, minRole: 'manager' },
-      { href: '/reports', label: 'Laporan', icon: BarChart3, minRole: 'manager' },
-    ],
-  },
-  {
-    label: 'Sistem Admin',
-    items: [
-      { href: '/employees', label: 'Karyawan', icon: Users, minRole: 'admin' },
-      { href: '/landing-cms', label: 'Landing Page CMS', icon: Globe, exactRole: 'landing_admin' },
-      { href: '/audit-logs', label: 'Audit Log', icon: ShieldCheck, minRole: 'admin' },
-      { href: '/settings', label: 'Pengaturan', icon: Settings, minRole: 'admin' },
-    ],
-  },
-];
+function getNavGroups(role: UserRole): NavGroup[] {
+  if (role === 'admin' || role === 'hrd') {
+    return [
+      {
+        label: 'Aktivitas Utama',
+        items: [
+          { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+          { href: '/employees', label: 'Karyawan', icon: Users },
+          { href: '/approvals', label: 'Persetujuan', icon: CheckCheck },
+        ],
+      },
+      {
+        label: 'Operasional Personalia',
+        items: [
+          { href: '/attendance', label: 'Kehadiran', icon: Clock },
+          { href: '/leave', label: 'Cuti', icon: CalendarDays },
+          { href: '/overtime', label: 'Lembur', icon: Timer },
+          { href: '/payroll', label: 'Penggajian', icon: ReceiptText },
+          { href: '/announcements', label: 'Pengumuman', icon: Megaphone },
+          { href: '/discipline', label: 'Disiplin & SP', icon: ShieldAlert },
+        ],
+      },
+      {
+        label: 'Laporan & Kinerja',
+        items: [
+          { href: '/reports', label: 'Laporan', icon: BarChart3 },
+          { href: '/performance-reviews', label: 'Kinerja', icon: TrendingUp },
+          ...(role === 'admin'
+            ? [{ href: '/audit-logs', label: 'Audit Log', icon: ShieldCheck }]
+            : []),
+        ],
+      },
+      {
+        label: 'Sistem',
+        items: [
+          { href: '/settings', label: 'Pengaturan', icon: Settings },
+        ],
+      },
+    ];
+  }
+
+  if (role === 'owner') {
+    return [
+      {
+        label: 'Ringkasan Eksekutif',
+        items: [
+          { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        ],
+      },
+      {
+        label: 'Laporan & Analitik',
+        items: [
+          { href: '/reports', label: 'Laporan', icon: BarChart3 },
+          { href: '/performance-reviews', label: 'Kinerja', icon: TrendingUp },
+          { href: '/audit-logs', label: 'Audit Log', icon: ShieldCheck },
+        ],
+      },
+      {
+        label: 'Direktori & Informasi',
+        items: [
+          { href: '/employees', label: 'Karyawan', icon: Users },
+          { href: '/announcements', label: 'Pengumuman', icon: Megaphone },
+        ],
+      },
+    ];
+  }
+
+  if (role === 'manager') {
+    return [
+      {
+        label: 'Aktivitas Utama & Tim',
+        items: [
+          { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+          { href: '/approvals', label: 'Persetujuan', icon: CheckCheck },
+          { href: '/performance-reviews', label: 'Kinerja', icon: TrendingUp },
+          { href: '/reports', label: 'Laporan', icon: BarChart3 },
+        ],
+      },
+      {
+        label: 'Karyawan Mandiri',
+        items: [
+          { href: '/attendance', label: 'Kehadiran', icon: Clock },
+          { href: '/leave', label: 'Cuti', icon: CalendarDays },
+          { href: '/overtime', label: 'Lembur', icon: Timer },
+          { href: '/payroll', label: 'Penggajian', icon: ReceiptText },
+          { href: '/announcements', label: 'Pengumuman', icon: Megaphone },
+          { href: '/discipline', label: 'Disiplin & SP', icon: ShieldAlert },
+        ],
+      },
+    ];
+  }
+
+  if (role === 'landing_admin') {
+    return [
+      {
+        label: 'CMS Unit Bisnis',
+        items: [
+          { href: '/landing-cms', label: 'Landing Page CMS', icon: Globe },
+        ],
+      },
+    ];
+  }
+
+  // Default: employee
+  return [
+    {
+      label: 'Overview',
+      items: [
+        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      ],
+    },
+    {
+      label: 'Aktivitas Mandiri',
+      items: [
+        { href: '/attendance', label: 'Kehadiran', icon: Clock },
+        { href: '/leave', label: 'Cuti', icon: CalendarDays },
+        { href: '/overtime', label: 'Lembur', icon: Timer },
+        { href: '/payroll', label: 'Penggajian', icon: ReceiptText },
+        { href: '/announcements', label: 'Pengumuman', icon: Megaphone },
+        { href: '/discipline', label: 'Disiplin & SP', icon: ShieldAlert },
+      ],
+    },
+  ];
+}
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard': 'Dashboard',
@@ -161,13 +246,7 @@ export default function PortalLayout({
 
   const visibleGroups = useMemo(() => {
     if (!user) return [];
-    return NAV_GROUPS.map((group) => ({
-      ...group,
-      items: group.items.filter(
-        (item) =>
-          item.exactRole ? user.role === item.exactRole : roleAtLeast(user.role, item.minRole ?? 'employee'),
-      ),
-    })).filter((group) => group.items.length > 0);
+    return getNavGroups(user.role);
   }, [user]);
 
   const totalItemsCount = useMemo(() => {
@@ -183,6 +262,25 @@ export default function PortalLayout({
     retry: false,
   });
   const unreadCount = unreadQuery.data?.unread ?? 0;
+
+  const approvalsCountQuery = useQuery<{ count: number }>({
+    queryKey: ['sidebar-approvals-count'],
+    queryFn: async () => {
+      try {
+        const [leaveRes, otRes] = await Promise.all([
+          authApi<{ total?: number }>('/api/leaves/requests?status=pending&limit=1'),
+          authApi<{ total?: number }>('/api/overtime/requests?status=pending&limit=1'),
+        ]);
+        return { count: (leaveRes?.total ?? 0) + (otRes?.total ?? 0) };
+      } catch {
+        return { count: 0 };
+      }
+    },
+    enabled: !!token && (user?.role === 'admin' || user?.role === 'hrd' || user?.role === 'manager'),
+    refetchInterval: 30_000,
+    retry: false,
+  });
+  const pendingApprovalsCount = approvalsCountQuery.data?.count ?? 0;
 
   const pageTitle = PAGE_TITLES[pathname] ?? 'HRIS Gasela Motor';
 
@@ -272,6 +370,13 @@ export default function PortalLayout({
                               active ? 'bg-primary-foreground text-primary' : 'bg-red-500 text-white'
                             }`}>
                               {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                          )}
+                          {!collapsed && item.href === '/approvals' && pendingApprovalsCount > 0 && (
+                            <span className={`inline-flex items-center justify-center min-w-4.5 h-4.5 rounded-full px-1.5 text-[10px] font-bold ${
+                              active ? 'bg-primary-foreground text-primary' : 'bg-amber-500 text-white'
+                            }`}>
+                              {pendingApprovalsCount > 99 ? '99+' : pendingApprovalsCount}
                             </span>
                           )}
                         </Link>

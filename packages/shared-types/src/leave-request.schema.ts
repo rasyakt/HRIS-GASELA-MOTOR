@@ -27,7 +27,7 @@ export const createLeaveRequestSchema = z
     reason: z.string().min(5).max(500),
     documentUrl: z
       .string()
-      .url('URL dokumen tidak valid')
+      .max(500)
       .optional()
       .describe('URL hasil upload kategori document'),
   })

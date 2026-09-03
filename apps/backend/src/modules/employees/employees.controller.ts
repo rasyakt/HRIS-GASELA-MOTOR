@@ -36,7 +36,7 @@ export class EmployeesController {
     private readonly auditLogsService: AuditLogsService,
   ) {}
 
-  @Roles('admin', 'hrd', 'manager')
+  @Roles('admin', 'hrd', 'manager', 'owner')
   @Get()
   @ApiOperation({ summary: 'Daftar karyawan (pagination & filter)' })
   list(@Query(new ZodValidationPipe()) query: EmployeeQueryDto) {

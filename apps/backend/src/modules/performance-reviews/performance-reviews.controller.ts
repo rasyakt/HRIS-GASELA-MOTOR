@@ -44,15 +44,15 @@ export class PerformanceReviewsController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Buat performance review (admin/hrd/owner)' })
-  @Roles('admin', 'hrd', 'owner')
+  @ApiOperation({ summary: 'Buat performance review (admin/hrd/manager)' })
+  @Roles('admin', 'hrd', 'manager')
   async create(@Body(new ZodValidationPipe()) dto: CreatePerformanceReviewDto) {
     return this.performanceReviewsService.create(dto);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Perbarui performance review (admin/hrd/owner)' })
-  @Roles('admin', 'hrd', 'owner')
+  @ApiOperation({ summary: 'Perbarui performance review (admin/hrd/manager)' })
+  @Roles('admin', 'hrd', 'manager')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body(new ZodValidationPipe()) dto: UpdatePerformanceReviewDto,
@@ -61,8 +61,8 @@ export class PerformanceReviewsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Hapus performance review (admin/hrd/owner)' })
-  @Roles('admin', 'hrd', 'owner')
+  @ApiOperation({ summary: 'Hapus performance review (admin/hrd/manager)' })
+  @Roles('admin', 'hrd', 'manager')
   async delete(@Param('id', ParseIntPipe) id: number) {
     await this.performanceReviewsService.delete(id);
   }

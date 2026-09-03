@@ -46,7 +46,7 @@ export function useAuthApi() {
     ): Promise<T> {
       // Check if token is expiring and refresh if needed
       if (refreshToken && isTokenExpiring()) {
-        if (!isRefreshing) {
+        if (!isRefreshing || !refreshPromise) {
           isRefreshing = true;
           refreshPromise = refreshAccessToken(refreshToken, updateTokens, clearSession)
             .finally(() => {
@@ -55,7 +55,8 @@ export function useAuthApi() {
             });
         }
 
-        const refreshed = await refreshPromise;
+        const currentPromise = refreshPromise;
+        const refreshed = currentPromise ? await currentPromise : false;
         if (!refreshed) {
           throw new Error('Sesi telah kedaluwarsa. Silakan masuk kembali.');
         }
@@ -67,8 +68,17 @@ export function useAuthApi() {
       } catch (err) {
         if (err instanceof ApiError && err.statusCode === 401) {
           // Try to refresh one more time on 401
-          if (refreshToken && !isRefreshing) {
-            const refreshed = await refreshAccessToken(refreshToken, updateTokens, clearSession);
+          if (refreshToken) {
+            if (!isRefreshing || !refreshPromise) {
+              isRefreshing = true;
+              refreshPromise = refreshAccessToken(refreshToken, updateTokens, clearSession)
+                .finally(() => {
+                  isRefreshing = false;
+                  refreshPromise = null;
+                });
+            }
+            const currentPromise = refreshPromise;
+            const refreshed = currentPromise ? await currentPromise : false;
             if (refreshed) {
               const newToken = useAuthStore.getState().accessToken;
               return await api<T>(path, { ...options, token: newToken });

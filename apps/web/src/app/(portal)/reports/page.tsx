@@ -254,8 +254,8 @@ export default function ReportsPage() {
   const [downloading, setDownloading] = useState<string | null>(null);
   const [csvMsg, setCsvMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const canManage = !!user && roleAtLeast(user.role, 'manager');
-  const canPayroll = !!user && roleAtLeast(user.role, 'hrd');
+  const canManage = !!user && (roleAtLeast(user.role, 'manager') || user.role === 'owner');
+  const canPayroll = !!user && (roleAtLeast(user.role, 'hrd') || user.role === 'owner');
   const visibleTabs = TABS.filter((t) => t.key !== 'payroll' || canPayroll);
 
   useEffect(() => {

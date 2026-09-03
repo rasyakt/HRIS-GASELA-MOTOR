@@ -12,6 +12,7 @@ describe('SettingsService', () => {
       companySetting: {
         findMany: jest.fn(),
         findUnique: jest.fn(),
+        create: jest.fn(),
         update: jest.fn(),
       },
       holiday: {
@@ -32,11 +33,20 @@ describe('SettingsService', () => {
   });
 
   describe('company settings', () => {
-    it('menolak update key yang tidak ada', async () => {
+    it('membuat key baru jika belum ada (upsert)', async () => {
       prisma.companySetting.findUnique.mockResolvedValue(null);
-      await expect(
-        service.updateCompanySetting({ key: 'company.name', value: 'PT X' }),
-      ).rejects.toThrow(NotFoundException);
+      prisma.companySetting.create.mockResolvedValue({
+        key: 'portal.theme_config',
+        value: '{"primaryColor":"#059669"}',
+        description: 'Konfigurasi tema & warna portal HRIS GaselaPulse',
+        updatedAt: new Date('2026-08-02T10:00:00.000Z'),
+      });
+      const result = await service.updateCompanySetting({
+        key: 'portal.theme_config',
+        value: '{"primaryColor":"#059669"}',
+      });
+      expect(result.key).toBe('portal.theme_config');
+      expect(prisma.companySetting.create).toHaveBeenCalled();
     });
 
     it('memperbarui nilai setting', async () => {

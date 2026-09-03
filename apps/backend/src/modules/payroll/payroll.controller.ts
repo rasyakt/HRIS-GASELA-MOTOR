@@ -46,15 +46,15 @@ export class PayrollController {
   }
 
   @Post('salary-components')
-  @Roles('admin', 'hrd', 'owner')
-  @ApiOperation({ summary: 'Buat komponen gaji (admin/hrd/owner)' })
+  @Roles('admin', 'hrd')
+  @ApiOperation({ summary: 'Buat komponen gaji (admin/hrd)' })
   createSalaryComponent(@Body() body: CreateSalaryComponentDto) {
     return this.payrollService.createSalaryComponent(body);
   }
 
   @Patch('salary-components/:id')
-  @Roles('admin', 'hrd', 'owner')
-  @ApiOperation({ summary: 'Perbarui komponen gaji (admin/hrd/owner)' })
+  @Roles('admin', 'hrd')
+  @ApiOperation({ summary: 'Perbarui komponen gaji (admin/hrd)' })
   updateSalaryComponent(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateSalaryComponentDto,
@@ -63,16 +63,16 @@ export class PayrollController {
   }
 
   @Delete('salary-components/:id')
-  @Roles('admin', 'hrd', 'owner')
-  @ApiOperation({ summary: 'Nonaktifkan komponen gaji (admin/hrd/owner)' })
+  @Roles('admin', 'hrd')
+  @ApiOperation({ summary: 'Nonaktifkan komponen gaji (admin/hrd)' })
   deactivateSalaryComponent(@Param('id', ParseIntPipe) id: number) {
     return this.payrollService.deactivateSalaryComponent(id);
   }
 
   @Post('generate')
-  @Roles('admin', 'hrd', 'owner')
+  @Roles('admin', 'hrd')
   @ApiOperation({
-    summary: 'Generate gaji periode bulan/tahun (admin/hrd/owner)',
+    summary: 'Generate gaji periode bulan/tahun (admin/hrd)',
   })
   generate(@Body() body: GeneratePayrollDto) {
     return this.payrollService.generate(body);
@@ -113,7 +113,7 @@ export class PayrollController {
   }
 
   @Post('approve')
-  @Roles('admin', 'hrd', 'owner')
+  @Roles('admin', 'hrd')
   @ApiOperation({ summary: 'Approve slip gaji terpilih (draft → approved)' })
   async approve(@CurrentUser() user: AuthUser, @Body() body: ApprovePayrollDto) {
     const result = await this.payrollService.batchApprove(user.employeeId, body);
@@ -131,7 +131,7 @@ export class PayrollController {
   }
 
   @Post('mark-paid')
-  @Roles('admin', 'hrd', 'owner')
+  @Roles('admin', 'hrd')
   @ApiOperation({ summary: 'Tandai dibayar (approved → paid)' })
   async markPaid(@CurrentUser() user: AuthUser, @Body() body: MarkPaidDto) {
     const result = await this.payrollService.markPaid(body);
@@ -149,7 +149,7 @@ export class PayrollController {
   }
 
   @Delete('drafts')
-  @Roles('admin', 'hrd', 'owner')
+  @Roles('admin', 'hrd')
   @ApiOperation({ summary: 'Hapus draft slip gaji terpilih' })
   deleteDrafts(@Body() body: { payrollIds: number[] }) {
     return this.payrollService.deleteDrafts(body.payrollIds);

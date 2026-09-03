@@ -66,6 +66,7 @@ export class PerformanceReviewsService {
         : undefined,
       include: this.include,
       orderBy: [{ periodYear: 'desc' }, { periodMonth: 'desc' }, { id: 'desc' }],
+      take: 100,
     });
     return reviews.map((r) => this.decorate(r));
   }

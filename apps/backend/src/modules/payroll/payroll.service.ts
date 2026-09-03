@@ -264,12 +264,12 @@ export class PayrollService {
           );
           continue;
         }
+
+        const effectiveHours = Math.min(hours, 12);
         if (hours > 12) {
           console.warn(
-            `Suspicious overtime hours for request #${ot.id}: ${hours} hours (max expected: 12)`,
+            `Overtime request #${ot.id} exceeds 12 hours (${hours}h). Capped at 12 hours for calculation.`,
           );
-          // Cap at 12 hours to prevent manipulation
-          continue;
         }
 
         const otDateStr = dayKey(ot.overtimeDate);
@@ -277,7 +277,7 @@ export class PayrollService {
         const isHolidayOrRestDay = isSunday || holidayDates.has(otDateStr);
 
         let multiplierSum = 0;
-        let remainingHours = hours;
+        let remainingHours = effectiveHours;
 
         if (isHolidayOrRestDay) {
           // PP 35/2021: 7 jam pertama = 2.0x, jam ke-8 = 3.0x, jam ke-9 dst = 4.0x

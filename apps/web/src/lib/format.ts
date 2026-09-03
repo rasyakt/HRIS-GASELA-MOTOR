@@ -5,15 +5,18 @@ export const ROLE_ORDER: Partial<Record<UserRole, number>> = {
   manager: 1,
   hrd: 2,
   admin: 3,
-  owner: 4,
 };
 
 export function roleAtLeast(role: UserRole, min: UserRole): boolean {
   const r = ROLE_ORDER[role];
   const m = ROLE_ORDER[min];
-  // Role di luar hierarki HRIS (mis. landing_admin) tidak lolos guard apa pun
+  // Role di luar hierarki HRIS operasional (owner, landing_admin) tidak lolos hierarki operasional
   if (r === undefined || m === undefined) return false;
   return r >= m;
+}
+
+export function isOwner(role?: UserRole): boolean {
+  return role === 'owner';
 }
 
 export const ROLE_LABEL: Record<UserRole, string> = {
@@ -21,7 +24,7 @@ export const ROLE_LABEL: Record<UserRole, string> = {
   manager: 'Manager',
   hrd: 'HRD',
   admin: 'Admin',
-  owner: 'Owner',
+  owner: 'Owner (Executive)',
   landing_admin: 'Admin Landing',
 };
 

@@ -10,6 +10,7 @@ export const createShiftSchema = z.object({
   endTime: timeString,
   gracePeriodMinutes: z.number().int().min(0).max(120).default(15),
   workHours: z.number().min(0).max(24).default(8),
+  isActive: z.boolean().optional(),
 });
 
 export const updateShiftSchema = createShiftSchema.partial();

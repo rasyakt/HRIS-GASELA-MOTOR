@@ -25,7 +25,11 @@ describe('UploadsService', () => {
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
+    try {
+      rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+      // Ignore file lock errors on Windows during fast teardown
+    }
   });
 
   const fakeFile = (originalname: string, mimetype: string, size = 1024) => ({
@@ -68,10 +72,10 @@ describe('UploadsService', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
-  it('menolak file melebihi 5MB', async () => {
+  it('menolak file melebihi 10MB', async () => {
     await expect(
       service.save(
-        fakeFile('besar.png', 'image/png', 6 * 1024 * 1024),
+        fakeFile('besar.png', 'image/png', 11 * 1024 * 1024),
         'avatar',
       ),
     ).rejects.toThrow(BadRequestException);

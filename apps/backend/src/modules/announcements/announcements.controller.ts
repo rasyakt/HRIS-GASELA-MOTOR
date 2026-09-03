@@ -27,16 +27,16 @@ import {
 export class AnnouncementsController {
   constructor(private readonly announcementsService: AnnouncementsService) {}
 
-  @Roles('admin', 'hrd', 'owner')
+  @Roles('admin', 'hrd')
   @Post()
-  @ApiOperation({ summary: 'Buat pengumuman draft (admin/hrd/owner)' })
+  @ApiOperation({ summary: 'Buat pengumuman draft (admin/hrd)' })
   create(@CurrentUser() user: AuthUser, @Body() body: CreateAnnouncementDto) {
     return this.announcementsService.create(user.employeeId, body);
   }
 
-  @Roles('admin', 'hrd', 'owner')
+  @Roles('admin', 'hrd')
   @Patch(':id')
-  @ApiOperation({ summary: 'Perbarui pengumuman (admin/hrd/owner)' })
+  @ApiOperation({ summary: 'Perbarui pengumuman (admin/hrd)' })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateAnnouncementDto,
@@ -44,19 +44,19 @@ export class AnnouncementsController {
     return this.announcementsService.update(id, body);
   }
 
-  @Roles('admin', 'hrd', 'owner')
+  @Roles('admin', 'hrd')
   @Post(':id/publish')
   @ApiOperation({
     summary:
-      'Publikasikan pengumuman + kirim push notification (admin/hrd/owner)',
+      'Publikasikan pengumuman + kirim push notification (admin/hrd)',
   })
   publish(@Param('id', ParseIntPipe) id: number) {
     return this.announcementsService.publish(id);
   }
 
-  @Roles('admin', 'hrd', 'owner')
+  @Roles('admin', 'hrd')
   @Delete(':id')
-  @ApiOperation({ summary: 'Hapus pengumuman (admin/hrd/owner)' })
+  @ApiOperation({ summary: 'Hapus pengumuman (admin/hrd)' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.announcementsService.remove(id);
   }

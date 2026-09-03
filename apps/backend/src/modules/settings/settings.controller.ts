@@ -33,10 +33,10 @@ export class SettingsController {
     return this.settingsService.listCompanySettings();
   }
 
-  @Roles('admin', 'hrd', 'owner')
+  @Roles('admin', 'hrd')
   @Put('company')
   @ApiOperation({
-    summary: 'Perbarui satu pengaturan perusahaan (admin/hrd/owner)',
+    summary: 'Perbarui satu pengaturan perusahaan (admin/hrd)',
   })
   updateCompanySetting(@Body() body: UpdateCompanySettingDto) {
     return this.settingsService.updateCompanySetting(body);

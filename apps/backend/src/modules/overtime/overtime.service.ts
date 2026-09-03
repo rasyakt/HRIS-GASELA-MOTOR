@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import {
   ConflictException,
   ForbiddenException,
@@ -49,6 +50,22 @@ export class OvertimeService {
       throw new ConflictException('Pengajuan lembur tidak boleh lebih dari 60 hari ke depan');
     }
 
+    // Check for overlapping overtime request on the same day
+    const overlapping = await this.prisma.overtimeRequest.findFirst({
+      where: {
+        employeeId,
+        status: { in: ['approved', 'pending'] },
+        overtimeDate: otDate,
+        startTime: { lt: minutesToDate(endMin) },
+        endTime: { gt: minutesToDate(startMin) },
+      },
+    });
+    if (overlapping) {
+      throw new ConflictException(
+        'Sudah ada pengajuan lembur yang bertabrakan pada rentang jam tersebut',
+      );
+    }
+
     const { startOfMonth, endOfMonth } = monthRange(otDate);
 
     const existingOt = await this.prisma.overtimeRequest.aggregate({
@@ -67,10 +84,10 @@ export class OvertimeService {
       );
     }
 
+    const datePrefix = dayKey(new Date()).replace(/-/g, '');
+    const randSuffix = crypto.randomBytes(2).toString('hex').toUpperCase();
     const count = await this.prisma.overtimeRequest.count();
-    const requestNumber = `OT-${dayKey(new Date()).replace(/-/g, '')}-${String(
-      count + 1,
-    ).padStart(4, '0')}`;
+    const requestNumber = `OT-${datePrefix}-${String(count + 1).padStart(3, '0')}${randSuffix}`;
 
     return this.toRequestDto(
       await this.prisma.overtimeRequest.create({
@@ -118,6 +135,7 @@ export class OvertimeService {
       total,
       page,
       limit,
+      totalPages: Math.ceil(total / limit),
     };
   }
 
@@ -137,14 +155,16 @@ export class OvertimeService {
         `Pengajuan sudah berstatus '${request.status}'`,
       );
     }
-    return this.prisma.overtimeRequest.update({
+    const updated = await this.prisma.overtimeRequest.update({
       where: { id },
       data: {
         status: input.status,
         approvedById: approverEmployeeId,
         approvedAt: new Date(),
       },
+      include: this.requestInclude,
     });
+    return this.toRequestDto(updated);
   }
 
   async cancel(id: number, employeeId: number) {
@@ -164,7 +184,8 @@ export class OvertimeService {
         `Hanya pengajuan 'pending' yang bisa dibatalkan (status: '${request.status}')`,
       );
     }
-    return this.prisma.overtimeRequest.delete({ where: { id } });
+    await this.prisma.overtimeRequest.delete({ where: { id } });
+    return { id, success: true, message: 'Pengajuan lembur berhasil dibatalkan' };
   }
 
   // ===================== HELPER =====================

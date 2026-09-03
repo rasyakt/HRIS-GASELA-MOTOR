@@ -6,9 +6,32 @@ import {
 import type { CreateShiftInput, UpdateShiftInput } from '@gasela/shared-types';
 import { PrismaService } from '../../prisma/prisma.service';
 
-/** Normalisasi "HH:mm" / "HH:mm:ss" → "HH:mm:ss" */
-function normalizeTime(value: string): string {
-  return value.length === 5 ? `${value}:00` : value;
+/** Mengubah string "HH:mm" / "HH:mm:ss" → Date UTC 1970-01-01 untuk @db.Time() Prisma */
+function parseTimeToDate(value: string): Date {
+  const norm = value.length === 5 ? `${value}:00` : value;
+  return new Date(`1970-01-01T${norm}Z`);
+}
+
+/** Mengubah Date (atau string) dari Prisma @db.Time() → "HH:mm:ss" */
+function timeToString(value: unknown): string {
+  if (value instanceof Date) {
+    const hh = String(value.getUTCHours()).padStart(2, '0');
+    const mm = String(value.getUTCMinutes()).padStart(2, '0');
+    const ss = String(value.getUTCSeconds()).padStart(2, '0');
+    return `${hh}:${mm}:${ss}`;
+  }
+  if (typeof value === 'string') {
+    return value.length === 5 ? `${value}:00` : value;
+  }
+  return '00:00:00';
+}
+
+function mapShiftDto<T extends { startTime: any; endTime: any }>(shift: T) {
+  return {
+    ...shift,
+    startTime: timeToString(shift.startTime),
+    endTime: timeToString(shift.endTime),
+  };
 }
 
 @Injectable()
@@ -16,10 +39,11 @@ export class ShiftsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async list(includeInactive = false) {
-    return this.prisma.shift.findMany({
+    const shifts = await this.prisma.shift.findMany({
       where: includeInactive ? undefined : { isActive: true },
       orderBy: { startTime: 'asc' },
     });
+    return shifts.map(mapShiftDto);
   }
 
   async getById(id: number) {
@@ -27,7 +51,7 @@ export class ShiftsService {
     if (!shift) {
       throw new NotFoundException(`Shift #${id} tidak ditemukan`);
     }
-    return shift;
+    return mapShiftDto(shift);
   }
 
   async create(input: CreateShiftInput) {
@@ -38,13 +62,14 @@ export class ShiftsService {
       throw new ConflictException(`Nama shift '${input.name}' sudah dipakai`);
     }
     const { startTime, endTime, ...rest } = input;
-    return this.prisma.shift.create({
+    const created = await this.prisma.shift.create({
       data: {
         ...rest,
-        startTime: normalizeTime(startTime),
-        endTime: normalizeTime(endTime),
+        startTime: parseTimeToDate(startTime),
+        endTime: parseTimeToDate(endTime),
       },
     });
+    return mapShiftDto(created);
   }
 
   async update(id: number, input: UpdateShiftInput) {
@@ -53,17 +78,18 @@ export class ShiftsService {
       throw new NotFoundException(`Shift #${id} tidak ditemukan`);
     }
     const { startTime, endTime, ...rest } = input;
-    return this.prisma.shift.update({
+    const updated = await this.prisma.shift.update({
       where: { id },
       data: {
         ...rest,
-        startTime: startTime ? normalizeTime(startTime) : undefined,
-        endTime: endTime ? normalizeTime(endTime) : undefined,
+        startTime: startTime ? parseTimeToDate(startTime) : undefined,
+        endTime: endTime ? parseTimeToDate(endTime) : undefined,
       },
     });
+    return mapShiftDto(updated);
   }
 
-  async deactivate(id: number) {
+  async remove(id: number) {
     const shift = await this.prisma.shift.findUnique({ where: { id } });
     if (!shift) {
       throw new NotFoundException(`Shift #${id} tidak ditemukan`);
@@ -72,13 +98,23 @@ export class ShiftsService {
       where: { shiftId: id },
     });
     if (usage > 0) {
-      throw new ConflictException(
-        `Shift sudah dipakai ${usage} catatan kehadiran, tidak bisa dinonaktifkan`,
-      );
+      const deactivated = await this.prisma.shift.update({
+        where: { id },
+        data: { isActive: false },
+      });
+      return {
+        message: `Shift memiliki ${usage} riwayat kehadiran dan telah dinonaktifkan.`,
+        shift: mapShiftDto(deactivated),
+      };
     }
-    return this.prisma.shift.update({
-      where: { id },
-      data: { isActive: false },
-    });
+    await this.prisma.shift.delete({ where: { id } });
+    return {
+      message: 'Shift berhasil dihapus permanen.',
+      id,
+    };
+  }
+
+  async deactivate(id: number) {
+    return this.remove(id);
   }
 }

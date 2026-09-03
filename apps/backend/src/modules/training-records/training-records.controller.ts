@@ -49,15 +49,15 @@ export class TrainingRecordsController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Tambah pelatihan (admin/hrd/owner)' })
-  @Roles('admin', 'hrd', 'owner')
+  @ApiOperation({ summary: 'Tambah pelatihan (admin/hrd)' })
+  @Roles('admin', 'hrd')
   async create(@Body(new ZodValidationPipe()) dto: CreateTrainingRecordDto) {
     return this.trainingRecordsService.create(dto);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Perbarui pelatihan (admin/hrd/owner)' })
-  @Roles('admin', 'hrd', 'owner')
+  @ApiOperation({ summary: 'Perbarui pelatihan (admin/hrd)' })
+  @Roles('admin', 'hrd')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body(new ZodValidationPipe()) dto: UpdateTrainingRecordDto,
@@ -66,8 +66,8 @@ export class TrainingRecordsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Hapus pelatihan (admin/hrd/owner)' })
-  @Roles('admin', 'hrd', 'owner')
+  @ApiOperation({ summary: 'Hapus pelatihan (admin/hrd)' })
+  @Roles('admin', 'hrd')
   async delete(@Param('id', ParseIntPipe) id: number) {
     await this.trainingRecordsService.delete(id);
   }

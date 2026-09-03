@@ -17,7 +17,10 @@ const TIME_RE = /^(\d{2}):(\d{2})(?::(\d{2}))?$/;
 
 function toMinutes(value: unknown): number | null {
   if (value === null || value === undefined) return null;
-  if (value instanceof Date) return value.getHours() * 60 + value.getMinutes();
+  if (value instanceof Date) {
+    const wib = new Date(value.getTime() + 7 * 60 * 60 * 1000);
+    return wib.getUTCHours() * 60 + wib.getUTCMinutes();
+  }
   if (typeof value !== 'string') return null;
   const m = TIME_RE.exec(value);
   if (!m) return null;
@@ -26,9 +29,10 @@ function toMinutes(value: unknown): number | null {
 
 function toTimeString(value: unknown): string | null {
   if (value instanceof Date) {
-    const hh = String(value.getHours()).padStart(2, '0');
-    const mm = String(value.getMinutes()).padStart(2, '0');
-    const ss = String(value.getSeconds()).padStart(2, '0');
+    const wib = new Date(value.getTime() + 7 * 60 * 60 * 1000);
+    const hh = String(wib.getUTCHours()).padStart(2, '0');
+    const mm = String(wib.getUTCMinutes()).padStart(2, '0');
+    const ss = String(wib.getUTCSeconds()).padStart(2, '0');
     return `${hh}:${mm}:${ss}`;
   }
   if (typeof value === 'string')
@@ -101,7 +105,7 @@ export class AttendancesService {
 
     const shiftStart = toMinutes(shift?.startTime) ?? 8 * 60;
     const grace = shift?.gracePeriodMinutes ?? 15;
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const nowMinutes = toMinutes(now) ?? (now.getHours() * 60 + now.getMinutes());
     const lateMinutes = Math.max(0, nowMinutes - (shiftStart + grace));
     const status = lateMinutes > 0 ? 'late' : 'present';
 
@@ -181,7 +185,7 @@ export class AttendancesService {
 
     const now = new Date();
     const checkInMin = toMinutes(attendance.checkInTime) ?? 0;
-    const checkOutMin = now.getHours() * 60 + now.getMinutes();
+    const checkOutMin = toMinutes(now) ?? (now.getHours() * 60 + now.getMinutes());
     const workedMinutes = Math.max(0, checkOutMin - checkInMin);
     const shiftEnd = toMinutes(
       attendance.shiftId
