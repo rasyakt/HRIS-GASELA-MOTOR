@@ -1208,15 +1208,24 @@ export default function ReportsPage() {
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
+                  variant="outline"
                   onClick={() => printDocument(pdfPreviewKind)}
-                  className="gap-1.5 bg-red-600 hover:bg-red-700 text-white shadow-xs font-semibold text-xs"
+                  className="gap-1.5 border-zinc-300 dark:border-zinc-700 text-xs font-semibold"
                 >
-                  <Printer className="size-3.5" />
-                  <span>Cetak / Simpan PDF</span>
+                  <Printer className="size-3.5 text-zinc-600 dark:text-zinc-300" />
+                  <span>Cetak Dokumen</span>
                 </Button>
                 <Button
                   size="sm"
-                  variant="outline"
+                  onClick={() => printDocument(pdfPreviewKind)}
+                  className="gap-1.5 bg-red-600 hover:bg-red-700 text-white shadow-xs font-semibold text-xs"
+                >
+                  <FileDown className="size-3.5" />
+                  <span>Unduh PDF</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
                   onClick={() => setPdfPreviewOpen(false)}
                   className="text-xs"
                 >
@@ -1269,15 +1278,25 @@ export default function ReportsPage() {
 
             {/* Modal Bottom Bar */}
             <div className="flex items-center justify-between px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-850 shrink-0 text-xs text-zinc-500">
-              <span>Gunakan opsi <em>&quot;Save as PDF&quot;</em> pada jendela print untuk mengunduh dokumen.</span>
-              <Button
-                size="sm"
-                onClick={() => printDocument(pdfPreviewKind)}
-                className="gap-1.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs"
-              >
-                <Printer className="size-3.5" />
-                <span>Cetak / Simpan PDF</span>
-              </Button>
+              <span>Klik <strong>&quot;Unduh PDF&quot;</strong> untuk menyimpan file PDF atau <strong>&quot;Cetak Dokumen&quot;</strong> untuk print langsung.</span>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPdfPreviewOpen(false)}
+                  className="text-xs"
+                >
+                  Tutup Pratinjau
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => printDocument(pdfPreviewKind)}
+                  className="gap-1.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs"
+                >
+                  <FileDown className="size-3.5" />
+                  <span>Unduh PDF</span>
+                </Button>
+              </div>
             </div>
 
           </div>
