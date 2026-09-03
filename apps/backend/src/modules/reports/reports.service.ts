@@ -85,6 +85,8 @@ export class ReportsService {
         'Terlambat (menit)',
         'Pulang Cepat (menit)',
         'Jam Kerja',
+        'Foto Masuk URL',
+        'Foto Keluar URL',
         'Catatan',
       ],
       rows: records.map((a) => [
@@ -100,6 +102,8 @@ export class ReportsService {
         a.lateMinutes,
         a.earlyLeaveMinutes,
         Number(a.workHours).toFixed(2),
+        a.checkInPhotoUrl ?? '',
+        a.checkOutPhotoUrl ?? '',
         a.notes ?? '',
       ]),
     });
