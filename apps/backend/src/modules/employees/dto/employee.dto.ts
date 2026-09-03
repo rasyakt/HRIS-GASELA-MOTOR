@@ -214,8 +214,28 @@ export class ResetUserPasswordDto
 export const createFamilyMemberSchema = z.object({
   fullName: z.string().min(2, 'Nama lengkap minimal 2 karakter'),
   relationship: z.enum(['spouse', 'child', 'parent', 'sibling']),
-  idCardNumber: z.string().optional().nullable(),
-  birthDate: z.string().optional().nullable(),
+  idCardNumber: z
+    .string()
+    .max(20)
+    .optional()
+    .nullable()
+    .refine((val) => !val || /^\d{16}$/.test(val.trim()), {
+      message: 'NIK harus 16 digit angka',
+    }),
+  birthDate: z
+    .string()
+    .date()
+    .optional()
+    .nullable()
+    .refine(
+      (val) => {
+        if (!val) return true;
+        const d = new Date(val);
+        const today = new Date();
+        return !isNaN(d.getTime()) && d <= today;
+      },
+      { message: 'Tanggal lahir tidak boleh di masa depan' },
+    ),
   gender: z.enum(['male', 'female']).optional().nullable(),
   isBpjsDependent: z.boolean().default(false),
 });

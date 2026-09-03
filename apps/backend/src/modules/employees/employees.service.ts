@@ -3,6 +3,7 @@ import {
   ConflictException,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import type {
   CreateEmployeeInput,
@@ -132,6 +133,20 @@ export class EmployeesService {
       ...restInput
     } = input;
 
+    if (birthDate) {
+      const b = new Date(birthDate);
+      if (!isNaN(b.getTime()) && b > new Date()) {
+        throw new BadRequestException('Tanggal lahir tidak boleh di masa depan');
+      }
+    }
+    if (joinDate && permanentDate) {
+      const j = new Date(joinDate);
+      const p = new Date(permanentDate);
+      if (!isNaN(j.getTime()) && !isNaN(p.getTime()) && p < j) {
+        throw new BadRequestException('Tanggal karyawan tetap tidak boleh lebih awal dari tanggal bergabung');
+      }
+    }
+
     return this.prisma.employee.create({
       data: {
         ...restInput,
@@ -219,6 +234,20 @@ export class EmployeesService {
           parsedPermanentDate = null;
         }
       }
+    }
+
+    if (parsedBirthDate && parsedBirthDate > new Date()) {
+      throw new BadRequestException('Tanggal lahir tidak boleh di masa depan');
+    }
+    const finalJoinDate = parsedJoinDate || employee.joinDate;
+    const finalPermanentDate =
+      input.permanentDate !== undefined
+        ? parsedPermanentDate
+        : employee.permanentDate;
+    if (finalJoinDate && finalPermanentDate && finalPermanentDate < finalJoinDate) {
+      throw new BadRequestException(
+        'Tanggal karyawan tetap tidak boleh lebih awal dari tanggal bergabung',
+      );
     }
 
     const {

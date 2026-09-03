@@ -341,11 +341,52 @@ export default function EmployeesPage() {
     setFormError(null);
 
     // Validation
+    const todayStr = new Date().toISOString().slice(0, 10);
     if (!formData.employeeNumber.trim()) return setFormError('NIK wajib diisi');
     if (!formData.fullName.trim()) return setFormError('Nama lengkap wajib diisi');
+    if (formData.fullName.trim().length < 3) return setFormError('Nama lengkap minimal 3 karakter');
     if (!formData.email.trim()) return setFormError('Email wajib diisi');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      return setFormError('Format email tidak valid (contoh: karyawan@gaselamotor.com)');
+    }
     if (!formData.joinDate) return setFormError('Tanggal bergabung wajib diisi');
     if (formData.basicSalary <= 0) return setFormError('Gaji pokok harus lebih besar dari 0');
+
+    if (formData.birthDate) {
+      const birth = new Date(formData.birthDate);
+      const today = new Date();
+      if (isNaN(birth.getTime()) || birth > today) {
+        return setFormError('Tanggal lahir tidak boleh di masa depan');
+      }
+    }
+
+    if (formData.phone.trim()) {
+      const cleanPhone = formData.phone.trim();
+      if (!/^(?:\+62|62|0)[0-9\- ]{7,18}$/.test(cleanPhone)) {
+        return setFormError('Nomor telepon tidak valid (contoh: 081234567890)');
+      }
+    }
+
+    if (formData.emergencyContactPhone.trim()) {
+      const cleanEmerg = formData.emergencyContactPhone.trim();
+      if (!/^(?:\+62|62|0)[0-9\- ]{7,18}$/.test(cleanEmerg)) {
+        return setFormError('Nomor telepon kontak darurat tidak valid (contoh: 081234567890)');
+      }
+    }
+
+    if (formData.idCardNumber.trim()) {
+      if (!/^\d{16}$/.test(formData.idCardNumber.trim())) {
+        return setFormError('Nomor KTP harus terdiri dari 16 digit angka');
+      }
+    }
+
+    if (formData.joinDate && formData.permanentDate) {
+      const join = new Date(formData.joinDate);
+      const perm = new Date(formData.permanentDate);
+      if (!isNaN(join.getTime()) && !isNaN(perm.getTime()) && perm < join) {
+        return setFormError('Tanggal karyawan tetap tidak boleh lebih awal dari tanggal bergabung');
+      }
+    }
 
     const payload = {
       ...formData,
@@ -353,6 +394,11 @@ export default function EmployeesPage() {
       positionId: formData.positionId ? Number(formData.positionId) : null,
       managerId: formData.managerId ? Number(formData.managerId) : null,
       basicSalary: Number(formData.basicSalary),
+      phone: formData.phone.trim() || null,
+      emergencyContactPhone: formData.emergencyContactPhone.trim() || null,
+      idCardNumber: formData.idCardNumber.trim() || null,
+      taxNumber: formData.taxNumber.trim() || null,
+      bankAccountNumber: formData.bankAccountNumber.trim() || null,
       birthDate: formData.birthDate || null,
       permanentDate: formData.permanentDate || null,
     };
@@ -854,9 +900,11 @@ export default function EmployeesPage() {
                             <Label htmlFor="phone">Nomor Telepon</Label>
                             <Input
                               id="phone"
+                              type="tel"
+                              inputMode="tel"
                               disabled={!isEditMode}
                               value={formData.phone}
-                              onChange={(e) => handleInputChange('phone', e.target.value)}
+                              onChange={(e) => handleInputChange('phone', e.target.value.replace(/[^0-9+\-\s]/g, ''))}
                               placeholder="081234567890"
                             />
                           </div>
@@ -868,18 +916,21 @@ export default function EmployeesPage() {
                             <Input
                               id="birthDate"
                               type="date"
+                              max={new Date().toISOString().slice(0, 10)}
                               disabled={!isEditMode}
                               value={formData.birthDate}
                               onChange={(e) => handleInputChange('birthDate', e.target.value)}
                             />
                           </div>
                           <div>
-                            <Label htmlFor="idCardNumber">Nomor KTP</Label>
+                            <Label htmlFor="idCardNumber">Nomor KTP (16 Digit)</Label>
                             <Input
                               id="idCardNumber"
+                              inputMode="numeric"
+                              maxLength={16}
                               disabled={!isEditMode}
                               value={formData.idCardNumber}
-                              onChange={(e) => handleInputChange('idCardNumber', e.target.value)}
+                              onChange={(e) => handleInputChange('idCardNumber', e.target.value.replace(/\D/g, '').slice(0, 16))}
                               placeholder="3273123456789012"
                             />
                           </div>
@@ -914,9 +965,12 @@ export default function EmployeesPage() {
                               <Label htmlFor="emergencyContactPhone">Nomor Telepon</Label>
                               <Input
                                 id="emergencyContactPhone"
+                                type="tel"
+                                inputMode="tel"
                                 disabled={!isEditMode}
                                 value={formData.emergencyContactPhone}
-                                onChange={(e) => handleInputChange('emergencyContactPhone', e.target.value)}
+                                onChange={(e) => handleInputChange('emergencyContactPhone', e.target.value.replace(/[^0-9+\-\s]/g, ''))}
+                                placeholder="081234567890"
                               />
                             </div>
                           </div>
@@ -1064,9 +1118,10 @@ export default function EmployeesPage() {
                             <Label htmlFor="bankAccountNumber">Nomor Rekening</Label>
                             <Input
                               id="bankAccountNumber"
+                              inputMode="numeric"
                               disabled={!isEditMode}
                               value={formData.bankAccountNumber}
-                              onChange={(e) => handleInputChange('bankAccountNumber', e.target.value)}
+                              onChange={(e) => handleInputChange('bankAccountNumber', e.target.value.replace(/\D/g, ''))}
                               placeholder="1234567890"
                             />
                           </div>

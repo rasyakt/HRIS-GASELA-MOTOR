@@ -50,15 +50,37 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!form.fullName.trim()) {
+      setError('Nama lengkap anggota keluarga wajib diisi');
+      return;
+    }
+
+    if (form.birthDate) {
+      const birth = new Date(form.birthDate);
+      const today = new Date();
+      if (isNaN(birth.getTime()) || birth > today) {
+        setError('Tanggal lahir tidak boleh di masa depan');
+        return;
+      }
+    }
+
+    if (form.idCardNumber.trim()) {
+      if (!/^\d{16}$/.test(form.idCardNumber.trim())) {
+        setError('NIK anggota keluarga harus terdiri dari 16 digit angka');
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
       await authApi(`/api/employees/${employeeId}/family`, {
         method: 'POST',
         body: JSON.stringify({
-          fullName: form.fullName,
+          fullName: form.fullName.trim(),
           relationship: form.relationship,
-          idCardNumber: form.idCardNumber || null,
+          idCardNumber: form.idCardNumber.trim() || null,
           birthDate: form.birthDate || null,
           gender: form.gender,
           isBpjsDependent: form.isBpjsDependent,
@@ -165,11 +187,13 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-semibold text-zinc-700">NIK (KTP/KK)</Label>
+              <Label className="text-xs font-semibold text-zinc-700">NIK (16 Digit KTP/KK)</Label>
               <Input
                 placeholder="16 digit NIK"
+                inputMode="numeric"
+                maxLength={16}
                 value={form.idCardNumber}
-                onChange={(e) => setForm({ ...form, idCardNumber: e.target.value })}
+                onChange={(e) => setForm({ ...form, idCardNumber: e.target.value.replace(/\D/g, '').slice(0, 16) })}
                 className="bg-white text-xs h-9"
               />
             </div>
@@ -178,6 +202,7 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
               <Label className="text-xs font-semibold text-zinc-700">Tanggal Lahir</Label>
               <Input
                 type="date"
+                max={new Date().toISOString().slice(0, 10)}
                 value={form.birthDate}
                 onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
                 className="bg-white text-xs h-9"

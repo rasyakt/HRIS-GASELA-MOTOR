@@ -57,7 +57,7 @@ export class EmployeesController {
   @Roles('admin', 'hrd')
   @Post()
   @ApiOperation({ summary: 'Buat karyawan baru (admin/hrd)' })
-  create(@Body() body: CreateEmployeeDto) {
+  create(@Body(new ZodValidationPipe()) body: CreateEmployeeDto) {
     return this.employeesService.create(body);
   }
 
@@ -67,7 +67,7 @@ export class EmployeesController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,
-    @Body() body: UpdateEmployeeDto,
+    @Body(new ZodValidationPipe()) body: UpdateEmployeeDto,
   ) {
     const result = await this.employeesService.update(id, body, user);
     if (body.basicSalary !== undefined) {
