@@ -242,6 +242,7 @@ export class ReportsService {
       present: 'Hadir',
       absent: 'Absen',
       late: 'Terlambat',
+      early_leave: 'Pulang Cepat',
       on_leave: 'Cuti',
       approved: 'Disetujui',
       pending: 'Menunggu',
@@ -253,9 +254,14 @@ export class ReportsService {
     return map[s] ?? s;
   }
 
+  // ===================== PREVIEW ENDPOINTS =====================
+  // BUG-016: Semua preview endpoint sekarang wajib validasi date range
+  // agar tidak bisa query seluruh data tanpa batas (OOM risk)
+
   async attendancePreview(params: AttendanceReportQuery) {
     const from = new Date(`${params.from}T00:00:00Z`);
     const to = new Date(`${params.to}T00:00:00Z`);
+    this.validateDateRange(from, to); // BUG-016 fix: wajib validasi seperti export CSV
     to.setUTCDate(to.getUTCDate() + 1);
     const departmentId = params.departmentId ? Number(params.departmentId) : undefined;
 
@@ -277,6 +283,7 @@ export class ReportsService {
   async leavePreview(params: LeaveReportQuery) {
     const from = new Date(`${params.from}T00:00:00Z`);
     const to = new Date(`${params.to}T00:00:00Z`);
+    this.validateDateRange(from, to); // BUG-016 fix
     to.setUTCDate(to.getUTCDate() + 1);
 
     return this.prisma.leaveRequest.findMany({
@@ -332,7 +339,11 @@ export class ReportsService {
       bpjsKetenagakerjaanEmployee: Number(r.bpjsKetenagakerjaanEmployee),
       taxPph21: Number(r.taxPph21),
       // Hitung total seluruh potongan (BPJS employee + PPh21 + deduction lainnya)
-      totalAllDeductions: Number(r.bpjsKesehatanEmployee) + Number(r.bpjsKetenagakerjaanEmployee) + Number(r.taxPph21) + Number(r.totalDeduction),
+      totalAllDeductions:
+        Number(r.bpjsKesehatanEmployee) +
+        Number(r.bpjsKetenagakerjaanEmployee) +
+        Number(r.taxPph21) +
+        Number(r.totalDeduction),
       netSalary: Number(r.netSalary),
       status: r.status,
       employee: {

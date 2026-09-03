@@ -50,7 +50,9 @@ describe('LeavesService', () => {
       holiday: {
         findMany: jest.fn().mockResolvedValue([]),
       },
-      $transaction: jest.fn(),
+      $transaction: jest.fn((arg) =>
+        typeof arg === 'function' ? arg(prisma) : Promise.resolve(arg),
+      ),
     };
     const module = await Test.createTestingModule({
       providers: [LeavesService, { provide: PrismaService, useValue: prisma }],

@@ -482,9 +482,6 @@ export default function LandingCmsPage() {
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
               Landing Page CMS
             </h1>
-            <Badge className="bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300 border-amber-300 dark:border-amber-500/30">
-              <Sparkles className="size-3 mr-1" /> Live Sync
-            </Badge>
           </div>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl">
             Kelola teks, foto, dan struktur publik{' '}

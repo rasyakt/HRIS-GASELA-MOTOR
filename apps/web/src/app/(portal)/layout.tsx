@@ -282,7 +282,13 @@ export default function PortalLayout({
   });
   const pendingApprovalsCount = approvalsCountQuery.data?.count ?? 0;
 
-  const pageTitle = PAGE_TITLES[pathname] ?? 'HRIS Gasela Motor';
+  // BUG-008 FIX: Gunakan startsWith agar sub-route seperti /employees/123
+  // menampilkan title yang benar ("Karyawan"), bukan "HRIS Gasela Motor"
+  // Sebelumnya: exact-match only → semua sub-route dapat title generik
+  const pageTitle =
+    Object.entries(PAGE_TITLES).find(
+      ([key]) => pathname === key || pathname.startsWith(key + '/')
+    )?.[1] ?? 'HRIS Gasela Motor';
 
   async function handleLogout() {
     setLoggingOut(true);

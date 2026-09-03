@@ -45,15 +45,25 @@ export function middleware(request: NextRequest) {
 
   if (unitId) {
     const { pathname, search } = request.nextUrl;
-    // Rewrite root path (/) of unit domain transparently to the unit landing page
-    if (pathname === '/' || pathname === '') {
-      return NextResponse.rewrite(new URL(`/landing/unit/${unitId}${search}`, request.url));
-    }
+
+    // BUG-010 FIX: Rewrite SEMUA path unit bisnis, bukan hanya root '/'
+    // Sebelumnya: motor.localhost/about → NextResponse.next() → tampilkan HRIS,
+    //             bukan halaman about landing unit Motor
+    // Sekarang: motor.localhost/about → /landing/unit/motor/about ✓
+    //
+    // BUG-022 NOTE: file .webmanifest & sejenisnya sudah di-exclude oleh matcher
+    // pattern '.*\\..*' (ekstensi apapun tidak masuk middleware)
+    return NextResponse.rewrite(
+      new URL(`/landing/unit/${unitId}${pathname}${search}`, request.url)
+    );
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+  // Exclude: API routes, Next.js static files, image optimization,
+  // favicon, manifest, robots, sitemap, dan semua file dengan ekstensi
+  // BUG-022 FIX: Eksplisit exclude manifest.webmanifest agar tidak tertangkap oleh sub-unit routing
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|robots.txt|sitemap.xml|.*\\..*).*)'],
 };

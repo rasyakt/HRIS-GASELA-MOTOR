@@ -81,12 +81,13 @@ export function generateTotpCode(
 }
 
 /**
- * Verify a 6-digit TOTP code with time drift window (default ±1 step = ±30 seconds)
+ * Verify a 6-digit TOTP code with time drift window (default ±2 steps = ±60 seconds)
+ * Menoleransi deviasi waktu hingga 1 menit antara perangkat ponsel & server
  */
 export function verifyTotpCode(
   token: string,
   secret: string,
-  window = 1,
+  window = 2,
 ): boolean {
   if (!token || !secret) return false;
   const cleanToken = token.trim();

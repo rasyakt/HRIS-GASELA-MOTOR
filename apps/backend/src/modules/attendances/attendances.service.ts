@@ -24,12 +24,27 @@ function nowToWibTimeDate(date: Date = new Date()): Date {
   return new Date(`1970-01-01T${hh}:${mm}:${ss}Z`);
 }
 
+/**
+ * BUG-005 ANALISIS:
+ * Fungsi ini menggunakan konvensi: nilai @db.Time() dari Prisma disimpan sebagai
+ * Date epoch-1970 dengan jam WIB langsung sebagai UTC hours.
+ * Contoh: shift 08:00 WIB → disimpan 1970-01-01T08:00:00Z → getUTCHours()=8 ✓
+ *
+ * ASUMSI KRITIS: Shift harus dimasukkan dalam WIB dan disimpan via string parsing
+ * (bukan DateTime konversi UTC). Jika menggunakan nowToWibTimeDate(), jam WIB
+ * sudah tersimpan sebagai UTC hours sehingga pembacaan getUTCHours() langsung benar.
+ *
+ * Untuk waktu saat ini (year>1970): konversi ke WIB secara eksplisit sebelum baca jam.
+ */
 function toMinutes(value: unknown): number | null {
   if (value === null || value === undefined) return null;
   if (value instanceof Date) {
     if (value.getUTCFullYear() <= 1970) {
+      // Nilai dari DB @db.Time(): jam WIB sudah tersimpan sebagai UTC hours
+      // (karena diinput sebagai string WIB, atau via nowToWibTimeDate())
       return value.getUTCHours() * 60 + value.getUTCMinutes();
     }
+    // Waktu saat ini: konversi eksplisit ke WIB sebelum ambil jam
     const wib = new Date(value.getTime() + 7 * 60 * 60 * 1000);
     return wib.getUTCHours() * 60 + wib.getUTCMinutes();
   }

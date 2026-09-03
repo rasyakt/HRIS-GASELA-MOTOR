@@ -143,15 +143,23 @@ export class AuthService {
     const ttlConfig = this.config.getOrThrow<string>('app.jwtAccessTtl');
     let expiresIn = 900; // default 15 minutes
 
+    // BUG-021 FIX: Robust TTL parsing dengan dukungan format 's' (detik), 'm' (menit),
+    // 'h' (jam), 'd' (hari), atau angka murni dalam detik, dengan fallback aman 900 detik (15 menit).
     if (typeof ttlConfig === 'string') {
-      if (ttlConfig.endsWith('m')) {
-        expiresIn = parseInt(ttlConfig) * 60;
-      } else if (ttlConfig.endsWith('h')) {
-        expiresIn = parseInt(ttlConfig) * 3600;
-      } else if (ttlConfig.endsWith('d')) {
-        expiresIn = parseInt(ttlConfig) * 86400;
-      } else {
-        expiresIn = parseInt(ttlConfig);
+      const trimmed = ttlConfig.trim().toLowerCase();
+      const val = parseInt(trimmed, 10);
+      if (!isNaN(val) && val > 0) {
+        if (trimmed.endsWith('s')) {
+          expiresIn = val;
+        } else if (trimmed.endsWith('m')) {
+          expiresIn = val * 60;
+        } else if (trimmed.endsWith('h')) {
+          expiresIn = val * 3600;
+        } else if (trimmed.endsWith('d')) {
+          expiresIn = val * 86400;
+        } else {
+          expiresIn = val;
+        }
       }
     }
 
@@ -186,6 +194,19 @@ export class AuthService {
       throw new UnauthorizedException(
         `Akun dikunci karena terlalu banyak percobaan login gagal. Coba lagi dalam ${minutesLeft} menit.`,
       );
+    }
+
+    // BUG-012: Reset counter jika lock sudah expired (lock berakhir tapi login gagal lagi)
+    // Tanpa ini, user hanya perlu 1 percobaan salah untuk langsung dikunci kembali
+    if (user.lockedUntil && user.lockedUntil <= new Date()) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { failedLoginAttempts: 0, lockedUntil: null },
+        select: { id: true },
+      });
+      // Refresh user data dengan counter yang sudah direset
+      user.failedLoginAttempts = 0;
+      user.lockedUntil = null;
     }
 
     // Validate password

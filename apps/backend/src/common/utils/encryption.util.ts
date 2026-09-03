@@ -159,3 +159,4 @@ export function isEncrypted(value: string | null): boolean {
     base64Regex.test(parts[2])
   );
 }
+

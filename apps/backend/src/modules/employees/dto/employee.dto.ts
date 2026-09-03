@@ -151,6 +151,8 @@ export const createUserAccountSchema = z.object({
   ]),
 });
 
+export type CreateUserAccountInput = z.infer<typeof createUserAccountSchema>;
+
 export const updateUserAccountSchema = z.object({
   username: z.string().min(3).optional(),
   role: z
@@ -159,19 +161,55 @@ export const updateUserAccountSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+export type UpdateUserAccountInput = z.infer<typeof updateUserAccountSchema>;
+
 export const resetUserPasswordSchema = z.object({
   password: z.string().min(6, 'Password minimal 6 karakter'),
 });
 
-export class CreateUserAccountDto extends createZodDto(
-  createUserAccountSchema,
-) {}
-export class UpdateUserAccountDto extends createZodDto(
-  updateUserAccountSchema,
-) {}
-export class ResetUserPasswordDto extends createZodDto(
-  resetUserPasswordSchema,
-) {}
+export type ResetUserPasswordInput = z.infer<typeof resetUserPasswordSchema>;
+
+export class CreateUserAccountDto
+  extends createZodDto(createUserAccountSchema)
+  implements CreateUserAccountInput
+{
+  @ApiProperty({ example: 'johndoe' })
+  username: string;
+
+  @ApiProperty({ example: 'Password123!' })
+  password: string;
+
+  @ApiProperty({
+    example: 'employee',
+    enum: ['admin', 'hrd', 'manager', 'employee', 'owner', 'landing_admin'],
+  })
+  role: 'admin' | 'hrd' | 'manager' | 'employee' | 'owner' | 'landing_admin';
+}
+
+export class UpdateUserAccountDto
+  extends createZodDto(updateUserAccountSchema)
+  implements UpdateUserAccountInput
+{
+  @ApiPropertyOptional({ example: 'johndoe' })
+  username?: string;
+
+  @ApiPropertyOptional({
+    example: 'employee',
+    enum: ['admin', 'hrd', 'manager', 'employee', 'owner', 'landing_admin'],
+  })
+  role?: 'admin' | 'hrd' | 'manager' | 'employee' | 'owner' | 'landing_admin';
+
+  @ApiPropertyOptional({ example: true })
+  isActive?: boolean;
+}
+
+export class ResetUserPasswordDto
+  extends createZodDto(resetUserPasswordSchema)
+  implements ResetUserPasswordInput
+{
+  @ApiProperty({ example: 'NewPassword123!' })
+  password: string;
+}
 
 export const createFamilyMemberSchema = z.object({
   fullName: z.string().min(2, 'Nama lengkap minimal 2 karakter'),
@@ -182,11 +220,60 @@ export const createFamilyMemberSchema = z.object({
   isBpjsDependent: z.boolean().default(false),
 });
 
-export const updateFamilyMemberSchema = createFamilyMemberSchema.partial();
+export type CreateFamilyMemberInput = z.infer<typeof createFamilyMemberSchema>;
 
-export class CreateFamilyMemberDto extends createZodDto(
-  createFamilyMemberSchema,
-) {}
-export class UpdateFamilyMemberDto extends createZodDto(
-  updateFamilyMemberSchema,
-) {}
+export const updateFamilyMemberSchema = createFamilyMemberSchema.partial();
+export type UpdateFamilyMemberInput = z.infer<typeof updateFamilyMemberSchema>;
+
+export class CreateFamilyMemberDto
+  extends createZodDto(createFamilyMemberSchema)
+  implements CreateFamilyMemberInput
+{
+  @ApiProperty({ example: 'Siti Rahmawati' })
+  fullName: string;
+
+  @ApiProperty({
+    example: 'spouse',
+    enum: ['spouse', 'child', 'parent', 'sibling'],
+  })
+  relationship: 'spouse' | 'child' | 'parent' | 'sibling';
+
+  @ApiPropertyOptional()
+  idCardNumber?: string | null;
+
+  @ApiPropertyOptional({ example: '1990-01-01' })
+  birthDate?: string | null;
+
+  @ApiPropertyOptional({ example: 'female', enum: ['male', 'female'] })
+  gender?: 'male' | 'female' | null;
+
+  @ApiPropertyOptional({ example: false })
+  isBpjsDependent: boolean;
+}
+
+export class UpdateFamilyMemberDto
+  extends createZodDto(updateFamilyMemberSchema)
+  implements UpdateFamilyMemberInput
+{
+  @ApiPropertyOptional({ example: 'Siti Rahmawati' })
+  fullName?: string;
+
+  @ApiPropertyOptional({
+    example: 'spouse',
+    enum: ['spouse', 'child', 'parent', 'sibling'],
+  })
+  relationship?: 'spouse' | 'child' | 'parent' | 'sibling';
+
+  @ApiPropertyOptional()
+  idCardNumber?: string | null;
+
+  @ApiPropertyOptional({ example: '1990-01-01' })
+  birthDate?: string | null;
+
+  @ApiPropertyOptional({ example: 'female', enum: ['male', 'female'] })
+  gender?: 'male' | 'female' | null;
+
+  @ApiPropertyOptional({ example: false })
+  isBpjsDependent?: boolean;
+}
+

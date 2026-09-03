@@ -87,7 +87,9 @@ export class SettingsService {
       where: {
         date: {
           gte: new Date(Date.UTC(year, 0, 1)),
-          lte: new Date(Date.UTC(year, 11, 31)),
+          // Gunakan lt awal-tahun-berikutnya agar 31 Des selalu terpilih
+          // terlepas dari timezone offset saat data diinsert
+          lt: new Date(Date.UTC(year + 1, 0, 1)),
         },
       },
       orderBy: { date: 'asc' },

@@ -58,7 +58,9 @@ export class AuditLogInterceptor implements NestInterceptor {
         action = 'PUBLISH';
       } else if (pathParts.includes('mark-paid') || url.includes('/mark-paid')) {
         action = 'MARK_PAID';
-      } else if (pathParts.includes('login') || url.includes('/login')) {
+      } else if (url.split('?')[0].endsWith('/auth/login')) {
+        // BUG-020: Gunakan exact path match agar tidak false-match URL lain
+        // yang mengandung kata 'login' (misal /social-login, /relogin, dll)
         action = 'LOGIN';
       } else {
         action = 'CREATE';

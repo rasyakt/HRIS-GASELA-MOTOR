@@ -207,6 +207,30 @@ export class PayrollService {
       },
     });
 
+    // BUG-002 FIX: Pre-load semua overtime requests & TER rates sebelum loop
+    // Sebelumnya: N+1 queries (1 query per karyawan × 2 = 200+ queries untuk 100 karyawan)
+    // Sekarang: 2 queries total untuk semua karyawan
+    const [allOvertimeRequests, allTerRates] = await Promise.all([
+      this.prisma.overtimeRequest.findMany({
+        where: {
+          status: 'approved',
+          overtimeDate: { gte: start, lt: end },
+        },
+      }),
+      this.prisma.terRate.findMany({
+        orderBy: [{ category: 'asc' }, { incomeFrom: 'asc' }],
+      }),
+    ]);
+
+    // Kelompokkan overtime per employee untuk akses O(1) di dalam loop
+    const overtimeByEmployee = new Map<number, typeof allOvertimeRequests>();
+    for (const ot of allOvertimeRequests) {
+      if (!overtimeByEmployee.has(ot.employeeId)) {
+        overtimeByEmployee.set(ot.employeeId, []);
+      }
+      overtimeByEmployee.get(ot.employeeId)!.push(ot);
+    }
+
     const results: PayrollDto[] = [];
     let skipped = 0;
     let totalGross = 0;
@@ -246,13 +270,8 @@ export class PayrollService {
         else totalDeduction += amount;
       }
 
-      const overtimeRequests = await this.prisma.overtimeRequest.findMany({
-        where: {
-          employeeId: emp.id,
-          status: 'approved',
-          overtimeDate: { gte: start, lt: end },
-        },
-      });
+      // BUG-002: Gunakan data yang sudah di-pre-load, bukan query baru
+      const overtimeRequests = overtimeByEmployee.get(emp.id) ?? [];
 
       let overtimePay = 0;
       for (const ot of overtimeRequests) {
@@ -273,8 +292,12 @@ export class PayrollService {
         }
 
         const otDateStr = dayKey(ot.overtimeDate);
+        // BUG-006 FIX: Tambah cek Sabtu (getUTCDay()===6) sebagai hari istirahat
+        // Sebelumnya hanya cek Minggu, Sabtu dihitung tarif weekday (1.5x/2x)
+        // PP 35/2021: Sabtu pada perusahaan 5-hari kerja = hari istirahat (2x/3x/4x)
         const isSunday = ot.overtimeDate.getUTCDay() === 0;
-        const isHolidayOrRestDay = isSunday || holidayDates.has(otDateStr);
+        const isSaturday = ot.overtimeDate.getUTCDay() === 6;
+        const isHolidayOrRestDay = isSunday || isSaturday || holidayDates.has(otDateStr);
 
         let multiplierSum = 0;
         let remainingHours = effectiveHours;
@@ -326,28 +349,30 @@ export class PayrollService {
 
       let taxPph21 = 0;
       if (pph21Gross > 0 && !isNaN(pph21Gross)) {
-        const bracket = await this.prisma.terRate.findFirst({
-          where: {
-            category: PTKP_TO_TER_CATEGORY[effectivePtkp],
-            incomeFrom: { lte: pph21Gross },
-            OR: [{ incomeTo: null }, { incomeTo: { gte: pph21Gross } }],
-          },
-          orderBy: { incomeFrom: 'desc' },
-        });
+        // BUG-002: Gunakan TER rates yang sudah di-pre-load (tidak query lagi per karyawan)
+        const terCategory = PTKP_TO_TER_CATEGORY[effectivePtkp];
+        const bracket = allTerRates
+          .filter((r) => r.category === terCategory && Number(r.incomeFrom) <= pph21Gross)
+          .filter((r) => r.incomeTo === null || Number(r.incomeTo) >= pph21Gross)
+          .sort((a, b) => Number(b.incomeFrom) - Number(a.incomeFrom))[0];
         taxPph21 = bracket
           ? Math.round(pph21Gross * (Number(bracket.ratePercent) / 100))
           : 0;
       }
 
-      const bpjsEmployeeTotal = Math.round(
-        bpjs.kesehatanEmployee + bpjs.jhtEmployee + bpjs.jpEmployee,
-      );
+      // BUG-013 FIX: Bulatkan masing-masing komponen BPJS terlebih dahulu
+      // lalu gunakan nilai-nilai yang sudah dibulatkan untuk netSalary
+      // Sebelumnya: total dibulatkan sekali tapi komponen individual tidak,
+      // menyebabkan selisih Rp 1-2 antara slip dan perhitungan netSalary
+      const bpjsKesehatanEmployee = Math.round(bpjs.kesehatanEmployee);
       const bpjsKetenagakerjaanEmployee = Math.round(
         bpjs.jhtEmployee + bpjs.jpEmployee,
       );
       const bpjsKetenagakerjaanCompany = Math.round(
         bpjs.jhtCompany + bpjs.jpCompany + bpjs.jkkCompany + bpjs.jkmCompany,
       );
+      // netSalary dihitung dari komponen yang sudah dibulatkan secara individual
+      const bpjsEmployeeTotal = bpjsKesehatanEmployee + bpjsKetenagakerjaanEmployee;
       const netSalary =
         grossSalary - bpjsEmployeeTotal - taxPph21 - totalDeduction;
 
@@ -368,8 +393,8 @@ export class PayrollService {
             totalDeduction,
             overtimePay,
             grossSalary,
-            bpjsKesehatanEmployee: bpjs.kesehatanEmployee,
-            bpjsKesehatanCompany: bpjs.kesehatanCompany,
+            bpjsKesehatanEmployee, // BUG-013: sudah dibulatkan secara konsisten
+            bpjsKesehatanCompany: Math.round(bpjs.kesehatanCompany),
             bpjsKetenagakerjaanEmployee,
             bpjsKetenagakerjaanCompany,
             taxPph21,

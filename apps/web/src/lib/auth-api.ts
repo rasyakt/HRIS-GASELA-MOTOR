@@ -1,12 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 import { api, ApiError } from './api-client';
 
-let isRefreshing = false;
-let refreshPromise: Promise<boolean> | null = null;
+// BUG-007 & BUG-015 FIX: Simpan referensi promise di module-level agar semua
+// request berbagi satu refresh yang sedang berjalan.
+// Race condition sebelumnya: `await refreshPromise` setelah finally() clear → await null → undefined (falsy)
+// Fix: simpan ke variabel lokal sebelum await, sehingga referensi tidak bisa hilang.
+let activeRefreshPromise: Promise<boolean> | null = null;
 
 async function refreshAccessToken(
   refreshToken: string,
@@ -50,16 +53,18 @@ export function useAuthApi() {
     ): Promise<T> {
       // Check if token is expiring and refresh if needed
       if (refreshToken && isTokenExpiring()) {
-        if (!isRefreshing) {
-          isRefreshing = true;
-          refreshPromise = refreshAccessToken(refreshToken, updateTokens, clearSession)
+        if (!activeRefreshPromise) {
+          activeRefreshPromise = refreshAccessToken(refreshToken, updateTokens, clearSession)
             .finally(() => {
-              isRefreshing = false;
-              refreshPromise = null;
+              activeRefreshPromise = null;
             });
         }
 
-        const refreshed = await refreshPromise;
+        // BUG-015 FIX: Simpan ke variabel lokal SEBELUM await
+        // agar race condition finally() tidak mengubah referensi menjadi null
+        // di sela-sela await (yang akan membuat `await null` = undefined = falsy = logout salah)
+        const pendingRefresh = activeRefreshPromise;
+        const refreshed = await pendingRefresh;
         if (!refreshed) {
           router.replace('/login');
           throw new Error('Session expired. Please login again.');
@@ -73,15 +78,20 @@ export function useAuthApi() {
       } catch (err) {
         if (err instanceof ApiError && err.statusCode === 401) {
           // Try to refresh one more time on 401
-          if (refreshToken && !isRefreshing) {
-            const refreshed = await refreshAccessToken(refreshToken, updateTokens, clearSession);
+          if (refreshToken) {
+            // Jika ada refresh yang sedang berjalan, tunggu hasilnya
+            // Jika tidak ada, mulai yang baru
+            const pendingRefresh = activeRefreshPromise
+              ?? refreshAccessToken(refreshToken, updateTokens, clearSession);
+
+            const refreshed = await pendingRefresh;
             if (refreshed) {
               // Retry the original request with new token
               const newToken = useAuthStore.getState().accessToken;
               return await api<T>(path, { ...options, token: newToken });
             }
           }
-          
+
           clearSession();
           router.replace('/login');
         }
