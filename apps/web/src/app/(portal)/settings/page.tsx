@@ -2,6 +2,8 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  Building2,
+  CalendarDays,
   CalendarPlus,
   Check,
   CheckCircle2,
@@ -1466,10 +1468,33 @@ function SettingRow({
   );
 }
 
+type SettingsTab = 'company' | 'shifts' | 'holidays' | 'retention' | 'theme';
+
 export default function SettingsPage() {
   const authApi = useAuthApi();
   const user = useAuthStore((s) => s.user);
   const qc = useQueryClient();
+
+  const [activeTab, setActiveTab] = useState<SettingsTab>('company');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab') as SettingsTab;
+      if (tab && ['company', 'shifts', 'holidays', 'retention', 'theme'].includes(tab)) {
+        setActiveTab(tab);
+      }
+    }
+  }, []);
+
+  const handleTabChange = (tab: SettingsTab) => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
 
   const [year, setYear] = useState(new Date().getFullYear());
   const [holDate, setHolDate] = useState('');
@@ -1535,38 +1560,93 @@ export default function SettingsPage() {
     );
   }
 
+  const SETTINGS_TABS: {
+    id: SettingsTab;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    badge?: string | number;
+  }[] = [
+    {
+      id: 'company',
+      label: 'Perusahaan & Lokasi',
+      icon: Building2,
+      badge: settings.data
+        ? `${settings.data.filter((s) => s.key !== 'portal.theme_config' && s.key !== 'attendance.photo_retention_days').length}`
+        : undefined,
+    },
+    {
+      id: 'shifts',
+      label: 'Jadwal Shift',
+      icon: Clock,
+    },
+    {
+      id: 'holidays',
+      label: 'Kalender Libur',
+      icon: CalendarDays,
+      badge: holidays.data ? `${holidays.data.length}` : undefined,
+    },
+    {
+      id: 'retention',
+      label: 'Retensi Foto',
+      icon: HardDrive,
+    },
+    {
+      id: 'theme',
+      label: 'Tema & Tampilan',
+      icon: Palette,
+    },
+  ];
+
   return (
     <div className="mx-auto max-w-4xl space-y-6">
+      {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-zinc-900">Pengaturan</h2>
-        <p className="text-sm text-zinc-500">
-          Pengaturan perusahaan dan kalender hari libur.
+        <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">Pengaturan Sistem</h2>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+          Kelola parameter operasional perusahaan, jadwal shift, hari libur, retensi foto, dan tema antarmuka.
         </p>
       </div>
 
-      {isAdmin && (
-        <PortalThemeSettingForm
-          setting={settings.data?.find((s) => s.key === 'portal.theme_config')}
-          saving={saveSetting.isPending}
-          onSave={(value) => saveSetting.mutate({ key: 'portal.theme_config', value })}
-        />
-      )}
+      {/* ── SUB-MENU TABS ── */}
+      <div className="flex items-center gap-1.5 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto pb-px">
+        {SETTINGS_TABS.map((tab) => {
+          const Icon = tab.icon;
+          const active = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 transition-all focus:outline-none whitespace-nowrap cursor-pointer ${
+                active
+                  ? 'border-primary text-primary font-bold dark:border-primary dark:text-primary bg-primary/5 dark:bg-primary/10 rounded-t-lg shadow-2xs'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:border-zinc-300 dark:hover:border-zinc-700'
+              }`}
+            >
+              <Icon className={`size-4 ${active ? 'text-primary' : 'text-zinc-400'}`} />
+              <span>{tab.label}</span>
+              {tab.badge !== undefined && (
+                <span className={`ml-1 rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
+                  active ? 'bg-primary text-primary-foreground' : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300'
+                }`}>
+                  {tab.badge}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
-      {isAdmin && (
-        <PhotoRetentionSettingCard
-          setting={settings.data?.find((s) => s.key === 'attendance.photo_retention_days')}
-          saving={saveSetting.isPending}
-          onSave={(value) => saveSetting.mutate({ key: 'attendance.photo_retention_days', value })}
-        />
-      )}
-
-      {isAdmin && <ShiftsManagementCard />}
-
-      {isAdmin && (
+      {/* ── TAB 1: PERUSAHAAN & LOKASI ── */}
+      {activeTab === 'company' && isAdmin && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Pengaturan Perusahaan</span>
+              <div>
+                <span>Pengaturan Perusahaan &amp; Lokasi</span>
+                <p className="text-xs font-normal text-zinc-500 dark:text-zinc-400 mt-1">
+                  Nama resmi entitas, koordinat GPS kantor pusat, radius geofence, dan tarif BPJS Ketenagakerjaan &amp; Kesehatan.
+                </p>
+              </div>
               <Badge>
                 {settings.data
                   ? `${settings.data.filter((s) => s.key !== 'portal.theme_config' && s.key !== 'attendance.photo_retention_days').length} item`
@@ -1604,10 +1684,17 @@ export default function SettingsPage() {
         </Card>
       )}
 
-      {isAdmin && (
+      {/* ── TAB 2: JADWAL SHIFT ── */}
+      {activeTab === 'shifts' && isAdmin && <ShiftsManagementCard />}
+
+      {/* ── TAB 3: KALENDER HARI LIBUR ── */}
+      {activeTab === 'holidays' && isAdmin && (
         <Card>
           <CardHeader>
             <CardTitle>Kalender Hari Libur</CardTitle>
+            <p className="text-xs font-normal text-zinc-500 dark:text-zinc-400 mt-1">
+              Hari libur nasional dan keagamaan. Tanggal libur di sini otomatis tidak memotong saldo cuti tahunan karyawan.
+            </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap items-end gap-3">
@@ -1629,12 +1716,12 @@ export default function SettingsPage() {
                   placeholder="mis. Hari Kemerdekaan"
                 />
               </div>
-              <label className="flex h-9 items-center gap-2 text-sm text-zinc-700">
+              <label className="flex h-9 items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
                 <input
                   type="checkbox"
                   checked={holRecurring}
                   onChange={(e) => setHolRecurring(e.target.checked)}
-                  className="size-4 accent-zinc-900"
+                  className="size-4 accent-zinc-900 dark:accent-zinc-100"
                 />
                 Berulang tiap tahun
               </label>
@@ -1676,27 +1763,27 @@ export default function SettingsPage() {
             {holidays.isLoading ? (
               <p className="text-sm text-zinc-400">Memuat…</p>
             ) : holidays.data && holidays.data.length > 0 ? (
-              <div className="overflow-hidden rounded-lg border border-zinc-200">
+              <div className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-xs text-zinc-500">
+                    <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-left text-xs text-zinc-500 dark:text-zinc-400">
                       <th className="px-3 py-2 font-medium">Tanggal</th>
                       <th className="px-3 py-2 font-medium">Nama</th>
                       <th className="px-3 py-2 font-medium">Tahunan</th>
                       <th className="px-3 py-2" />
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-100">
+                  <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
                     {holidays.data.map((h) => (
                       <tr
                         key={h.id}
-                        className="hover:bg-zinc-50 transition-colors"
+                        className="hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors"
                       >
-                        <td className="px-3 py-2 font-medium text-zinc-900">
+                        <td className="px-3 py-2 font-medium text-zinc-900 dark:text-zinc-100">
                           {fmtDate(h.date)}
                         </td>
-                        <td className="px-3 py-2 text-zinc-700">{h.name}</td>
-                        <td className="px-3 py-2 text-zinc-600">
+                        <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">{h.name}</td>
+                        <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">
                           {h.isRecurringYearly ? 'Ya' : '—'}
                         </td>
                         <td className="px-3 py-2 text-right">
@@ -1714,12 +1801,30 @@ export default function SettingsPage() {
                 </table>
               </div>
             ) : (
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 Tidak ada hari libur untuk tahun {year}.
               </p>
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* ── TAB 4: RETENSI FOTO PRESENSI ── */}
+      {activeTab === 'retention' && isAdmin && (
+        <PhotoRetentionSettingCard
+          setting={settings.data?.find((s) => s.key === 'attendance.photo_retention_days')}
+          saving={saveSetting.isPending}
+          onSave={(value) => saveSetting.mutate({ key: 'attendance.photo_retention_days', value })}
+        />
+      )}
+
+      {/* ── TAB 5: TEMA & TAMPILAN PORTAL ── */}
+      {activeTab === 'theme' && isAdmin && (
+        <PortalThemeSettingForm
+          setting={settings.data?.find((s) => s.key === 'portal.theme_config')}
+          saving={saveSetting.isPending}
+          onSave={(value) => saveSetting.mutate({ key: 'portal.theme_config', value })}
+        />
       )}
     </div>
   );
