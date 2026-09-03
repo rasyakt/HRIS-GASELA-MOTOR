@@ -2,22 +2,25 @@
 
 import { useQuery } from '@tanstack/react-query';
 import {
+  AlertCircle,
   BarChart3,
   CalendarDays,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+  Eye,
   FileDown,
   FileSpreadsheet,
-  Loader2,
-  ReceiptText,
-  Clock,
-  TrendingUp,
-  Wallet,
-  Users,
-  SlidersHorizontal,
-  AlertCircle,
-  CheckCircle2,
   Filter,
+  Loader2,
   MapPin,
-  ExternalLink,
+  Printer,
+  ReceiptText,
+  SlidersHorizontal,
+  TrendingUp,
+  Users,
+  Wallet,
+  X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -254,6 +257,11 @@ export default function ReportsPage() {
   const [downloading, setDownloading] = useState<string | null>(null);
   const [csvMsg, setCsvMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // Photo & PDF Preview Modal States
+  const [viewPhotoUrl, setViewPhotoUrl] = useState<{ url: string; title: string } | null>(null);
+  const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
+  const [pdfPreviewKind, setPdfPreviewKind] = useState<TabKey>('attendance');
+
   const canManage = !!user && (roleAtLeast(user.role, 'manager') || user.role === 'owner');
   const canPayroll = !!user && (roleAtLeast(user.role, 'hrd') || user.role === 'owner');
   const visibleTabs = TABS.filter((t) => t.key !== 'payroll' || canPayroll);
@@ -326,7 +334,7 @@ export default function ReportsPage() {
     }
   }
 
-  function exportPdf(kind: TabKey) {
+  function getReportContentHtml(kind: TabKey) {
     const titleMap: Record<TabKey, string> = {
       attendance: 'LAPORAN REKAPITULASI KEHADIRAN KARYAWAN',
       leave: 'LAPORAN REKAPITULASI CUTI KARYAWAN',
@@ -346,27 +354,40 @@ export default function ReportsPage() {
         <table>
           <thead>
             <tr>
+              <th style="width: 25px;">No</th>
               <th>Tanggal</th>
               <th>NIK</th>
               <th>Nama Karyawan</th>
               <th>Departemen</th>
               <th>Shift</th>
               <th>Masuk / Keluar</th>
+              <th style="text-align: center; width: 85px;">Foto Presensi</th>
               <th>Status</th>
               <th>Terlambat</th>
+              <th>Jam Kerja</th>
             </tr>
           </thead>
           <tbody>
-            ${attRecs.map((r: any) => `
+            ${attRecs.length === 0 ? `<tr><td colspan="11" style="text-align:center; padding: 24px; color: #94a3b8;">Tidak ada data kehadiran pada periode ini.</td></tr>` : ''}
+            ${attRecs.map((r: any, i: number) => `
               <tr>
+                <td style="color: #64748b;">${i + 1}</td>
                 <td>${fmtDate(r.attendanceDate)}</td>
                 <td>${r.employee?.employeeNumber ?? '-'}</td>
                 <td><strong>${r.employee?.fullName ?? '-'}</strong></td>
                 <td>${r.employee?.department?.name ?? '-'}</td>
                 <td>${r.shift?.name ?? '-'}</td>
-                <td>${r.checkInTime ? fmtTime(r.checkInTime) : '-'} / ${r.checkOutTime ? fmtTime(r.checkOutTime) : '-'}</td>
-                <td>${statusLabel(r.status)}</td>
+                <td style="font-family: monospace;">${r.checkInTime ? fmtTime(r.checkInTime) : '-'} / ${r.checkOutTime ? fmtTime(r.checkOutTime) : '-'}</td>
+                <td style="text-align: center;">
+                  <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
+                    ${r.checkInPhotoUrl ? `<div style="text-align: center;"><img src="${r.checkInPhotoUrl}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #10b981;" /><div style="font-size: 7.5px; color: #059669; font-weight: bold; margin-top: 1px;">MASUK</div></div>` : ''}
+                    ${r.checkOutPhotoUrl ? `<div style="text-align: center;"><img src="${r.checkOutPhotoUrl}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #0284c7;" /><div style="font-size: 7.5px; color: #0284c7; font-weight: bold; margin-top: 1px;">KELUAR</div></div>` : ''}
+                    ${!r.checkInPhotoUrl && !r.checkOutPhotoUrl ? `<span style="color: #94a3b8;">—</span>` : ''}
+                  </div>
+                </td>
+                <td><span style="font-weight: 600;">${statusLabel(r.status)}</span></td>
                 <td>${r.lateMinutes ? `${r.lateMinutes} mnt` : '-'}</td>
+                <td>${r.workHours ? `${r.workHours} jam` : '-'}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -377,6 +398,7 @@ export default function ReportsPage() {
         <table>
           <thead>
             <tr>
+              <th style="width: 25px;">No</th>
               <th>NIK</th>
               <th>Nama Karyawan</th>
               <th>Jenis Cuti</th>
@@ -388,8 +410,10 @@ export default function ReportsPage() {
             </tr>
           </thead>
           <tbody>
-            ${leaveRecs.map((r: any) => `
+            ${leaveRecs.length === 0 ? `<tr><td colspan="9" style="text-align:center; padding: 24px; color: #94a3b8;">Tidak ada data cuti pada periode ini.</td></tr>` : ''}
+            ${leaveRecs.map((r: any, i: number) => `
               <tr>
+                <td style="color: #64748b;">${i + 1}</td>
                 <td>${r.employee?.employeeNumber ?? '-'}</td>
                 <td><strong>${r.employee?.fullName ?? '-'}</strong></td>
                 <td>${r.leaveType?.name ?? '-'}</td>
@@ -408,6 +432,7 @@ export default function ReportsPage() {
         <table>
           <thead>
             <tr>
+              <th style="width: 25px;">No</th>
               <th>No. Slip</th>
               <th>NIK</th>
               <th>Nama Karyawan</th>
@@ -419,8 +444,10 @@ export default function ReportsPage() {
             </tr>
           </thead>
           <tbody>
-            ${payRecs.map((r: any) => `
+            ${payRecs.length === 0 ? `<tr><td colspan="9" style="text-align:center; padding: 24px; color: #94a3b8;">Tidak ada data penggajian pada periode ini.</td></tr>` : ''}
+            ${payRecs.map((r: any, i: number) => `
               <tr>
+                <td style="color: #64748b;">${i + 1}</td>
                 <td>${r.payrollNumber}</td>
                 <td>${r.employeeNumber ?? '-'}</td>
                 <td><strong>${r.employeeName ?? '-'}</strong></td>
@@ -436,7 +463,16 @@ export default function ReportsPage() {
       `;
     }
 
-    const printWindow = window.open('', '_blank', 'width=1000,height=800');
+    return {
+      title: titleMap[kind],
+      periodStr,
+      rowsHtml,
+    };
+  }
+
+  function printDocument(kind: TabKey) {
+    const { title, periodStr, rowsHtml } = getReportContentHtml(kind);
+    const printWindow = window.open('', '_blank', 'width=1050,height=850');
     if (!printWindow) return;
 
     printWindow.document.write(`
@@ -444,20 +480,21 @@ export default function ReportsPage() {
       <html lang="id">
       <head>
         <meta charset="UTF-8">
-        <title>Laporan - ${titleMap[kind]}</title>
+        <title>Laporan - ${title}</title>
         <style>
-          body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 28px; color: #0f172a; font-size: 11px; }
-          .header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 20px; }
+          body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 24px; color: #0f172a; font-size: 11px; margin: 0; }
+          .header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px; }
           .company { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
           .title { font-size: 13px; font-weight: 700; color: #334155; text-transform: uppercase; margin-top: 2px; }
           .sub { color: #64748b; font-size: 11px; margin-top: 4px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 10px; }
-          th { background: #f8fafc; color: #475569; text-align: left; padding: 8px 10px; font-weight: 700; border-bottom: 1px solid #cbd5e1; text-transform: uppercase; }
-          td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
-          .footer { margin-top: 50px; display: flex; justify-content: space-between; font-size: 10px; color: #64748b; }
-          .sign { text-align: center; margin-top: 60px; min-width: 180px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 10px; }
+          th { background: #f8fafc; color: #475569; text-align: left; padding: 8px 6px; font-weight: 700; border-bottom: 1.5px solid #cbd5e1; text-transform: uppercase; font-size: 9.5px; }
+          td { padding: 6px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+          .footer { margin-top: 40px; display: flex; justify-content: space-between; font-size: 10px; color: #64748b; page-break-inside: avoid; }
+          .sign { text-align: center; margin-top: 20px; min-width: 180px; }
           @media print {
             body { padding: 0; }
+            @page { margin: 10mm; size: auto; }
           }
         </style>
       </head>
@@ -465,7 +502,7 @@ export default function ReportsPage() {
         <div class="header">
           <div>
             <div class="company">PT GASELA MOTOR</div>
-            <div class="title">${titleMap[kind]}</div>
+            <div class="title">${title}</div>
             <div class="sub">Periode: <strong>${periodStr}</strong></div>
           </div>
           <div style="text-align: right;">
@@ -636,10 +673,13 @@ export default function ReportsPage() {
             <Button
               variant="outline"
               className="border-red-200 dark:border-red-900/50 bg-red-50/60 dark:bg-red-950/40 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/60 font-semibold text-xs gap-1.5 px-4 py-2.5 h-auto shadow-2xs"
-              onClick={() => exportPdf(activeTab)}
+              onClick={() => {
+                setPdfPreviewKind(activeTab);
+                setPdfPreviewOpen(true);
+              }}
             >
-              <FileDown className="size-3.5 text-red-600 dark:text-red-400 shrink-0" />
-              <span>Export PDF</span>
+              <Eye className="size-3.5 text-red-600 dark:text-red-400 shrink-0" />
+              <span>Pratinjau &amp; Cetak PDF</span>
             </Button>
             <Button
               className="text-xs font-semibold gap-1.5 px-4 py-2.5 h-auto shadow-2xs"
@@ -773,7 +813,8 @@ export default function ReportsPage() {
                       <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell whitespace-nowrap">Departemen</th>
                       <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell whitespace-nowrap">Shift</th>
                       <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Masuk / Keluar</th>
-                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Lokasi GPS (Presensi)</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider text-center whitespace-nowrap">Foto Wajah</th>
+                      <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Lokasi GPS</th>
                       <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider whitespace-nowrap">Status</th>
                       <th className="px-3.5 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider text-right whitespace-nowrap">Terlambat</th>
                     </tr>
@@ -790,6 +831,50 @@ export default function ReportsPage() {
                         <td className="px-3.5 py-2.5 text-xs md:text-sm text-zinc-500 dark:text-zinc-400 hidden lg:table-cell whitespace-nowrap">{r.shift?.name ?? '—'}</td>
                         <td className="px-3.5 py-2.5 text-xs md:text-sm text-zinc-700 dark:text-zinc-300 whitespace-nowrap font-mono">
                           {r.checkInTime ? fmtTime(r.checkInTime) : '—'}&nbsp;/&nbsp;{r.checkOutTime ? fmtTime(r.checkOutTime) : '—'}
+                        </td>
+                        {/* Foto Wajah Presensi Thumbnail */}
+                        <td className="px-3.5 py-2.5 whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-1.5">
+                            {r.checkInPhotoUrl ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setViewPhotoUrl({
+                                    url: r.checkInPhotoUrl,
+                                    title: `Foto Check-in: ${r.employee?.fullName ?? ''} (${fmtDate(r.attendanceDate)})`,
+                                  })
+                                }
+                                title="Lihat Foto Wajah Check-in"
+                                className="group relative size-8 rounded-lg overflow-hidden border border-emerald-500/60 hover:scale-105 transition-transform shadow-xs"
+                              >
+                                <img src={r.checkInPhotoUrl} alt="Masuk" className="size-full object-cover" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                  <Eye className="size-3 text-white" />
+                                </div>
+                              </button>
+                            ) : null}
+                            {r.checkOutPhotoUrl ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setViewPhotoUrl({
+                                    url: r.checkOutPhotoUrl,
+                                    title: `Foto Check-out: ${r.employee?.fullName ?? ''} (${fmtDate(r.attendanceDate)})`,
+                                  })
+                                }
+                                title="Lihat Foto Wajah Check-out"
+                                className="group relative size-8 rounded-lg overflow-hidden border border-sky-500/60 hover:scale-110 transition-transform shadow-xs"
+                              >
+                                <img src={r.checkOutPhotoUrl} alt="Keluar" className="size-full object-cover" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                  <Eye className="size-3 text-white" />
+                                </div>
+                              </button>
+                            ) : null}
+                            {!r.checkInPhotoUrl && !r.checkOutPhotoUrl && (
+                              <span className="text-xs text-zinc-400 font-mono">—</span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-3.5 py-2.5 whitespace-nowrap">
                           {r.checkInLat && r.checkInLng ? (
@@ -1067,18 +1152,137 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {/* ── EXCEL HINT ── */}
-      <div className="mt-8 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 py-4 flex gap-3">
-        <FileSpreadsheet className="size-4 text-zinc-400 shrink-0 mt-0.5" />
-        <div>
-          <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Cara membuka file CSV di Microsoft Excel</p>
-          <ol className="list-decimal list-inside space-y-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-            <li>Klik tombol <strong>Ekspor CSV</strong> pada bagian filter di atas.</li>
-            <li>Buka Excel → <strong>Data</strong> → <strong>From Text/CSV</strong> → pilih file yang diunduh.</li>
-            <li>Pastikan delimiter yang dipilih adalah <strong>titik koma (;)</strong> → klik <strong>Load</strong>.</li>
-          </ol>
+      {/* ── PHOTO ZOOM PREVIEW MODAL ── */}
+      {viewPhotoUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="relative max-w-md w-full bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-3 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">
+                {viewPhotoUrl.title}
+              </h4>
+              <button
+                type="button"
+                onClick={() => setViewPhotoUrl(null)}
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+            <div className="overflow-hidden rounded-xl border border-zinc-100 dark:border-zinc-800 bg-black/5 flex items-center justify-center">
+              <img
+                src={viewPhotoUrl.url}
+                alt="Foto Wajah"
+                className="w-full max-h-[70vh] object-contain rounded-lg"
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button size="sm" variant="outline" onClick={() => setViewPhotoUrl(null)}>
+                Tutup
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* ── PDF PREVIEW MODAL ── */}
+      {pdfPreviewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-6 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="relative flex flex-col w-full max-w-5xl max-h-[92vh] bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95 duration-150">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-850 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="rounded-lg bg-red-100 dark:bg-red-950/60 p-2 text-red-600 dark:text-red-400">
+                  <FileDown className="size-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                    Pratinjau Dokumen PDF
+                  </h3>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    Tinjau tata letak dokumen dan foto kehadiran sebelum mencetak atau menyimpan PDF.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => printDocument(pdfPreviewKind)}
+                  className="gap-1.5 bg-red-600 hover:bg-red-700 text-white shadow-xs font-semibold text-xs"
+                >
+                  <Printer className="size-3.5" />
+                  <span>Cetak / Simpan PDF</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPdfPreviewOpen(false)}
+                  className="text-xs"
+                >
+                  <X className="size-4" />
+                  <span className="hidden sm:inline ml-1">Tutup</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Modal Scrollable Body (A4 Paper Rendering) */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-zinc-200 dark:bg-zinc-950 flex justify-center">
+              <div className="w-full max-w-4xl bg-white text-zinc-900 p-8 sm:p-12 shadow-xl rounded-sm border border-zinc-200 min-h-225 text-[11px] font-sans">
+                {/* Paper Header */}
+                <div className="flex justify-between items-end border-b-2 border-zinc-900 pb-3 mb-4">
+                  <div>
+                    <div className="text-lg font-extrabold tracking-tight text-zinc-950">PT GASELA MOTOR</div>
+                    <div className="text-xs font-bold uppercase text-zinc-700 mt-0.5">
+                      {getReportContentHtml(pdfPreviewKind).title}
+                    </div>
+                    <div className="text-[11px] text-zinc-500 mt-1">
+                      Periode: <strong>{getReportContentHtml(pdfPreviewKind).periodStr}</strong>
+                    </div>
+                  </div>
+                  <div className="text-right text-[10px] text-zinc-500">
+                    <div>Dicetak pada: {new Date().toLocaleString('id-ID')}</div>
+                    <div className="text-zinc-400 mt-0.5">Sistem HRIS GaselaPulse</div>
+                  </div>
+                </div>
+
+                {/* Paper Table */}
+                <div
+                  className="report-paper-table [&_table]:w-full [&_table]:border-collapse [&_table]:text-[10px] [&_th]:bg-zinc-100 [&_th]:text-zinc-700 [&_th]:p-2 [&_th]:text-left [&_th]:border-b [&_th]:border-zinc-300 [&_th]:font-bold [&_th]:uppercase [&_td]:p-2 [&_td]:border-b [&_td]:border-zinc-200 [&_td]:align-middle"
+                  dangerouslySetInnerHTML={{
+                    __html: getReportContentHtml(pdfPreviewKind).rowsHtml,
+                  }}
+                />
+
+                {/* Paper Footer / Signatures */}
+                <div className="mt-12 flex justify-between items-end text-[10px] text-zinc-500 pt-6 border-t border-dashed border-zinc-200">
+                  <div>GaselaPulse HRIS System — Laporan Resmi</div>
+                  <div className="text-center min-w-45">
+                    <p>Disetujui Oleh,</p>
+                    <div className="h-16" />
+                    <p className="border-b border-zinc-400 pb-0.5 font-medium">__________________________</p>
+                    <p className="font-bold text-zinc-800 mt-0.5">Manager HRD / Finance</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Bottom Bar */}
+            <div className="flex items-center justify-between px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-850 shrink-0 text-xs text-zinc-500">
+              <span>Gunakan opsi <em>&quot;Save as PDF&quot;</em> pada jendela print untuk mengunduh dokumen.</span>
+              <Button
+                size="sm"
+                onClick={() => printDocument(pdfPreviewKind)}
+                className="gap-1.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs"
+              >
+                <Printer className="size-3.5" />
+                <span>Cetak / Simpan PDF</span>
+              </Button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
