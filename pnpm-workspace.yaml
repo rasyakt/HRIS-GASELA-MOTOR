@@ -8,6 +8,7 @@ allowBuilds:
   '@scarf/scarf': true
   '@tailwindcss/oxide': true
   bcrypt: true
+  core-js: set this to true or false
   esbuild: true
   prisma: true
   sharp: true
