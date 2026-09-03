@@ -34,7 +34,8 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm --filter @gasela/backend deploy --legacy --prod /prod/backend
 
 RUN cp -r /app/apps/backend/dist /prod/backend/dist && \
-    cp -r /app/apps/backend/prisma /prod/backend/prisma
+    cp -r /app/apps/backend/prisma /prod/backend/prisma && \
+    (cp -r /app/apps/backend/scripts /prod/backend/scripts 2>/dev/null || true)
 
 FROM node:22-alpine AS runner
 RUN apk add --no-cache tzdata && \
