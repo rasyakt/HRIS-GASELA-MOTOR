@@ -1,12 +1,13 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Key, Loader2, Shield, User, UserCheck, UserX } from 'lucide-react';
+import { Key, Loader2, Lock, Shield, User, UserCheck, UserX } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input, PasswordInput } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
+import { useAuthStore } from '@/store/auth-store';
 
 interface UserAccount {
   id: number;
@@ -26,8 +27,10 @@ export function AccountPanel({
 }) {
   const authApi = useAuthApi();
   const qc = useQueryClient();
+  const currentUser = useAuthStore((s) => s.user);
 
   const isSuperAdminAccount = userAccount?.role === 'superadmin';
+  const isCurrentUserSuperadmin = currentUser?.role === 'superadmin';
 
   const [username, setUsername] = useState(userAccount?.username ?? '');
   const [role, setRole] = useState(userAccount?.role ?? 'employee');
@@ -111,10 +114,10 @@ export function AccountPanel({
     updateAccount.mutate();
   }
 
-  function handleResetPassword(e: React.FormEvent) {
+  function handleReset(e: React.FormEvent) {
     e.preventDefault();
     if (!newPassword) return setError('Password baru wajib diisi');
-    if (newPassword.length < 6) return setError('Password baru minimal 6 karakter');
+    if (newPassword.length < 6) return setError('Password minimal 6 karakter');
     resetPassword.mutate();
   }
 
@@ -284,35 +287,47 @@ export function AccountPanel({
             )}
           </form>
 
-          <form onSubmit={handleResetPassword} className="rounded-lg border border-zinc-200 p-4 space-y-4 bg-zinc-50/50">
-            <div className="pb-2 border-b border-zinc-200">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Reset Kata Sandi</span>
-            </div>
-            
-            <div>
-              <Label htmlFor="reset-pass">Password Baru</Label>
-              <div className="flex gap-3 mt-1">
-                <PasswordInput
-                  id="reset-pass"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Minimal 6 karakter"
-                  className="bg-white"
-                />
-                <Button
-                  type="submit"
-                  disabled={resetPassword.isPending}
-                  className="shrink-0"
-                >
-                  {resetPassword.isPending && (
-                    <Loader2 className="mr-1.5 size-4 animate-spin" />
-                  )}
-                  <Key className="mr-1.5 size-4" />
-                  Ganti Password
-                </Button>
+          {isSuperAdminAccount && !isCurrentUserSuperadmin ? (
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-xs text-zinc-600 flex items-start gap-2.5">
+              <Lock className="size-4 text-zinc-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-zinc-800">Reset Kata Sandi Terkunci</p>
+                <p className="mt-0.5">
+                  Kata sandi akun Superadmin (Developer) bersifat rahasia dan hanya dapat diubah oleh Superadmin itu sendiri melalui halaman Profil.
+                </p>
               </div>
             </div>
-          </form>
+          ) : (
+            <form onSubmit={handleReset} className="rounded-lg border border-zinc-200 p-4 space-y-4 bg-zinc-50/50">
+              <div className="pb-2 border-b border-zinc-200">
+                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Reset Kata Sandi</span>
+              </div>
+              
+              <div>
+                <Label htmlFor="reset-pass">Password Baru</Label>
+                <div className="flex gap-3 mt-1">
+                  <PasswordInput
+                    id="reset-pass"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Minimal 6 karakter"
+                    className="bg-white"
+                  />
+                  <Button
+                    type="submit"
+                    disabled={resetPassword.isPending}
+                    className="shrink-0"
+                  >
+                    {resetPassword.isPending && (
+                      <Loader2 className="mr-1.5 size-4 animate-spin" />
+                    )}
+                    <Key className="mr-1.5 size-4" />
+                    Ganti Password
+                  </Button>
+                </div>
+              </div>
+            </form>
+          )}
         </div>
       )}
     </div>
