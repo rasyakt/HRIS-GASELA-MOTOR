@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FaceCameraModal } from '@/components/face-camera-modal';
 import { useAuthApi } from '@/lib/auth-api';
-import { badgeClass, fmtDate, fmtHours, fmtTime } from '@/lib/format';
+import { badgeClass, fmtDate, fmtHours, fmtTime, statusLabel } from '@/lib/format';
 
 interface AttendanceRow {
   id: number;
@@ -229,7 +229,7 @@ export default function AttendancePage() {
           ) : today ? (
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-3">
-                <Badge className={badgeClass(today.status)}>{today.status}</Badge>
+                <Badge className={badgeClass(today.status)}>{statusLabel(today.status)}</Badge>
                 {today.shiftName && (
                   <span className="text-sm text-zinc-500 dark:text-zinc-400">
                     Shift: {today.shiftName}
@@ -347,7 +347,7 @@ export default function AttendancePage() {
                       <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">
                         {fmtDate(r.attendanceDate)}
                       </span>
-                      <Badge className={badgeClass(r.status)}>{r.status}</Badge>
+                      <Badge className={badgeClass(r.status)}>{statusLabel(r.status)}</Badge>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                       <div>
@@ -450,7 +450,7 @@ export default function AttendancePage() {
                           {fmtDate(r.attendanceDate)}
                         </td>
                         <td className="py-2.5 pr-3">
-                          <Badge className={badgeClass(r.status)}>{r.status}</Badge>
+                          <Badge className={badgeClass(r.status)}>{statusLabel(r.status)}</Badge>
                         </td>
                         <td className="py-2.5 pr-3 text-zinc-600 dark:text-zinc-300 font-mono">
                           {fmtTime(r.checkInTime)}

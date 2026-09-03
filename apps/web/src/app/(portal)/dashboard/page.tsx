@@ -27,7 +27,7 @@ import { ArrowRight, CalendarX2, Hourglass, Timer, Users } from 'lucide-react';
 import Link from 'next/link';
 import { CompanyLocationMapCard } from '@/components/dashboard/CompanyLocationMapCard';
 import { useAuthApi } from '@/lib/auth-api';
-import { badgeClass, fmtDate, fmtHours, fmtTime } from '@/lib/format';
+import { badgeClass, fmtDate, fmtHours, fmtTime, statusLabel } from '@/lib/format';
 import { useAuthStore } from '@/store/auth-store';
 
 function TodayCard({ attendance }: { attendance: TodayAttendanceDto | null }) {
@@ -47,7 +47,7 @@ function TodayCard({ attendance }: { attendance: TodayAttendanceDto | null }) {
         <div>
           <div className="text-sm text-zinc-500 dark:text-zinc-400">Status</div>
           <span className={`mt-1 ${badgeClass(attendance.status)}`}>
-            {attendance.status}
+            {statusLabel(attendance.status)}
           </span>
         </div>
         {attendance.shiftName && (
@@ -119,7 +119,7 @@ function RecentTable({ rows }: { rows: RecentAttendanceDto[] }) {
           <div key={r.date} className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900">
             <div className="flex items-center justify-between">
               <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{fmtDate(r.date)}</span>
-              <span className={badgeClass(r.status)}>{r.status}</span>
+              <span className={badgeClass(r.status)}>{statusLabel(r.status)}</span>
             </div>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div>
@@ -156,7 +156,7 @@ function RecentTable({ rows }: { rows: RecentAttendanceDto[] }) {
               <tr key={r.date} className="border-b border-zinc-100 dark:border-zinc-800/80 last:border-0">
                 <td className="py-2 pr-3 text-zinc-900 dark:text-zinc-100">{fmtDate(r.date)}</td>
                 <td className="py-2 pr-3">
-                  <span className={badgeClass(r.status)}>{r.status}</span>
+                  <span className={badgeClass(r.status)}>{statusLabel(r.status)}</span>
                 </td>
                 <td className="py-2 pr-3 text-zinc-600 dark:text-zinc-400">{fmtTime(r.checkInTime)}</td>
                 <td className="py-2 pr-3 text-zinc-600 dark:text-zinc-400">{fmtTime(r.checkOutTime)}</td>
