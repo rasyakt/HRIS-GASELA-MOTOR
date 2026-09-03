@@ -348,6 +348,9 @@ async function main() {
   const getOrCreateEmployee = async (employeeNumber: string, data: any) => {
     const existing = await prisma.employee.findUnique({ where: { employeeNumber } });
     if (existing) return existing;
+    if (data.basicSalary !== undefined && typeof data.basicSalary !== 'string') {
+      data.basicSalary = String(data.basicSalary);
+    }
     return prisma.employee.create({ data: { employeeNumber, ...data } });
   };
 
@@ -364,7 +367,7 @@ async function main() {
       employmentStatus: 'active',
       employmentType: 'permanent',
       ptkpStatus: 'TK0',
-      basicSalary: 25000000,
+      basicSalary: '25000000',
       departmentId: deptHrd.id,
       positionId: (await prisma.position.findUnique({ where: { code: 'DIR' } }))?.id ?? null,
       profilePhotoUrl: null,
@@ -395,7 +398,7 @@ async function main() {
       employmentStatus: 'active',
       employmentType: 'permanent',
       ptkpStatus: 'K2',
-      basicSalary: 7500000,
+      basicSalary: '7500000',
       departmentId: deptHrd.id,
       positionId: (await prisma.position.findUnique({ where: { code: 'HRD' } }))!.id,
       profilePhotoUrl: null,
@@ -427,7 +430,7 @@ async function main() {
       employmentStatus: 'active',
       employmentType: 'permanent',
       ptkpStatus: 'TK0',
-      basicSalary: 4500000,
+      basicSalary: '4500000',
       departmentId: deptHrd.id,
       positionId: (await prisma.position.findUnique({ where: { code: 'HRD' } }))!.id,
       profilePhotoUrl: null,
@@ -460,7 +463,7 @@ async function main() {
       employmentStatus: 'active',
       employmentType: 'permanent',
       ptkpStatus: 'TK0',
-      basicSalary: 4500000,
+      basicSalary: '4500000',
       departmentId: deptSales.id,
       positionId: (await prisma.position.findUnique({ where: { code: 'ADMS' } }))!.id,
     });
@@ -492,7 +495,7 @@ async function main() {
       employmentStatus: 'active',
       employmentType: 'permanent',
       ptkpStatus: 'K3',
-      basicSalary: 15000000,
+      basicSalary: '15000000',
       departmentId: deptHrd.id,
       positionId: (await prisma.position.findUnique({ where: { code: 'DIR' } }))!.id,
     });
@@ -524,7 +527,7 @@ async function main() {
       employmentStatus: 'active',
       employmentType: 'permanent',
       ptkpStatus: 'K1',
-      basicSalary: 6500000,
+      basicSalary: '6500000',
       departmentId: deptHrd.id,
       positionId: (await prisma.position.findUnique({ where: { code: 'HRD' } }))!.id,
     });
@@ -556,7 +559,7 @@ async function main() {
       employmentStatus: 'active',
       employmentType: 'permanent',
       ptkpStatus: 'K2',
-      basicSalary: 8500000,
+      basicSalary: '8500000',
       departmentId: deptWorkshop.id,
       positionId: (await prisma.position.findUnique({ where: { code: 'SPVG' } }))!.id,
     });
