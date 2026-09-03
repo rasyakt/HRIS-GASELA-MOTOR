@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, X, User, Briefcase, FileText, Upload, Trash2, Loader2, Edit, Award, GraduationCap, Package, Shield, HeartHandshake, Download } from 'lucide-react';
+import { Search, Plus, X, User, Briefcase, FileText, Upload, Trash2, Loader2, Edit, Award, GraduationCap, Package, Shield, HeartHandshake, Download, RotateCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -259,12 +259,29 @@ export default function EmployeesPage() {
     setIsEditMode(false);
   };
 
+  const [isGeneratingNik, setIsGeneratingNik] = useState(false);
+
+  const fetchNextNik = async () => {
+    setIsGeneratingNik(true);
+    try {
+      const res = await authApi<{ employeeNumber: string; format: string }>('/api/employees/next-number');
+      if (res && res.employeeNumber) {
+        setFormData((prev) => ({ ...prev, employeeNumber: res.employeeNumber }));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsGeneratingNik(false);
+    }
+  };
+
   const handleOpenCreate = () => {
     resetForm();
     setSelectedEmployeeId(null);
     setIsEditMode(true);
     setDrawerTab('profile');
     setDrawerOpen(true);
+    fetchNextNik();
   };
 
   const handleOpenDetail = (emp: EmployeeRow) => {
@@ -863,7 +880,21 @@ export default function EmployeesPage() {
                       <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="employeeNumber">NIK / Nomor Karyawan</Label>
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="employeeNumber">NIK / Nomor Karyawan</Label>
+                              {!selectedEmployeeId && isEditMode && (
+                                <button
+                                  type="button"
+                                  onClick={fetchNextNik}
+                                  disabled={isGeneratingNik}
+                                  className="text-[11px] text-primary hover:text-primary/80 font-medium flex items-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
+                                  title="Generate nomor urut otomatis berikutnya"
+                                >
+                                  <RotateCcw className={`size-3 ${isGeneratingNik ? 'animate-spin' : ''}`} />
+                                  <span>Generate</span>
+                                </button>
+                              )}
+                            </div>
                             <Input
                               id="employeeNumber"
                               disabled={!isEditMode || !!selectedEmployeeId}

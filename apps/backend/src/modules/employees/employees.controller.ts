@@ -43,6 +43,13 @@ export class EmployeesController {
     return this.employeesService.list(query);
   }
 
+  @Roles('admin', 'hrd', 'owner')
+  @Get('next-number')
+  @ApiOperation({ summary: 'Dapatkan nomor karyawan (NIK) berikutnya sesuai format aktif' })
+  getNextNumber() {
+    return this.employeesService.getNextEmployeeNumber();
+  }
+
   @Roles('admin', 'hrd', 'manager', 'owner', 'employee')
   @Get(':id')
   @ApiOperation({ summary: 'Detail karyawan' })
