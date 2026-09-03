@@ -11,8 +11,11 @@ COPY packages/shared-types/package.json ./packages/shared-types/
 COPY packages/shared-utils/package.json ./packages/shared-utils/
 COPY apps/web/package.json ./apps/web/
 
-# 2. Install dependensi dengan BuildKit cache mount pnpm store
-RUN pnpm config set fetch-timeout 600000 && \
+# 2. Konfigurasi registry Cloudflare CDN & nonaktifkan audit agar cepat dan stabil
+RUN pnpm config set registry https://registry.yarnpkg.com && \
+    pnpm config set audit false && \
+    pnpm config set fund false && \
+    pnpm config set fetch-timeout 300000 && \
     pnpm config set fetch-retries 5
 
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
