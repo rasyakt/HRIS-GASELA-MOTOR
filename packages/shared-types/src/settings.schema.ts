@@ -8,6 +8,7 @@ export const COMPANY_SETTING_KEYS = [
   'overtime.rate_multiplier_weekday',
   'portal.theme_config',
   'attendance.photo_retention_days',
+  'attendance.checkout_earliest_buffer_minutes',
 ] as const;
 export type CompanySettingKey = (typeof COMPANY_SETTING_KEYS)[number];
 

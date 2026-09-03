@@ -8,6 +8,10 @@ export interface TodayAttendanceDto {
   lateMinutes: number;
   workHours: number;
   shiftName: string | null;
+  shiftStartTime?: string | null;
+  shiftEndTime?: string | null;
+  earliestCheckoutTime?: string | null;
+  canCheckoutNow?: boolean;
 }
 
 export interface RecentAttendanceDto {

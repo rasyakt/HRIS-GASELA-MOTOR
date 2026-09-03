@@ -109,6 +109,35 @@ export class DashboardService {
       workHours: Number(r.workHours),
     }));
 
+    const bufferSetting = await this.prisma.companySetting.findUnique({
+      where: { key: 'attendance.checkout_earliest_buffer_minutes' },
+    });
+    const bufferMinutes = bufferSetting
+      ? parseInt(bufferSetting.value, 10) || 0
+      : 30;
+
+    let shiftStartTime: string | null = null;
+    let shiftEndTime: string | null = null;
+    let earliestCheckoutTime: string | null = null;
+    let canCheckoutNow = true;
+
+    if (attendance?.shift) {
+      shiftStartTime = timeToString(attendance.shift.startTime);
+      shiftEndTime = timeToString(attendance.shift.endTime);
+      if (shiftEndTime) {
+        const [sh, sm] = shiftEndTime.split(':').map(Number);
+        const shiftEndMin = sh * 60 + sm;
+        const earliestMin = Math.max(0, shiftEndMin - bufferMinutes);
+        const eh = String(Math.floor(earliestMin / 60)).padStart(2, '0');
+        const em = String(earliestMin % 60).padStart(2, '0');
+        earliestCheckoutTime = `${eh}:${em}`;
+
+        const nowWib = new Date(Date.now() + 7 * 60 * 60 * 1000);
+        const nowMin = nowWib.getUTCHours() * 60 + nowWib.getUTCMinutes();
+        canCheckoutNow = nowMin >= earliestMin;
+      }
+    }
+
     return {
       today: {
         date: dayKey(today),
@@ -120,6 +149,10 @@ export class DashboardService {
               lateMinutes: attendance.lateMinutes,
               workHours: Number(attendance.workHours),
               shiftName: attendance.shift?.name ?? null,
+              shiftStartTime,
+              shiftEndTime,
+              earliestCheckoutTime,
+              canCheckoutNow,
             }
           : null,
       },

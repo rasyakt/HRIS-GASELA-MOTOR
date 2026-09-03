@@ -54,6 +54,7 @@ const SETTING_HINTS: Record<string, string> = {
   'office.radius_meters': 'Radius geofence presensi check-in/out karyawan (dalam meter)',
   'overtime.rate_multiplier_weekday': 'Pengali upah lembur pada hari kerja (misal: 1.5)',
   'attendance.photo_retention_days': 'Batas waktu penyimpanan foto selfie presensi sebelum dibersihkan otomatis (hari, standar: 60)',
+  'attendance.checkout_earliest_buffer_minutes': 'Waktu paling awal karyawan boleh check-out sebelum jam shift berakhir (dalam menit, misal: 30)',
 };
 
 const DEFAULT_BPJS_CONFIG = {
@@ -1404,6 +1405,104 @@ function ShiftsManagementCard() {
   );
 }
 
+function ShiftCheckoutPolicyCard({
+  settings,
+  onSave,
+  saving,
+}: {
+  settings: CompanySettingDto[] | undefined;
+  onSave: (key: string, value: string) => void;
+  saving: boolean;
+}) {
+  const currentSetting = settings?.find(
+    (s) => s.key === 'attendance.checkout_earliest_buffer_minutes',
+  );
+  const [bufferVal, setBufferVal] = useState(currentSetting?.value ?? '30');
+
+  useEffect(() => {
+    if (currentSetting?.value) {
+      setBufferVal(currentSetting.value);
+    }
+  }, [currentSetting?.value]);
+
+  const isDirty = bufferVal !== (currentSetting?.value ?? '30');
+
+  const calcSampleCheckout = (bufferStr: string) => {
+    const b = Math.max(0, parseInt(bufferStr, 10) || 0);
+    const endMinutes = 17 * 60; // Contoh shift jam 17:00
+    const earliest = Math.max(0, endMinutes - b);
+    const hh = String(Math.floor(earliest / 60)).padStart(2, '0');
+    const mm = String(earliest % 60).padStart(2, '0');
+    return `${hh}:${mm}`;
+  };
+
+  return (
+    <Card className="mt-6 border border-zinc-200 dark:border-zinc-800">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base text-zinc-900 dark:text-white">
+          <Clock className="size-4 text-emerald-600 dark:text-emerald-400" />
+          Kebijakan Batas Waktu Check-out Pulang Shift
+        </CardTitle>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          Mencegah karyawan langsung melakukan check-out setelah check-in. Tombol check-out baru terbuka menjelang jam selesai shift kerja.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2 items-start">
+          <div className="space-y-2">
+            <Label
+              htmlFor="checkout-buffer"
+              className="text-xs font-semibold text-zinc-700 dark:text-zinc-300"
+            >
+              Batas Waktu Awal Check-out Sebelum Shift Selesai (Menit)
+            </Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="checkout-buffer"
+                type="number"
+                min="0"
+                max="300"
+                value={bufferVal}
+                onChange={(e) => setBufferVal(e.target.value)}
+                className="w-28 font-mono text-sm"
+              />
+              <span className="text-xs text-zinc-500 font-medium">menit sebelum jam pulang</span>
+              <Button
+                size="sm"
+                onClick={() =>
+                  onSave('attendance.checkout_earliest_buffer_minutes', bufferVal)
+                }
+                disabled={!isDirty || saving}
+                className="ml-auto"
+              >
+                {saving ? (
+                  <Loader2 className="size-3.5 animate-spin mr-1" />
+                ) : (
+                  <Save className="size-3.5 mr-1" />
+                )}
+                Simpan Aturan
+              </Button>
+            </div>
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed pt-1">
+              <strong>Contoh:</strong> Jika shift kerja berakhir pukul <strong>17:00</strong> dan aturan diisi <strong>{bufferVal || '0'} menit</strong>, maka check-out dibuka mulai pukul <strong>{calcSampleCheckout(bufferVal)} WIB</strong>.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-amber-200/80 bg-amber-50/50 dark:border-amber-900/50 dark:bg-amber-950/20 p-3.5 text-xs text-amber-900 dark:text-amber-200 space-y-1.5">
+            <div className="font-semibold flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
+              <ShieldCheck className="size-4" />
+              Ketentuan Pulang Lebih Awal (Early Leave)
+            </div>
+            <p className="text-[11px] leading-relaxed text-amber-700 dark:text-amber-300/80">
+              Karyawan yang terpaksa pulang sebelum jam tersebut (misal karena sakit atau urusan keluarga darurat) <strong>wajib menyertakan alasan izin</strong> pada catatan. Presensi akan otomatis tercatat sebagai <strong>Pulang Cepat</strong>.
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function SettingRow({
   setting,
   onSave,
@@ -1571,7 +1670,7 @@ export default function SettingsPage() {
       label: 'Perusahaan & Lokasi',
       icon: Building2,
       badge: settings.data
-        ? `${settings.data.filter((s) => s.key !== 'portal.theme_config' && s.key !== 'attendance.photo_retention_days').length}`
+        ? `${settings.data.filter((s) => s.key !== 'portal.theme_config' && s.key !== 'attendance.photo_retention_days' && s.key !== 'attendance.checkout_earliest_buffer_minutes').length}`
         : undefined,
     },
     {
@@ -1661,7 +1760,7 @@ export default function SettingsPage() {
               <>
                 <div className="space-y-3">
                   {settings.data
-                    .filter((s) => s.key !== 'portal.theme_config' && s.key !== 'attendance.photo_retention_days')
+                    .filter((s) => s.key !== 'portal.theme_config' && s.key !== 'attendance.photo_retention_days' && s.key !== 'attendance.checkout_earliest_buffer_minutes')
                     .map((s) => (
                       <SettingRow
                         key={s.key}
@@ -1685,7 +1784,16 @@ export default function SettingsPage() {
       )}
 
       {/* ── TAB 2: JADWAL SHIFT ── */}
-      {activeTab === 'shifts' && isAdmin && <ShiftsManagementCard />}
+      {activeTab === 'shifts' && isAdmin && (
+        <div className="space-y-6">
+          <ShiftsManagementCard />
+          <ShiftCheckoutPolicyCard
+            settings={settings.data}
+            onSave={(key, value) => saveSetting.mutate({ key, value })}
+            saving={saveSetting.isPending}
+          />
+        </div>
+      )}
 
       {/* ── TAB 3: KALENDER HARI LIBUR ── */}
       {activeTab === 'holidays' && isAdmin && (

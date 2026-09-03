@@ -26,6 +26,8 @@ export class UpdateCompanySettingDto
       'bpjs.rates',
       'overtime.rate_multiplier_weekday',
       'portal.theme_config',
+      'attendance.photo_retention_days',
+      'attendance.checkout_earliest_buffer_minutes',
     ] as const,
   })
   key: UpdateCompanySettingInput['key'];

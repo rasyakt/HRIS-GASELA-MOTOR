@@ -147,5 +147,69 @@ describe('AttendancesService', () => {
       expect(typeof result.workHours).toBe('number');
       expect(result.checkOutTime).toBeDefined();
     });
+
+    it('menolak check-out lebih awal jika tanpa alasan/catatan izin', async () => {
+      prisma.companySetting.findUnique.mockImplementation(
+        ({ where }: { where: { key: string } }) => {
+          if (where.key === 'office.location') return officeSetting;
+          if (where.key === 'office.radius_meters') return radiusSetting;
+          if (where.key === 'attendance.checkout_earliest_buffer_minutes')
+            return { key: 'attendance.checkout_earliest_buffer_minutes', value: '30' };
+          return null;
+        },
+      );
+      prisma.attendance.findUnique.mockResolvedValue({
+        id: 5,
+        checkInTime: '08:00:00',
+        checkOutTime: null,
+        shiftId: 1,
+        status: 'present',
+      });
+      // Shift berakhir jam 23:00 (jauh di masa depan)
+      prisma.shift.findUnique.mockResolvedValue({
+        id: 1,
+        name: 'Shift Malam',
+        endTime: '23:00:00',
+      });
+
+      await expect(
+        service.checkOut(1, { ...officeCoords, notes: '' }),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('mengizinkan check-out lebih awal jika menyertakan alasan izin', async () => {
+      prisma.companySetting.findUnique.mockImplementation(
+        ({ where }: { where: { key: string } }) => {
+          if (where.key === 'office.location') return officeSetting;
+          if (where.key === 'office.radius_meters') return radiusSetting;
+          if (where.key === 'attendance.checkout_earliest_buffer_minutes')
+            return { key: 'attendance.checkout_earliest_buffer_minutes', value: '30' };
+          return null;
+        },
+      );
+      prisma.attendance.findUnique.mockResolvedValue({
+        id: 5,
+        checkInTime: '08:00:00',
+        checkOutTime: null,
+        shiftId: 1,
+        status: 'present',
+      });
+      prisma.shift.findUnique.mockResolvedValue({
+        id: 1,
+        name: 'Shift Malam',
+        endTime: '23:00:00',
+      });
+      prisma.attendance.update.mockImplementation(
+        ({ data }: { data: Record<string, unknown> }) =>
+          Promise.resolve({ id: 5, ...data }),
+      );
+
+      const result = await service.checkOut(1, {
+        ...officeCoords,
+        notes: 'Izin sakit / ke dokter',
+      });
+      expect(result.status).toBe('early_leave');
+      expect(result.earlyLeaveMinutes).toBeGreaterThan(0);
+    });
   });
 });
