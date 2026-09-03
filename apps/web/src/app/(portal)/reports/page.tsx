@@ -272,6 +272,17 @@ export default function ReportsPage() {
     if (user && !canManage) router.replace('/dashboard');
   }, [user, canManage, router]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (viewPhotoUrl) setViewPhotoUrl(null);
+        if (pdfPreviewOpen) setPdfPreviewOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [viewPhotoUrl, pdfPreviewOpen]);
+
   const deptQuery = useQuery({
     queryKey: ['departments'],
     queryFn: () => authApi<DepartmentItem[]>('/api/departments'),
@@ -381,8 +392,8 @@ export default function ReportsPage() {
                 <td style="font-family: monospace;">${r.checkInTime ? fmtTime(r.checkInTime) : '-'} / ${r.checkOutTime ? fmtTime(r.checkOutTime) : '-'}</td>
                 <td style="text-align: center;">
                   <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
-                    ${r.checkInPhotoUrl ? `<div style="text-align: center;"><img src="${r.checkInPhotoUrl}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #10b981;" /><div style="font-size: 7.5px; color: #059669; font-weight: bold; margin-top: 1px;">MASUK</div></div>` : ''}
-                    ${r.checkOutPhotoUrl ? `<div style="text-align: center;"><img src="${r.checkOutPhotoUrl}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #0284c7;" /><div style="font-size: 7.5px; color: #0284c7; font-weight: bold; margin-top: 1px;">KELUAR</div></div>` : ''}
+                    ${r.checkInPhotoUrl ? `<div style="text-align: center;"><img src="${r.checkInPhotoUrl}" crossorigin="anonymous" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #10b981;" /><div style="font-size: 7.5px; color: #059669; font-weight: bold; margin-top: 1px;">MASUK</div></div>` : ''}
+                    ${r.checkOutPhotoUrl ? `<div style="text-align: center;"><img src="${r.checkOutPhotoUrl}" crossorigin="anonymous" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #0284c7;" /><div style="font-size: 7.5px; color: #0284c7; font-weight: bold; margin-top: 1px;">KELUAR</div></div>` : ''}
                     ${!r.checkInPhotoUrl && !r.checkOutPhotoUrl ? `<span style="color: #94a3b8;">—</span>` : ''}
                   </div>
                 </td>
@@ -471,31 +482,93 @@ export default function ReportsPage() {
     };
   }
 
+  async function urlToDataUrl(url: string): Promise<string | null> {
+    if (!url) return null;
+    if (url.startsWith('data:')) return url;
+    try {
+      const res = await fetch(url, { credentials: 'omit' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') resolve(reader.result);
+          else reject(new Error('Konversi base64 gagal'));
+        };
+        reader.onerror = () => reject(new Error('FileReader error'));
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      // Fallback via in-memory Image canvas draw
+      return new Promise<string | null>((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth || 64;
+            canvas.height = img.naturalHeight || 64;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0);
+              resolve(canvas.toDataURL('image/jpeg', 0.9));
+              return;
+            }
+          } catch {
+            // ignore canvas errors
+          }
+          resolve(null);
+        };
+        img.onerror = () => resolve(null);
+        img.src = url;
+      });
+    }
+  }
+
   function printDocument(kind: TabKey) {
     const { title, periodStr, rowsHtml } = getReportContentHtml(kind);
-    const printWindow = window.open('', '_blank', 'width=1050,height=850');
-    if (!printWindow) return;
 
-    printWindow.document.write(`
+    // Remove any existing print iframe
+    const oldIframe = document.getElementById('print-report-iframe');
+    if (oldIframe) oldIframe.remove();
+
+    const iframe = document.createElement('iframe');
+    iframe.id = 'print-report-iframe';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    iframe.style.opacity = '0';
+    iframe.style.pointerEvents = 'none';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) return;
+
+    doc.open();
+    doc.write(`
       <!DOCTYPE html>
       <html lang="id">
       <head>
         <meta charset="UTF-8">
         <title>Laporan - ${title}</title>
         <style>
-          body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 24px; color: #0f172a; font-size: 11px; margin: 0; }
+          @page { margin: 8mm; size: ${kind === 'attendance' ? 'landscape' : 'auto'}; }
+          body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 12px; color: #0f172a; font-size: 11px; margin: 0; }
           .header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px; }
           .company { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
           .title { font-size: 13px; font-weight: 700; color: #334155; text-transform: uppercase; margin-top: 2px; }
           .sub { color: #64748b; font-size: 11px; margin-top: 4px; }
           table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 10px; }
-          th { background: #f8fafc; color: #475569; text-align: left; padding: 8px 6px; font-weight: 700; border-bottom: 1.5px solid #cbd5e1; text-transform: uppercase; font-size: 9.5px; }
+          th { background: #f8fafc !important; color: #475569; text-align: left; padding: 8px 6px; font-weight: 700; border-bottom: 1.5px solid #cbd5e1; text-transform: uppercase; font-size: 9.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           td { padding: 6px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
-          .footer { margin-top: 40px; display: flex; justify-content: space-between; font-size: 10px; color: #64748b; page-break-inside: avoid; }
-          .sign { text-align: center; margin-top: 20px; min-width: 180px; }
+          .footer { margin-top: 36px; display: flex; justify-content: space-between; font-size: 10px; color: #64748b; page-break-inside: avoid; }
+          .sign { text-align: center; margin-top: 16px; min-width: 180px; }
           @media print {
             body { padding: 0; }
-            @page { margin: 10mm; size: auto; }
+            img { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           }
         </style>
       </head>
@@ -523,22 +596,28 @@ export default function ReportsPage() {
             <p><strong>Manager HRD / Finance</strong></p>
           </div>
         </div>
-
-        <script>
-          window.onload = function() {
-            window.print();
-          };
-        </script>
       </body>
       </html>
     `);
-    printWindow.document.close();
+    doc.close();
+
+    // Trigger print from hidden iframe seamlessly
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } finally {
+        setTimeout(() => {
+          iframe.remove();
+        }, 1500);
+      }
+    }, 250);
   }
 
   async function downloadDirectPdf(kind: TabKey) {
     const reportElement = document.getElementById('report-paper-container');
     if (!reportElement) {
-      printDocument(kind);
+      setCsvMsg({ type: 'error', text: 'Elemen dokumen laporan tidak ditemukan.' });
       return;
     }
 
@@ -556,7 +635,7 @@ export default function ReportsPage() {
               'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
             fallbackScript.onload = () => resolve();
             fallbackScript.onerror = () =>
-              reject(new Error('Gagal memuat generator PDF'));
+              reject(new Error('Gagal memuat pustaka generator PDF.'));
             document.head.appendChild(fallbackScript);
           };
           document.head.appendChild(script);
@@ -565,9 +644,24 @@ export default function ReportsPage() {
 
       const html2pdf = (window as any).html2pdf;
       if (!html2pdf) {
-        printDocument(kind);
-        return;
+        throw new Error('Pustaka pembuat PDF tidak tersedia.');
       }
+
+      // Pre-convert images inside reportElement to base64 Data URLs so canvas is never tainted
+      const imgElements = Array.from(reportElement.querySelectorAll('img'));
+      await Promise.all(
+        imgElements.map(async (img) => {
+          if (img.src && !img.src.startsWith('data:')) {
+            const dataUrl = await urlToDataUrl(img.src);
+            if (dataUrl) {
+              img.src = dataUrl;
+            } else {
+              // If cross-origin prevented loading, hide image to prevent canvas corruption
+              img.style.display = 'none';
+            }
+          }
+        })
+      );
 
       const { title, periodStr } = getReportContentHtml(kind);
       const safePeriod = periodStr
@@ -575,24 +669,52 @@ export default function ReportsPage() {
         .replace(/[/\\?%*:|"<>]/g, '-');
       const filename = `${title.replace(/\s+/g, '_')}_${safePeriod}.pdf`;
 
+      // Use landscape orientation for wide tables like attendance
+      const orientation = kind === 'attendance' ? 'landscape' : 'portrait';
+
       const opt = {
-        margin: [8, 8, 8, 8],
+        margin: [6, 6, 6, 6],
         filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
           useCORS: true,
+          allowTaint: false,
           logging: false,
           scrollY: 0,
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
       };
 
-      await html2pdf().set(opt).from(reportElement).save();
-    } catch {
-      // Fallback to print if conversion fails
-      printDocument(kind);
+      // Suppress benign html2canvas color warning during conversion to prevent Next.js dev error overlay
+      const originalConsoleError = console.error;
+      console.error = (...args: any[]) => {
+        if (
+          typeof args[0] === 'string' &&
+          (args[0].includes('unsupported color function') ||
+            args[0].includes('unsupported color') ||
+            args[0].includes('color function "lab"') ||
+            args[0].includes('color function "oklab"') ||
+            args[0].includes('color function "oklch"'))
+        ) {
+          return;
+        }
+        originalConsoleError.apply(console, args);
+      };
+
+      try {
+        await html2pdf().set(opt).from(reportElement).save();
+        setCsvMsg({ type: 'success', text: `Dokumen "${filename}" berhasil diunduh.` });
+      } finally {
+        console.error = originalConsoleError;
+      }
+    } catch (err: any) {
+      console.error('Error generating PDF:', err);
+      setCsvMsg({
+        type: 'error',
+        text: `Gagal membuat file PDF langsung: ${err?.message || 'Terjadi kesalahan'}. Anda dapat menggunakan tombol "Cetak Dokumen" sebagai alternatif.`,
+      });
     } finally {
       setDownloadingPdf(false);
     }
@@ -657,10 +779,7 @@ export default function ReportsPage() {
           <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">Laporan &amp; Analitik</h1>
           <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">Tinjau visualisasi data sebelum mengekspor ke CSV/Excel.</p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 py-2">
-          <FileSpreadsheet className="size-3.5 text-emerald-500" />
-          Format ekspor: CSV (UTF-8) · Kompatibel Excel &amp; Google Sheets
-        </div>
+        
       </div>
 
       {/* ── TOAST NOTIFICATION ── */}
@@ -1218,7 +1337,12 @@ export default function ReportsPage() {
 
       {/* ── PHOTO ZOOM PREVIEW MODAL ── */}
       {viewPhotoUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setViewPhotoUrl(null);
+          }}
+        >
           <div className="relative max-w-md w-full bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-3 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">
@@ -1250,7 +1374,12 @@ export default function ReportsPage() {
 
       {/* ── PDF PREVIEW MODAL ── */}
       {pdfPreviewOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-6 backdrop-blur-xs animate-in fade-in duration-150">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-6 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setPdfPreviewOpen(false);
+          }}
+        >
           <div className="relative flex flex-col w-full max-w-5xl max-h-[92vh] bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95 duration-150">
             
             {/* Modal Header */}
@@ -1290,7 +1419,7 @@ export default function ReportsPage() {
                   ) : (
                     <FileDown className="size-3.5" />
                   )}
-                  <span>{downloadingPdf ? 'Mengunduh PDF…' : 'Unduh PDF Langsung'}</span>
+                  <span>{downloadingPdf ? 'Mengunduh PDF…' : 'Unduh PDF'}</span>
                 </Button>
                 <Button
                   size="sm"
@@ -1308,41 +1437,72 @@ export default function ReportsPage() {
             <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-zinc-200 dark:bg-zinc-950 flex justify-center">
               <div
                 id="report-paper-container"
-                className="w-full max-w-4xl bg-white text-zinc-900 p-8 sm:p-12 shadow-xl rounded-sm border border-zinc-200 min-h-225 text-[11px] font-sans"
+                className="w-full max-w-4xl shadow-xl rounded-xs min-h-225 text-[11px]"
+                style={{
+                  backgroundColor: '#ffffff',
+                  color: '#0f172a',
+                  padding: '36px',
+                  border: '1px solid #e2e8f0',
+                  fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                }}
               >
                 {/* Paper Header */}
-                <div className="flex justify-between items-end border-b-2 border-zinc-900 pb-3 mb-4">
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-end',
+                    borderBottom: '2px solid #0f172a',
+                    paddingBottom: '12px',
+                    marginBottom: '16px',
+                  }}
+                >
                   <div>
-                    <div className="text-lg font-extrabold tracking-tight text-zinc-950">PT GASELA MOTOR</div>
-                    <div className="text-xs font-bold uppercase text-zinc-700 mt-0.5">
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: '#09090b', letterSpacing: '-0.025em' }}>
+                      PT GASELA MOTOR
+                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: '#334155', marginTop: '2px' }}>
                       {getReportContentHtml(pdfPreviewKind).title}
                     </div>
-                    <div className="text-[11px] text-zinc-500 mt-1">
-                      Periode: <strong>{getReportContentHtml(pdfPreviewKind).periodStr}</strong>
+                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                      Periode: <strong style={{ color: '#0f172a' }}>{getReportContentHtml(pdfPreviewKind).periodStr}</strong>
                     </div>
                   </div>
-                  <div className="text-right text-[10px] text-zinc-500">
+                  <div style={{ textAlign: 'right', fontSize: '10px', color: '#64748b' }}>
                     <div>Dicetak pada: {new Date().toLocaleString('id-ID')}</div>
-                    <div className="text-zinc-400 mt-0.5">Sistem HRIS GaselaPulse</div>
+                    <div style={{ color: '#94a3b8', marginTop: '2px' }}>Sistem HRIS GaselaPulse</div>
                   </div>
                 </div>
 
                 {/* Paper Table */}
                 <div
-                  className="report-paper-table [&_table]:w-full [&_table]:border-collapse [&_table]:text-[10px] [&_th]:bg-zinc-100 [&_th]:text-zinc-700 [&_th]:p-2 [&_th]:text-left [&_th]:border-b [&_th]:border-zinc-300 [&_th]:font-bold [&_th]:uppercase [&_td]:p-2 [&_td]:border-b [&_td]:border-zinc-200 [&_td]:align-middle"
+                  className="report-paper-table [&_table]:w-full [&_table]:border-collapse [&_table]:text-[10px] [&_th]:bg-[#f8fafc] [&_th]:text-[#475569] [&_th]:p-2 [&_th]:text-left [&_th]:border-b [&_th]:border-[#cbd5e1] [&_th]:font-bold [&_th]:uppercase [&_td]:p-2 [&_td]:border-b [&_td]:border-[#e2e8f0] [&_td]:align-middle"
                   dangerouslySetInnerHTML={{
                     __html: getReportContentHtml(pdfPreviewKind).rowsHtml,
                   }}
                 />
 
                 {/* Paper Footer / Signatures */}
-                <div className="mt-12 flex justify-between items-end text-[10px] text-zinc-500 pt-6 border-t border-dashed border-zinc-200">
+                <div
+                  style={{
+                    marginTop: '48px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-end',
+                    fontSize: '10px',
+                    color: '#64748b',
+                    paddingTop: '24px',
+                    borderTop: '1px dashed #e2e8f0',
+                  }}
+                >
                   <div>GaselaPulse HRIS System — Laporan Resmi</div>
-                  <div className="text-center min-w-45">
+                  <div style={{ textAlign: 'center', minWidth: '180px' }}>
                     <p>Disetujui Oleh,</p>
-                    <div className="h-16" />
-                    <p className="border-b border-zinc-400 pb-0.5 font-medium">__________________________</p>
-                    <p className="font-bold text-zinc-800 mt-0.5">Manager HRD / Finance</p>
+                    <div style={{ height: '64px' }} />
+                    <p style={{ borderBottom: '1px solid #94a3b8', paddingBottom: '2px', fontWeight: 500 }}>
+                      __________________________
+                    </p>
+                    <p style={{ fontWeight: 700, color: '#1e293b', marginTop: '4px' }}>Manager HRD / Finance</p>
                   </div>
                 </div>
               </div>
@@ -1350,7 +1510,7 @@ export default function ReportsPage() {
 
             {/* Modal Bottom Bar */}
             <div className="flex items-center justify-between px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-850 shrink-0 text-xs text-zinc-500">
-              <span>Klik <strong>&quot;Unduh PDF Langsung&quot;</strong> untuk menyimpan file ke perangkat atau <strong>&quot;Cetak Dokumen&quot;</strong> untuk print ke kertas.</span>
+              <span>Klik <strong>&quot;Unduh PDF&quot;</strong> untuk menyimpan file ke perangkat atau <strong>&quot;Cetak Dokumen&quot;</strong> untuk print ke kertas.</span>
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
@@ -1371,7 +1531,7 @@ export default function ReportsPage() {
                   ) : (
                     <FileDown className="size-3.5" />
                   )}
-                  <span>{downloadingPdf ? 'Mengunduh PDF…' : 'Unduh PDF Langsung'}</span>
+                  <span>{downloadingPdf ? 'Mengunduh PDF…' : 'Unduh PDF'}</span>
                 </Button>
               </div>
             </div>
