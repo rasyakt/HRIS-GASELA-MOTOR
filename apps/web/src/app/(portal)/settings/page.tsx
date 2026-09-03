@@ -19,6 +19,7 @@ import {
   Save,
   ShieldCheck,
   Trash2,
+  UserCheck,
   X,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -42,6 +43,7 @@ const SETTING_HINTS: Record<string, string> = {
   'overtime.rate_multiplier_weekday': 'Pengali upah lembur pada hari kerja (misal: 1.5)',
   'attendance.photo_retention_days': 'Batas waktu penyimpanan foto selfie presensi sebelum dibersihkan otomatis (hari, standar: 60)',
   'attendance.checkout_earliest_buffer_minutes': 'Waktu paling awal karyawan boleh check-out sebelum jam shift berakhir (dalam menit, misal: 30)',
+  'employee.number_format': 'Format penomoran NIK karyawan baru otomatis (misal: KAY-{SEQ:3} atau EMP-{YYYY}-{SEQ:4})',
 };
 
 const DEFAULT_BPJS_CONFIG = {
@@ -979,6 +981,143 @@ function ShiftsManagementCard() {
   );
 }
 
+function EmployeeNumberFormatCard({
+  settings,
+  onSave,
+  saving,
+}: {
+  settings: CompanySettingDto[] | undefined;
+  onSave: (key: string, value: string) => void;
+  saving: boolean;
+}) {
+  const currentSetting = settings?.find((s) => s.key === 'employee.number_format');
+  const [formatVal, setFormatVal] = useState(currentSetting?.value ?? 'KAY-{SEQ:3}');
+
+  useEffect(() => {
+    if (currentSetting?.value) {
+      setFormatVal(currentSetting.value);
+    }
+  }, [currentSetting?.value]);
+
+  const isDirty = formatVal !== (currentSetting?.value ?? 'KAY-{SEQ:3}');
+
+  const calcPreview = (fmt: string) => {
+    const now = new Date();
+    const YYYY = String(now.getFullYear());
+    const YY = YYYY.slice(-2);
+    const MM = String(now.getMonth() + 1).padStart(2, '0');
+
+    let res = (fmt || 'KAY-{SEQ:3}')
+      .replace(/{YYYY}/g, YYYY)
+      .replace(/{YY}/g, YY)
+      .replace(/{MM}/g, MM);
+
+    res = res.replace(/{SEQ(?::(\d+))?}/, (_, digits) => {
+      const len = digits ? parseInt(digits, 10) : 3;
+      return '1'.padStart(len, '0');
+    });
+
+    return res;
+  };
+
+  const handleAddTag = (tag: string) => {
+    setFormatVal((prev) => prev + tag);
+  };
+
+  const PRESETS = [
+    { label: 'KAY-001', value: 'KAY-{SEQ:3}' },
+    { label: 'EMP-2026-0001', value: 'EMP-{YYYY}-{SEQ:4}' },
+    { label: 'GM/2609/001', value: 'GM/{YY}{MM}/{SEQ:3}' },
+    { label: 'NIK-00001', value: 'NIK-{SEQ:5}' },
+  ];
+
+  return (
+    <Card className="mt-6 border border-zinc-200 dark:border-zinc-800">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-base text-zinc-900 dark:text-white">
+            <UserCheck className="size-4 text-primary" />
+            Format Nomor Karyawan (NIK Otomatis)
+          </div>
+          <Badge className="bg-primary/10 text-primary border-primary/20 text-xs font-mono">
+            Preview: {calcPreview(formatVal)}
+          </Badge>
+        </CardTitle>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          Pola nomor induk karyawan (NIK) yang akan otomatis di-generate saat menambah karyawan baru.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2 items-start">
+          <div className="space-y-2">
+            <Label htmlFor="employee-number-format" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+              Pola Format NIK
+            </Label>
+            <Input
+              id="employee-number-format"
+              value={formatVal}
+              onChange={(e) => setFormatVal(e.target.value)}
+              placeholder="KAY-{SEQ:3}"
+              className="font-mono text-xs"
+            />
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <span className="text-[11px] text-zinc-400">Sisipkan Tag:</span>
+              {['{YYYY}', '{YY}', '{MM}', '{SEQ:3}', '{SEQ:4}'].map((tag) => (
+                <button
+                  type="button"
+                  key={tag}
+                  onClick={() => handleAddTag(tag)}
+                  className="rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 px-1.5 py-0.5 text-[10px] font-mono text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
+                >
+                  +{tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-zinc-100 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/50 p-3 space-y-2">
+            <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">Pilihan Preset Cepat:</span>
+            <div className="flex flex-wrap gap-1.5">
+              {PRESETS.map((p) => (
+                <button
+                  type="button"
+                  key={p.value}
+                  onClick={() => setFormatVal(p.value)}
+                  className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-all ${
+                    formatVal === p.value
+                      ? 'border-primary bg-primary/10 text-primary font-bold'
+                      : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-zinc-400 mt-1">
+              * Tag <code>{'{SEQ:N}'}</code> adalah nomor urut otomatis yang akan naik secara sekuensial.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="text-xs text-zinc-500">
+            Contoh NIK Karyawan Pertama: <span className="font-mono font-bold text-zinc-800 dark:text-zinc-200">{calcPreview(formatVal)}</span>
+          </div>
+          <Button
+            size="sm"
+            disabled={!isDirty || saving}
+            onClick={() => onSave('employee.number_format', formatVal)}
+            className="gap-1.5 text-xs"
+          >
+            {saving ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
+            Simpan Format
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function ShiftCheckoutPolicyCard({
   settings,
   onSave,
@@ -1297,50 +1436,58 @@ export default function SettingsPage() {
 
       {/* ── TAB 1: PERUSAHAAN & LOKASI ── */}
       {activeTab === 'company' && canManage && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div>
-                <span>Pengaturan Perusahaan &amp; Lokasi</span>
-                <p className="text-xs font-normal text-zinc-500 dark:text-zinc-400 mt-1">
-                  Nama resmi entitas, koordinat GPS kantor pusat, radius geofence, dan tarif BPJS Ketenagakerjaan &amp; Kesehatan.
-                </p>
-              </div>
-              <Badge>
-                {settings.data
-                  ? `${settings.data.filter((s) => s.key !== 'portal.theme_config' && s.key !== 'attendance.photo_retention_days').length} item`
-                  : '…'}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {settings.isLoading ? (
-              <p className="text-sm text-zinc-400">Memuat…</p>
-            ) : settings.data ? (
-              <>
-                <div className="space-y-3">
-                  {settings.data
-                    .filter((s) => s.key !== 'portal.theme_config' && s.key !== 'attendance.photo_retention_days' && s.key !== 'attendance.checkout_earliest_buffer_minutes')
-                    .map((s) => (
-                      <SettingRow
-                        key={s.key}
-                        setting={s}
-                        saving={saveSetting.isPending}
-                        onSave={(value) => saveSetting.mutate({ key: s.key, value })}
-                      />
-                    ))}
-                </div>
-                {saveSetting.isError && (
-                  <p className="mt-3 text-sm text-red-600">
-                    {saveSetting.error instanceof Error
-                      ? saveSetting.error.message
-                      : 'Gagal menyimpan pengaturan'}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div>
+                  <span>Pengaturan Perusahaan &amp; Lokasi</span>
+                  <p className="text-xs font-normal text-zinc-500 dark:text-zinc-400 mt-1">
+                    Nama resmi entitas, koordinat GPS kantor pusat, radius geofence, dan tarif BPJS Ketenagakerjaan &amp; Kesehatan.
                   </p>
-                )}
-              </>
-            ) : null}
-          </CardContent>
-        </Card>
+                </div>
+                <Badge>
+                  {settings.data
+                    ? `${settings.data.filter((s) => s.key !== 'portal.theme_config' && s.key !== 'attendance.photo_retention_days' && s.key !== 'employee.number_format').length} item`
+                    : '…'}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {settings.isLoading ? (
+                <p className="text-sm text-zinc-400">Memuat…</p>
+              ) : settings.data ? (
+                <>
+                  <div className="space-y-3">
+                    {settings.data
+                      .filter((s) => s.key !== 'portal.theme_config' && s.key !== 'attendance.photo_retention_days' && s.key !== 'attendance.checkout_earliest_buffer_minutes' && s.key !== 'employee.number_format')
+                      .map((s) => (
+                        <SettingRow
+                          key={s.key}
+                          setting={s}
+                          saving={saveSetting.isPending}
+                          onSave={(value) => saveSetting.mutate({ key: s.key, value })}
+                        />
+                      ))}
+                  </div>
+                  {saveSetting.isError && (
+                    <p className="mt-3 text-sm text-red-600">
+                      {saveSetting.error instanceof Error
+                        ? saveSetting.error.message
+                        : 'Gagal menyimpan pengaturan'}
+                    </p>
+                  )}
+                </>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <EmployeeNumberFormatCard
+            settings={settings.data}
+            onSave={(key, value) => saveSetting.mutate({ key, value })}
+            saving={saveSetting.isPending}
+          />
+        </div>
       )}
 
       {/* ── TAB 2: JADWAL SHIFT ── */}

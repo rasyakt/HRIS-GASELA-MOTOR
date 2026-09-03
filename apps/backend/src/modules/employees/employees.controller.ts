@@ -43,6 +43,13 @@ export class EmployeesController {
     return this.employeesService.list(query);
   }
 
+  @Roles('admin', 'hrd', 'owner')
+  @Get('next-number')
+  @ApiOperation({ summary: 'Dapatkan nomor karyawan (NIK) berikutnya sesuai format aktif' })
+  getNextNumber() {
+    return this.employeesService.getNextEmployeeNumber();
+  }
+
   @Roles('admin', 'hrd', 'manager', 'owner', 'employee')
   @Get(':id')
   @ApiOperation({ summary: 'Detail karyawan' })
@@ -57,7 +64,7 @@ export class EmployeesController {
   @Roles('admin', 'hrd')
   @Post()
   @ApiOperation({ summary: 'Buat karyawan baru (admin/hrd)' })
-  create(@Body() body: CreateEmployeeDto) {
+  create(@Body(new ZodValidationPipe()) body: CreateEmployeeDto) {
     return this.employeesService.create(body);
   }
 
@@ -67,7 +74,7 @@ export class EmployeesController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,
-    @Body() body: UpdateEmployeeDto,
+    @Body(new ZodValidationPipe()) body: UpdateEmployeeDto,
   ) {
     const result = await this.employeesService.update(id, body, user);
     if (body.basicSalary !== undefined) {

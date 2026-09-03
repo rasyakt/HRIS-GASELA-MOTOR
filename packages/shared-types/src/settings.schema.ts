@@ -9,6 +9,7 @@ export const COMPANY_SETTING_KEYS = [
   'portal.theme_config',
   'attendance.photo_retention_days',
   'attendance.checkout_earliest_buffer_minutes',
+  'employee.number_format',
 ] as const;
 export type CompanySettingKey = (typeof COMPANY_SETTING_KEYS)[number];
 

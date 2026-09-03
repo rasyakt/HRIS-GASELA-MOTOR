@@ -22,6 +22,10 @@ import {
   Sparkles,
   Terminal,
   Trash2,
+  AlertTriangle,
+  RefreshCw,
+  Eye,
+  X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -153,7 +157,6 @@ function PortalThemeSettingForm({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
-            <Sparkles className="size-3.5 text-zinc-500 dark:text-zinc-400" />
             Pilihan Palet Warna Preset
           </Label>
           <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
@@ -514,7 +517,308 @@ function SystemDiagnosticsCard() {
           </div>
         </CardContent>
       </Card>
+
+      <SystemErrorLogsCard />
     </div>
+  );
+}
+
+interface SystemErrorLogItem {
+  id: string;
+  timestamp: string;
+  statusCode: number;
+  method: string;
+  path: string;
+  error: string;
+  message: string;
+  ipAddress?: string;
+  userAgent?: string;
+  username?: string;
+  stack?: string;
+}
+
+function SystemErrorLogsCard() {
+  const authApi = useAuthApi();
+  const qc = useQueryClient();
+  const [selectedError, setSelectedError] = useState<SystemErrorLogItem | null>(null);
+
+  const errorLogs = useQuery({
+    queryKey: ['system-error-logs'],
+    queryFn: () => authApi<SystemErrorLogItem[]>('/api/audit-logs/error-logs?limit=15'),
+    refetchInterval: 10000,
+  });
+
+  const clearLogs = useMutation({
+    mutationFn: () => authApi('/api/audit-logs/error-logs', { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['system-error-logs'] });
+      setSelectedError(null);
+    },
+  });
+
+  const getStatusBadge = (code: number) => {
+    if (code >= 500) {
+      return (
+        <Badge className="bg-red-600 text-white font-mono font-bold text-[10px]">
+          {code} Server Error
+        </Badge>
+      );
+    }
+    if (code === 404) {
+      return (
+        <Badge className="bg-amber-600 text-white font-mono font-bold text-[10px]">
+          404 Not Found
+        </Badge>
+      );
+    }
+    if (code === 403 || code === 401) {
+      return (
+        <Badge className="bg-purple-600 text-white font-mono font-bold text-[10px]">
+          {code} {code === 401 ? 'Unauthorized' : 'Forbidden'}
+        </Badge>
+      );
+    }
+    return (
+      <Badge className="bg-orange-600 text-white font-mono font-bold text-[10px]">
+        {code} Bad Request
+      </Badge>
+    );
+  };
+
+  const getMethodBadge = (method: string) => {
+    const colors: Record<string, string> = {
+      GET: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+      POST: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+      PATCH: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+      PUT: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800',
+      DELETE: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300 border-red-200 dark:border-red-800',
+    };
+    return (
+      <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-bold border ${colors[method] || 'bg-zinc-100 text-zinc-800'}`}>
+        {method}
+      </span>
+    );
+  };
+
+  const logs = errorLogs.data || [];
+
+  return (
+    <>
+      <Card className="border border-zinc-200 dark:border-zinc-800 shadow-2xs">
+        <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2 text-zinc-900 dark:text-white">
+                <ShieldAlert className="size-4 text-red-600 dark:text-red-400" />
+                15 Log Error Sistem Terbaru
+              </CardTitle>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                Daftar 15 kegagalan request API, exception, dan error HTTP 4xx/5xx terbaru (auto-refresh 10 detik).
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge
+                className={
+                  logs.length > 0
+                    ? 'bg-red-100 text-red-700 dark:bg-red-950/80 dark:text-red-400 border border-red-200 dark:border-red-800 font-bold text-xs'
+                    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 font-bold text-xs'
+                }
+              >
+                {logs.length > 0 ? `${logs.length} Error Terdeteksi` : '0 Error (Sistem Sehat)'}
+              </Badge>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => errorLogs.refetch()}
+                disabled={errorLogs.isFetching}
+                className="text-xs h-7 px-2.5 gap-1"
+                title="Muat ulang log error"
+              >
+                <RefreshCw className={`size-3 ${errorLogs.isFetching ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Refresh</span>
+              </Button>
+              {logs.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (confirm('Bersihkan seluruh log error sistem saat ini?')) {
+                      clearLogs.mutate();
+                    }
+                  }}
+                  disabled={clearLogs.isPending}
+                  className="text-xs h-7 px-2.5 gap-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50"
+                  title="Bersihkan log error"
+                >
+                  <Trash2 className="size-3" />
+                  <span className="hidden sm:inline">Bersihkan Log</span>
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-4 p-0 sm:p-4">
+          {errorLogs.isLoading ? (
+            <div className="py-12 flex flex-col items-center justify-center gap-2 text-zinc-400">
+              <Loader2 className="size-6 animate-spin" />
+              <span className="text-xs">Memuat riwayat log error...</span>
+            </div>
+          ) : logs.length === 0 ? (
+            <div className="py-10 text-center space-y-2">
+              <div className="size-10 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center mx-auto text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="size-5" />
+              </div>
+              <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                Tidak Ada Log Error Tercatat
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
+                Seluruh permintaan API dan service backend saat ini berjalan optimal tanpa gangguan.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+              <table className="w-full text-left text-xs whitespace-nowrap">
+                <thead className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 font-semibold">
+                  <tr>
+                    <th className="px-3.5 py-2.5">Waktu</th>
+                    <th className="px-3.5 py-2.5">Status</th>
+                    <th className="px-3.5 py-2.5">Metode &amp; Endpoint</th>
+                    <th className="px-3.5 py-2.5">Pesan Error</th>
+                    <th className="px-3.5 py-2.5">Pengguna / IP</th>
+                    <th className="px-3.5 py-2.5 text-right">Detail</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60 font-medium">
+                  {logs.map((item) => (
+                    <tr key={item.id} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/50 transition-colors">
+                      <td className="px-3.5 py-2.5 font-mono text-[11px] text-zinc-500">
+                        {new Date(item.timestamp).toLocaleTimeString('id-ID', { hour12: false })}
+                        <span className="block text-[10px] text-zinc-400">
+                          {new Date(item.timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                        </span>
+                      </td>
+                      <td className="px-3.5 py-2.5">
+                        {getStatusBadge(item.statusCode)}
+                      </td>
+                      <td className="px-3.5 py-2.5">
+                        <div className="flex items-center gap-1.5">
+                          {getMethodBadge(item.method)}
+                          <span className="font-mono text-xs text-zinc-800 dark:text-zinc-200 max-w-xs truncate" title={item.path}>
+                            {item.path}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-3.5 py-2.5 max-w-sm">
+                        <span className="text-zinc-700 dark:text-zinc-300 font-semibold truncate block" title={item.message}>
+                          {item.message}
+                        </span>
+                        <span className="text-[10px] text-zinc-400 block truncate">
+                          {item.error}
+                        </span>
+                      </td>
+                      <td className="px-3.5 py-2.5 text-zinc-600 dark:text-zinc-400 text-[11px]">
+                        <span className="font-semibold text-zinc-800 dark:text-zinc-200 block">
+                          {item.username || 'Anonim'}
+                        </span>
+                        <span className="font-mono text-[10px] text-zinc-400 block">
+                          {item.ipAddress || '—'}
+                        </span>
+                      </td>
+                      <td className="px-3.5 py-2.5 text-right">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedError(item)}
+                          className="h-7 px-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 cursor-pointer"
+                        >
+                          <Eye className="size-3.5 mr-1" />
+                          Lihat
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Modal Detail Log Error */}
+      {selectedError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <Card className="w-full max-w-2xl bg-white dark:bg-zinc-900 shadow-2xl border-zinc-200 dark:border-zinc-800 max-h-[90vh] flex flex-col overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="size-5 text-red-600 dark:text-red-400" />
+                <div>
+                  <CardTitle className="text-base font-bold text-zinc-900 dark:text-white">
+                    Detail Log Error #{selectedError.id.slice(-6)}
+                  </CardTitle>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {new Date(selectedError.timestamp).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'medium' })}
+                  </p>
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedError(null)} className="size-8 p-0 cursor-pointer">
+                <X className="size-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="p-5 space-y-4 overflow-y-auto flex-1 text-xs">
+              <div className="grid grid-cols-2 gap-3 bg-zinc-50 dark:bg-zinc-950/60 p-3.5 rounded-lg border border-zinc-100 dark:border-zinc-800">
+                <div>
+                  <span className="text-zinc-400 block text-[10px] uppercase font-bold">Status Code</span>
+                  <div className="mt-1">{getStatusBadge(selectedError.statusCode)}</div>
+                </div>
+                <div>
+                  <span className="text-zinc-400 block text-[10px] uppercase font-bold">Metode &amp; Path</span>
+                  <div className="mt-1 flex items-center gap-1.5 font-mono">
+                    {getMethodBadge(selectedError.method)}
+                    <span className="text-zinc-800 dark:text-zinc-200 font-bold">{selectedError.path}</span>
+                  </div>
+                </div>
+                <div>
+                  <span className="text-zinc-400 block text-[10px] uppercase font-bold">Pengguna</span>
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">{selectedError.username || 'Anonim'}</span>
+                </div>
+                <div>
+                  <span className="text-zinc-400 block text-[10px] uppercase font-bold">IP Address</span>
+                  <span className="font-mono text-zinc-800 dark:text-zinc-200">{selectedError.ipAddress || '—'}</span>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Pesan Error</Label>
+                <div className="mt-1 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 p-3 text-red-800 dark:text-red-300 font-medium">
+                  {selectedError.message}
+                </div>
+              </div>
+
+              {selectedError.userAgent && (
+                <div>
+                  <Label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">User Agent</Label>
+                  <div className="mt-1 font-mono text-[11px] bg-zinc-50 dark:bg-zinc-950 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 break-all">
+                    {selectedError.userAgent}
+                  </div>
+                </div>
+              )}
+
+              {selectedError.stack && (
+                <div>
+                  <Label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Stack Trace Server</Label>
+                  <pre className="mt-1 font-mono text-[10px] bg-zinc-950 text-zinc-300 p-3 rounded-lg overflow-x-auto max-h-48 whitespace-pre-wrap border border-zinc-800">
+                    {selectedError.stack}
+                  </pre>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </>
   );
 }
 

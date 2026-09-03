@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Delete, Get, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -23,5 +23,20 @@ export class AuditLogsController {
   @Roles('admin', 'hrd', 'owner')
   async stats() {
     return this.auditLogsService.stats();
+  }
+
+  @Get('error-logs')
+  @ApiOperation({ summary: '15 log error sistem terbaru (superadmin/admin/owner)' })
+  @Roles('superadmin', 'admin', 'owner')
+  getErrorLogs(@Query('limit') limit?: string) {
+    const lim = limit ? Math.min(Math.max(1, parseInt(limit, 10) || 15), 50) : 15;
+    return this.auditLogsService.getRecentErrorLogs(lim);
+  }
+
+  @Delete('error-logs')
+  @ApiOperation({ summary: 'Bersihkan log error sistem (superadmin)' })
+  @Roles('superadmin')
+  clearErrorLogs() {
+    return this.auditLogsService.clearRecentErrorLogs();
   }
 }

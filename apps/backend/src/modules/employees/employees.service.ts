@@ -3,6 +3,7 @@ import {
   ConflictException,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import type {
   CreateEmployeeInput,
@@ -117,6 +118,69 @@ export class EmployeesService {
     return employee;
   }
 
+  async getNextEmployeeNumber(): Promise<{ employeeNumber: string; format: string }> {
+    const setting = await this.prisma.companySetting.findUnique({
+      where: { key: 'employee.number_format' },
+    });
+    const format = setting?.value?.trim() || 'KAY-{SEQ:3}';
+
+    const now = new Date();
+    const YYYY = String(now.getFullYear());
+    const YY = YYYY.slice(-2);
+    const MM = String(now.getMonth() + 1).padStart(2, '0');
+
+    let resolved = format
+      .replace(/{YYYY}/g, YYYY)
+      .replace(/{YY}/g, YY)
+      .replace(/{MM}/g, MM);
+
+    const seqMatch = resolved.match(/{SEQ(?::(\d+))?}/);
+    if (!seqMatch) {
+      resolved = `${resolved}-{SEQ:3}`;
+    }
+
+    const matchedPlaceholder = seqMatch ? seqMatch[0] : '{SEQ:3}';
+    const seqDigits = seqMatch && seqMatch[1] ? parseInt(seqMatch[1], 10) : 3;
+
+    const [prefix, suffix] = resolved.split(matchedPlaceholder);
+    const safePrefix = prefix || '';
+    const safeSuffix = suffix || '';
+
+    const matchingEmployees = await this.prisma.employee.findMany({
+      where: {
+        employeeNumber: {
+          startsWith: safePrefix,
+        },
+      },
+      select: { employeeNumber: true },
+    });
+
+    let maxSeq = 0;
+    const escapedPrefix = safePrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escapedSuffix = safeSuffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const extractRegex = new RegExp(`^${escapedPrefix}(\\d+)${escapedSuffix}$`);
+
+    for (const emp of matchingEmployees) {
+      const match = emp.employeeNumber.match(extractRegex);
+      if (match && match[1]) {
+        const num = parseInt(match[1], 10);
+        if (!isNaN(num) && num > maxSeq) {
+          maxSeq = num;
+        }
+      }
+    }
+
+    let nextSeq = maxSeq + 1;
+    let candidate = `${safePrefix}${String(nextSeq).padStart(seqDigits, '0')}${safeSuffix}`;
+
+    while (await this.prisma.employee.findUnique({ where: { employeeNumber: candidate } })) {
+      nextSeq++;
+      candidate = `${safePrefix}${String(nextSeq).padStart(seqDigits, '0')}${safeSuffix}`;
+    }
+
+    return { employeeNumber: candidate, format };
+  }
+
   async create(input: CreateEmployeeInput) {
     await this.assertUnique({
       employeeNumber: input.employeeNumber,
@@ -131,6 +195,20 @@ export class EmployeesService {
       permanentDate,
       ...restInput
     } = input;
+
+    if (birthDate) {
+      const b = new Date(birthDate);
+      if (!isNaN(b.getTime()) && b > new Date()) {
+        throw new BadRequestException('Tanggal lahir tidak boleh di masa depan');
+      }
+    }
+    if (joinDate && permanentDate) {
+      const j = new Date(joinDate);
+      const p = new Date(permanentDate);
+      if (!isNaN(j.getTime()) && !isNaN(p.getTime()) && p < j) {
+        throw new BadRequestException('Tanggal karyawan tetap tidak boleh lebih awal dari tanggal bergabung');
+      }
+    }
 
     return this.prisma.employee.create({
       data: {
@@ -219,6 +297,20 @@ export class EmployeesService {
           parsedPermanentDate = null;
         }
       }
+    }
+
+    if (parsedBirthDate && parsedBirthDate > new Date()) {
+      throw new BadRequestException('Tanggal lahir tidak boleh di masa depan');
+    }
+    const finalJoinDate = parsedJoinDate || employee.joinDate;
+    const finalPermanentDate =
+      input.permanentDate !== undefined
+        ? parsedPermanentDate
+        : employee.permanentDate;
+    if (finalJoinDate && finalPermanentDate && finalPermanentDate < finalJoinDate) {
+      throw new BadRequestException(
+        'Tanggal karyawan tetap tidak boleh lebih awal dari tanggal bergabung',
+      );
     }
 
     const {

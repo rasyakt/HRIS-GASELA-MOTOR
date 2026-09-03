@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import {
+  getSystemErrorLogs,
+  clearSystemErrorLogs,
+} from '../../common/filters/http-exception.filter';
 
 export interface AuditLogEntry {
   action: string;
@@ -73,5 +77,14 @@ export class AuditLogsService {
       this.prisma.auditLog.count({ where: { timestamp: { gte: todayStart } } }),
     ]);
     return { total, today };
+  }
+
+  getRecentErrorLogs(limit = 15) {
+    return getSystemErrorLogs(limit);
+  }
+
+  clearRecentErrorLogs() {
+    clearSystemErrorLogs();
+    return { success: true, message: 'Log error sistem berhasil dibersihkan' };
   }
 }

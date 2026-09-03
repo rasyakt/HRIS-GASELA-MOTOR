@@ -3,17 +3,45 @@ import { EMPLOYMENT_STATUSES, EMPLOYMENT_TYPES, PTKP_STATUSES } from './enums';
 
 const dateString = z.string().date();
 
+const birthDateString = z
+  .string()
+  .date()
+  .refine(
+    (val) => {
+      const d = new Date(val);
+      const today = new Date();
+      return !isNaN(d.getTime()) && d <= today;
+    },
+    { message: 'Tanggal lahir tidak boleh di masa depan' }
+  );
+
+const phoneString = z
+  .string()
+  .max(20)
+  .refine(
+    (val) => !val || /^(?:\+62|62|0)[0-9\- ]{7,18}$/.test(val.trim()),
+    { message: 'Format nomor telepon tidak valid (contoh: 081234567890)' }
+  );
+
+const idCardString = z
+  .string()
+  .max(20)
+  .refine(
+    (val) => !val || /^\d{16}$/.test(val.trim()),
+    { message: 'Nomor KTP harus 16 digit angka' }
+  );
+
 export const createEmployeeSchema = z.object({
-  employeeNumber: z.string().min(1).max(20),
-  fullName: z.string().min(3).max(100),
-  email: z.string().email().max(100),
-  phone: z.string().max(20).optional().nullable(),
-  birthDate: dateString.optional().nullable(),
-  idCardNumber: z.string().max(20).optional().nullable(),
+  employeeNumber: z.string().min(1, 'NIK wajib diisi').max(20),
+  fullName: z.string().min(3, 'Nama lengkap minimal 3 karakter').max(100),
+  email: z.string().email('Format email tidak valid').max(100),
+  phone: phoneString.optional().nullable(),
+  birthDate: birthDateString.optional().nullable(),
+  idCardNumber: idCardString.optional().nullable(),
   taxNumber: z.string().max(20).optional().nullable(),
   address: z.string().optional().nullable(),
   emergencyContactName: z.string().max(100).optional().nullable(),
-  emergencyContactPhone: z.string().max(20).optional().nullable(),
+  emergencyContactPhone: phoneString.optional().nullable(),
   departmentId: z.number().int().positive().optional().nullable(),
   positionId: z.number().int().positive().optional().nullable(),
   managerId: z.number().int().positive().optional().nullable(),
@@ -22,7 +50,7 @@ export const createEmployeeSchema = z.object({
   employmentStatus: z.enum(EMPLOYMENT_STATUSES).default('probation'),
   employmentType: z.enum(EMPLOYMENT_TYPES),
   ptkpStatus: z.enum(PTKP_STATUSES).default('K2'),
-  basicSalary: z.number().nonnegative(),
+  basicSalary: z.number().nonnegative('Gaji pokok tidak boleh negatif'),
   bankAccountName: z.string().max(100).optional().nullable(),
   bankAccountNumber: z.string().max(30).optional().nullable(),
   bankName: z.string().max(50).optional().nullable(),
