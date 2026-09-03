@@ -649,33 +649,47 @@ export default function EmployeesPage() {
       </Card>
 
       {/* Centered Modal Popup */}
-      {drawerOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm transition-opacity" onClick={handleCloseDrawer} />
-          <div className="pointer-events-none fixed inset-0 flex items-center justify-center p-4">
-            <div className="pointer-events-auto w-full max-w-3xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 p-6">
-                <div>
-                  <h3 className="text-lg font-bold text-zinc-900">
-                    {selectedEmployeeId ? (isEditMode ? 'Ubah Data Karyawan' : 'Detail Karyawan') : 'Tambah Karyawan Baru'}
-                  </h3>
-                  {selectedEmployeeId && (
-                    <p className="text-xs text-zinc-500 mt-1">ID: {selectedEmployeeId} · NIK: {formData.employeeNumber}</p>
-                  )}
+      {drawerOpen && (() => {
+        const isTargetSuperadmin =
+          employeeDetail.data?.user?.role === 'superadmin' ||
+          employeeDetail.data?.employeeNumber === 'EMP-0000' ||
+          formData.employeeNumber === 'EMP-0000';
+        const canEditTarget = isTargetSuperadmin
+          ? user?.role === 'superadmin'
+          : !!user && (roleAtLeast(user.role, 'hrd') || user.role === 'owner');
+
+        return (
+          <div className="fixed inset-0 z-50 overflow-hidden">
+            <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm transition-opacity" onClick={handleCloseDrawer} />
+            <div className="pointer-events-none fixed inset-0 flex items-center justify-center p-4">
+              <div className="pointer-events-auto w-full max-w-3xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 p-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-zinc-900 flex items-center gap-2">
+                      {selectedEmployeeId ? (isEditMode && canEditTarget ? 'Ubah Data Karyawan' : 'Detail Karyawan') : 'Tambah Karyawan Baru'}
+                      {isTargetSuperadmin && (
+                        <Badge className="bg-amber-600 text-white font-semibold text-[10px]">
+                          Superadmin (Permanen)
+                        </Badge>
+                      )}
+                    </h3>
+                    {selectedEmployeeId && (
+                      <p className="text-xs text-zinc-500 mt-1">ID: {selectedEmployeeId} · NIK: {formData.employeeNumber}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {selectedEmployeeId && !isEditMode && canEditTarget && (
+                      <Button onClick={() => setIsEditMode(true)} variant="outline" size="sm">
+                        <Edit className="mr-1.5 size-4" />
+                        Ubah
+                      </Button>
+                    )}
+                    <button onClick={handleCloseDrawer} className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors">
+                      <X className="size-5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  {selectedEmployeeId && !isEditMode && user && (roleAtLeast(user.role, 'hrd') || user.role === 'owner') && (
-                    <Button onClick={() => setIsEditMode(true)} variant="outline" size="sm">
-                      <Edit className="mr-1.5 size-4" />
-                      Ubah
-                    </Button>
-                  )}
-                  <button onClick={handleCloseDrawer} className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors">
-                    <X className="size-5" />
-                  </button>
-                </div>
-              </div>
 
               {/* Detail Tabs (Only when employee selected) */}
               {selectedEmployeeId && (
@@ -778,6 +792,18 @@ export default function EmployeesPage() {
               {/* Form Content / Details body */}
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 {formError && <ErrorBanner message={formError} />}
+
+                {isTargetSuperadmin && user?.role !== 'superadmin' && (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-800 flex items-start gap-2.5">
+                    <Shield className="size-4 shrink-0 text-amber-600 mt-0.5" />
+                    <div>
+                      <p className="font-bold">Data Karyawan Superadmin Terlindungi</p>
+                      <p className="mt-0.5 text-amber-700">
+                        Data profil, gaji, dan akun Superadmin (Developer) bersifat permanen serta dilindungi sistem. Hanya akun Superadmin itu sendiri yang memiliki wewenang untuk mengubah data ini.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Loading state */}
                 {selectedEmployeeId && employeeDetail.isLoading ? (
@@ -1260,9 +1286,9 @@ export default function EmployeesPage() {
               </div>
 
               {/* Bottom Actions footer */}
-              {isEditMode && user && (roleAtLeast(user.role, 'hrd') || user.role === 'owner') && (drawerTab === 'profile' || drawerTab === 'job' || !selectedEmployeeId) && (
+              {isEditMode && canEditTarget && (drawerTab === 'profile' || drawerTab === 'job' || !selectedEmployeeId) && (
                 <div className="border-t border-zinc-100 bg-zinc-50/50 p-6 flex items-center justify-between gap-3 shrink-0">
-                  {selectedEmployeeId ? (
+                  {selectedEmployeeId && !isTargetSuperadmin ? (
                     <Button
                       type="button"
                       variant="outline"
@@ -1299,7 +1325,8 @@ export default function EmployeesPage() {
             </div>
           </div>
         </div>
-      )}
+      );
+      })()}
     </div>
   );
 }

@@ -144,11 +144,31 @@ export class EmployeesService {
     });
   }
 
-  async update(id: number, input: UpdateEmployeeInput) {
-    const employee = await this.prisma.employee.findUnique({ where: { id } });
+  async update(
+    id: number,
+    input: UpdateEmployeeInput,
+    requestingUser?: AuthUser,
+  ) {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id },
+      include: { user: true },
+    });
     if (!employee) {
       throw new NotFoundException(`Karyawan #${id} tidak ditemukan`);
     }
+
+    // Proteksi akun Superadmin: Hanya Superadmin itu sendiri yang boleh mengubah datanya
+    if (
+      (employee.employeeNumber === 'EMP-0000' ||
+        (employee.user?.role as string) === 'superadmin') &&
+      requestingUser &&
+      (requestingUser.role as string) !== 'superadmin'
+    ) {
+      throw new ForbiddenException(
+        'Data karyawan Superadmin (Developer) bersifat permanen dan hanya dapat diubah oleh Superadmin itu sendiri',
+      );
+    }
+
     await this.assertUnique(
       {
         employeeNumber: input.employeeNumber,
@@ -226,7 +246,7 @@ export class EmployeesService {
     });
   }
 
-  async deactivate(id: number) {
+  async deactivate(id: number, requestingUser?: AuthUser) {
     const employee = await this.prisma.employee.findUnique({
       where: { id },
       include: { user: true },
@@ -234,9 +254,12 @@ export class EmployeesService {
     if (!employee) {
       throw new NotFoundException(`Karyawan #${id} tidak ditemukan`);
     }
-    if ((employee.user?.role as string) === 'superadmin') {
+    if (
+      employee.employeeNumber === 'EMP-0000' ||
+      (employee.user?.role as string) === 'superadmin'
+    ) {
       throw new ForbiddenException(
-        'Akun Superadmin bersifat permanen dan tidak dapat dihapus atau dinonaktifkan',
+        'Akun dan karyawan Superadmin bersifat permanen dan tidak dapat dihapus atau dinonaktifkan',
       );
     }
     if (employee.isActive === false) {

@@ -69,7 +69,7 @@ export class EmployeesController {
     @CurrentUser() user: AuthUser,
     @Body() body: UpdateEmployeeDto,
   ) {
-    const result = await this.employeesService.update(id, body);
+    const result = await this.employeesService.update(id, body, user);
     if (body.basicSalary !== undefined) {
       await this.auditLogsService.record({
         action: 'edit-salary',
@@ -90,7 +90,7 @@ export class EmployeesController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,
   ) {
-    const result = await this.employeesService.deactivate(id);
+    const result = await this.employeesService.deactivate(id, user);
     await this.auditLogsService.record({
       action: 'deactivate',
       resource: 'employee',
