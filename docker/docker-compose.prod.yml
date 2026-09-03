@@ -3,6 +3,7 @@ services:
     image: mysql:8.0
     restart: unless-stopped
     environment:
+      TZ: Asia/Jakarta
       MYSQL_DATABASE: gasela_hris
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Isi DB_ROOT_PASSWORD di .env}
     volumes:
@@ -21,6 +22,7 @@ services:
     restart: unless-stopped
     env_file: ../apps/backend/.env
     environment:
+      TZ: Asia/Jakarta
       DATABASE_URL: mysql://root:${DB_ROOT_PASSWORD:?Isi DB_ROOT_PASSWORD di .env}@mysql:3306/gasela_hris
       CORS_ORIGINS: ${CORS_ORIGINS:?Isi CORS_ORIGINS di .env}
     ports:
@@ -38,6 +40,7 @@ services:
     restart: unless-stopped
     env_file: ../apps/web/.env
     environment:
+      TZ: Asia/Jakarta
       NEXT_PUBLIC_API_URL: http://backend:3001
       PORT: 3000
       HOSTNAME: '0.0.0.0'

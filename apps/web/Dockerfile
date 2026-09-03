@@ -32,7 +32,11 @@ RUN pnpm --filter @gasela/shared-utils build
 RUN pnpm --filter @gasela/web build
 
 FROM node:22-alpine AS runner
+RUN apk add --no-cache tzdata && \
+    cp /usr/share/zoneinfo/Asia/Jakarta /etc/localtime && \
+    echo "Asia/Jakarta" > /etc/timezone
 ENV NODE_ENV=production
+ENV TZ=Asia/Jakarta
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 WORKDIR /app
