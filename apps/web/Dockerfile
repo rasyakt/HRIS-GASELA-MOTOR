@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 # Build context = ROOT repo (lihat docker/docker-compose.prod.yml)
 
 FROM node:22-alpine AS builder
