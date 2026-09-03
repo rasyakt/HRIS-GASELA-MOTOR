@@ -261,6 +261,7 @@ export default function ReportsPage() {
   const [viewPhotoUrl, setViewPhotoUrl] = useState<{ url: string; title: string } | null>(null);
   const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
   const [pdfPreviewKind, setPdfPreviewKind] = useState<TabKey>('attendance');
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   const canManage = !!user && (roleAtLeast(user.role, 'manager') || user.role === 'owner');
   const canPayroll = !!user && (roleAtLeast(user.role, 'hrd') || user.role === 'owner');
@@ -532,6 +533,69 @@ export default function ReportsPage() {
       </html>
     `);
     printWindow.document.close();
+  }
+
+  async function downloadDirectPdf(kind: TabKey) {
+    const reportElement = document.getElementById('report-paper-container');
+    if (!reportElement) {
+      printDocument(kind);
+      return;
+    }
+
+    setDownloadingPdf(true);
+    try {
+      // Ensure html2pdf is loaded from local bundle or fallback CDN
+      if (typeof window !== 'undefined' && !(window as any).html2pdf) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = '/libs/html2pdf.bundle.min.js';
+          script.onload = () => resolve();
+          script.onerror = () => {
+            const fallbackScript = document.createElement('script');
+            fallbackScript.src =
+              'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            fallbackScript.onload = () => resolve();
+            fallbackScript.onerror = () =>
+              reject(new Error('Gagal memuat generator PDF'));
+            document.head.appendChild(fallbackScript);
+          };
+          document.head.appendChild(script);
+        });
+      }
+
+      const html2pdf = (window as any).html2pdf;
+      if (!html2pdf) {
+        printDocument(kind);
+        return;
+      }
+
+      const { title, periodStr } = getReportContentHtml(kind);
+      const safePeriod = periodStr
+        .replace(/\s+/g, '_')
+        .replace(/[/\\?%*:|"<>]/g, '-');
+      const filename = `${title.replace(/\s+/g, '_')}_${safePeriod}.pdf`;
+
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          scrollY: 0,
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+      };
+
+      await html2pdf().set(opt).from(reportElement).save();
+    } catch {
+      // Fallback to print if conversion fails
+      printDocument(kind);
+    } finally {
+      setDownloadingPdf(false);
+    }
   }
 
   if (!user || !canManage) return null;
@@ -1217,17 +1281,22 @@ export default function ReportsPage() {
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => printDocument(pdfPreviewKind)}
+                  onClick={() => downloadDirectPdf(pdfPreviewKind)}
+                  disabled={downloadingPdf}
                   className="gap-1.5 bg-red-600 hover:bg-red-700 text-white shadow-xs font-semibold text-xs"
                 >
-                  <FileDown className="size-3.5" />
-                  <span>Unduh PDF</span>
+                  {downloadingPdf ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <FileDown className="size-3.5" />
+                  )}
+                  <span>{downloadingPdf ? 'Mengunduh PDF…' : 'Unduh PDF Langsung'}</span>
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={() => setPdfPreviewOpen(false)}
-                  className="text-xs"
+                  className="text-xs ml-1"
                 >
                   <X className="size-4" />
                   <span className="hidden sm:inline ml-1">Tutup</span>
@@ -1237,7 +1306,10 @@ export default function ReportsPage() {
 
             {/* Modal Scrollable Body (A4 Paper Rendering) */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-zinc-200 dark:bg-zinc-950 flex justify-center">
-              <div className="w-full max-w-4xl bg-white text-zinc-900 p-8 sm:p-12 shadow-xl rounded-sm border border-zinc-200 min-h-225 text-[11px] font-sans">
+              <div
+                id="report-paper-container"
+                className="w-full max-w-4xl bg-white text-zinc-900 p-8 sm:p-12 shadow-xl rounded-sm border border-zinc-200 min-h-225 text-[11px] font-sans"
+              >
                 {/* Paper Header */}
                 <div className="flex justify-between items-end border-b-2 border-zinc-900 pb-3 mb-4">
                   <div>
@@ -1278,7 +1350,7 @@ export default function ReportsPage() {
 
             {/* Modal Bottom Bar */}
             <div className="flex items-center justify-between px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-850 shrink-0 text-xs text-zinc-500">
-              <span>Klik <strong>&quot;Unduh PDF&quot;</strong> untuk menyimpan file PDF atau <strong>&quot;Cetak Dokumen&quot;</strong> untuk print langsung.</span>
+              <span>Klik <strong>&quot;Unduh PDF Langsung&quot;</strong> untuk menyimpan file ke perangkat atau <strong>&quot;Cetak Dokumen&quot;</strong> untuk print ke kertas.</span>
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
@@ -1290,11 +1362,16 @@ export default function ReportsPage() {
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => printDocument(pdfPreviewKind)}
+                  onClick={() => downloadDirectPdf(pdfPreviewKind)}
+                  disabled={downloadingPdf}
                   className="gap-1.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs"
                 >
-                  <FileDown className="size-3.5" />
-                  <span>Unduh PDF</span>
+                  {downloadingPdf ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <FileDown className="size-3.5" />
+                  )}
+                  <span>{downloadingPdf ? 'Mengunduh PDF…' : 'Unduh PDF Langsung'}</span>
                 </Button>
               </div>
             </div>
