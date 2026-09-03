@@ -259,7 +259,7 @@ export class LeavesService {
     if (days === 0) {
       throw new BadRequestException('Rentang tanggal tidak berisi hari kerja atau bertepatan dengan libur sepenuhnya');
     }
-    if (type.minNoticeDays != null) {
+    if (type.minNoticeDays != null && type.minNoticeDays > 0) {
       const diff = Math.round(
         (start.getTime() - localToday().getTime()) / 86_400_000,
       );
