@@ -277,7 +277,7 @@ export function TrainingPanel({ employeeId }: { employeeId: number }) {
                   <p className="text-xs text-zinc-500 mt-1 truncate">{t.notes}</p>
                 )}
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
                   onClick={() => startEdit(t)}
