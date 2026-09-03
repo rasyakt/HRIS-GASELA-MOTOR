@@ -227,9 +227,17 @@ export class EmployeesService {
   }
 
   async deactivate(id: number) {
-    const employee = await this.prisma.employee.findUnique({ where: { id } });
+    const employee = await this.prisma.employee.findUnique({
+      where: { id },
+      include: { user: true },
+    });
     if (!employee) {
       throw new NotFoundException(`Karyawan #${id} tidak ditemukan`);
+    }
+    if ((employee.user?.role as string) === 'superadmin') {
+      throw new ForbiddenException(
+        'Akun Superadmin bersifat permanen dan tidak dapat dihapus atau dinonaktifkan',
+      );
     }
     if (employee.isActive === false) {
       return employee;
@@ -255,8 +263,13 @@ export class EmployeesService {
     input: CreateUserAccountInput,
     currentUser?: AuthUser,
   ) {
-    if (input.role === 'owner' && currentUser?.role !== 'owner') {
-      throw new ForbiddenException('Hanya Owner yang dapat menetapkan peran Owner');
+    if ((input.role as string) === 'superadmin') {
+      throw new ForbiddenException(
+        'Role superadmin bersifat permanen dan tidak dapat dibuat akun baru',
+      );
+    }
+    if (input.role === 'owner' && currentUser?.role !== 'owner' && currentUser?.role !== 'superadmin') {
+      throw new ForbiddenException('Hanya Owner atau Superadmin yang dapat menetapkan peran Owner');
     }
 
     const employee = await this.prisma.employee.findUnique({
@@ -311,11 +324,35 @@ export class EmployeesService {
       throw new NotFoundException(`Akun karyawan #${employeeId} tidak ditemukan`);
     }
 
-    if (employee.user.role === 'owner' && currentUser?.role !== 'owner') {
-      throw new ForbiddenException('Hanya Owner yang dapat memodifikasi akun Owner');
+    if ((input.role as string) === 'superadmin') {
+      throw new ForbiddenException(
+        'Role superadmin bersifat permanen dan tidak dapat ditetapkan ke akun lain',
+      );
     }
-    if (input.role === 'owner' && currentUser?.role !== 'owner') {
-      throw new ForbiddenException('Hanya Owner yang dapat menetapkan peran Owner');
+
+    if ((employee.user.role as string) === 'superadmin') {
+      if (input.isActive === false) {
+        throw new ForbiddenException(
+          'Akun Superadmin bersifat permanen dan tidak dapat dinonaktifkan',
+        );
+      }
+      if (input.role && (input.role as string) !== 'superadmin') {
+        throw new ForbiddenException(
+          'Role Superadmin bersifat permanen dan tidak dapat diubah',
+        );
+      }
+      if (currentUser?.role !== 'superadmin') {
+        throw new ForbiddenException(
+          'Hanya Superadmin itu sendiri yang dapat memodifikasi akun Superadmin',
+        );
+      }
+    }
+
+    if (employee.user.role === 'owner' && currentUser?.role !== 'owner' && currentUser?.role !== 'superadmin') {
+      throw new ForbiddenException('Hanya Owner atau Superadmin yang dapat memodifikasi akun Owner');
+    }
+    if (input.role === 'owner' && currentUser?.role !== 'owner' && currentUser?.role !== 'superadmin') {
+      throw new ForbiddenException('Hanya Owner atau Superadmin yang dapat menetapkan peran Owner');
     }
 
     if (input.username && input.username !== employee.user.username) {
@@ -366,8 +403,14 @@ export class EmployeesService {
       throw new NotFoundException(`Akun karyawan #${employeeId} tidak ditemukan`);
     }
 
-    if (employee.user.role === 'owner' && currentUser?.role !== 'owner') {
-      throw new ForbiddenException('Hanya Owner yang dapat mereset password akun Owner');
+    if ((employee.user.role as string) === 'superadmin' && currentUser?.role !== 'superadmin') {
+      throw new ForbiddenException(
+        'Hanya Superadmin itu sendiri yang dapat mereset password akun Superadmin',
+      );
+    }
+
+    if (employee.user.role === 'owner' && currentUser?.role !== 'owner' && currentUser?.role !== 'superadmin') {
+      throw new ForbiddenException('Hanya Owner atau Superadmin yang dapat mereset password akun Owner');
     }
 
     // Validate password complexity

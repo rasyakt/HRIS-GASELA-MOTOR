@@ -351,6 +351,39 @@ async function main() {
     return prisma.employee.create({ data: { employeeNumber, ...data } });
   };
 
+  // --- Superadmin Developer (Permanen, khusus developer, tertinggi) ---
+  const superadminExists = await prisma.user.findFirst({
+    where: { OR: [{ role: 'superadmin' as any }, { username: 'superadmin' }] },
+  });
+  if (!superadminExists) {
+    const superadminEmployee = await getOrCreateEmployee('EMP-0000', {
+      fullName: 'Superadmin Developer',
+      email: 'developer@gaselamotor.com',
+      phone: '081200000000',
+      joinDate: new Date('2020-01-01'),
+      employmentStatus: 'active',
+      employmentType: 'permanent',
+      ptkpStatus: 'TK0',
+      basicSalary: 25000000,
+      departmentId: deptHrd.id,
+      positionId: (await prisma.position.findUnique({ where: { code: 'DIR' } }))?.id ?? null,
+      profilePhotoUrl: null,
+    });
+    const passwordHash = await bcrypt.hash('SuperAdmin123!', 10);
+    await prisma.user.create({
+      data: {
+        employeeId: superadminEmployee.id,
+        username: 'superadmin',
+        passwordHash,
+        role: 'superadmin' as any,
+        isActive: true,
+      },
+    });
+    console.log('  Superadmin dibuat: superadmin / SuperAdmin123!');
+  } else {
+    console.log('  Superadmin sudah ada, dilewati');
+  }
+
   // --- Admin pertama ---
   const adminExists = await prisma.user.findUnique({ where: { username: 'admin' } });
   if (!adminExists) {

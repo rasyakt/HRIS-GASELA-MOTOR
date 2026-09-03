@@ -5,6 +5,7 @@ import {
   CheckCheck,
   BarChart3,
   Clock,
+  Code2,
   LayoutDashboard,
   LogOut,
   Megaphone,
@@ -46,6 +47,7 @@ interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  exact?: boolean;
 }
 
 interface NavGroup {
@@ -54,7 +56,7 @@ interface NavGroup {
 }
 
 function getNavGroups(role: UserRole): NavGroup[] {
-  if (role === 'admin' || role === 'hrd') {
+  if (role === 'admin' || role === 'hrd' || role === 'superadmin') {
     return [
       {
         label: 'Aktivitas Utama',
@@ -80,7 +82,7 @@ function getNavGroups(role: UserRole): NavGroup[] {
         items: [
           { href: '/reports', label: 'Laporan', icon: BarChart3 },
           { href: '/performance-reviews', label: 'Kinerja', icon: TrendingUp },
-          ...(role === 'admin'
+          ...(role === 'admin' || role === 'superadmin'
             ? [{ href: '/audit-logs', label: 'Audit Log', icon: ShieldCheck }]
             : []),
         ],
@@ -88,9 +90,27 @@ function getNavGroups(role: UserRole): NavGroup[] {
       {
         label: 'Sistem',
         items: [
-          { href: '/settings', label: 'Pengaturan', icon: Settings },
+          {
+            href: '/settings',
+            label: 'Pengaturan',
+            icon: Settings,
+          },
         ],
       },
+      ...(role === 'superadmin'
+        ? [
+            {
+              label: 'Developer Hub',
+              items: [
+                {
+                  href: '/developer',
+                  label: 'Menu Developer',
+                  icon: Code2,
+                },
+              ],
+            },
+          ]
+        : []),
     ];
   }
 

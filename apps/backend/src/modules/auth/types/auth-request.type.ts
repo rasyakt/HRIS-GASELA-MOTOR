@@ -11,7 +11,7 @@ export interface AuthRequest extends Request {
  * ditangani via @ExactRoles — sengaja tidak ada di sini agar tidak
  * mendapat akses ke endpoint HR operasional melalui cek hierarkis.
  */
-export const USER_ROLE_ORDER = ['employee', 'manager', 'hrd', 'admin', 'owner'];
+export const USER_ROLE_ORDER = ['employee', 'manager', 'hrd', 'admin', 'owner', 'superadmin'];
 
 /**
  * Cek apakah `actual` role setidaknya setara dengan `required` role.

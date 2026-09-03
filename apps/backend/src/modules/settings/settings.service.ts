@@ -1,9 +1,11 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import type {
+  AuthUser,
   CompanySettingDto,
   CreateHolidayInput,
   HolidayDto,
@@ -40,7 +42,20 @@ export class SettingsService {
     }));
   }
 
-  async updateCompanySetting(input: UpdateCompanySettingInput) {
+  async updateCompanySetting(
+    input: UpdateCompanySettingInput,
+    currentUser?: AuthUser,
+  ) {
+    if (
+      (input.key === 'portal.theme_config' ||
+        input.key === 'attendance.photo_retention_days') &&
+      currentUser &&
+      (currentUser.role as string) !== 'superadmin'
+    ) {
+      throw new ForbiddenException(
+        'Pengaturan tema dan retensi foto hanya dapat diubah oleh peran Superadmin (Developer)',
+      );
+    }
     const row = await this.prisma.companySetting.findUnique({
       where: { key: input.key },
     });

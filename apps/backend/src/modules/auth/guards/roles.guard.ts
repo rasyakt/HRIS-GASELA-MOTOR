@@ -34,6 +34,9 @@ export class RolesGuard implements CanActivate {
 
     if (!user) throw new UnauthorizedException('Anda belum login');
 
+    // Superadmin (Developer) memiliki akses mutlak ke seluruh fitur sistem
+    if (user.role === 'superadmin') return true;
+
     if (exactRoles && exactRoles.length > 0) {
       if (exactRoles.includes(user.role)) return true;
       // @Roles hierarkis tetap dievaluasi — lolos jika salah satunya cocok

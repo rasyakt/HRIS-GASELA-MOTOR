@@ -11,7 +11,7 @@ import { useAuthApi } from '@/lib/auth-api';
 interface UserAccount {
   id: number;
   username: string;
-  role: 'admin' | 'hrd' | 'manager' | 'employee' | 'owner';
+  role: 'admin' | 'hrd' | 'manager' | 'employee' | 'owner' | 'superadmin';
   isActive: boolean;
 }
 
@@ -26,6 +26,8 @@ export function AccountPanel({
 }) {
   const authApi = useAuthApi();
   const qc = useQueryClient();
+
+  const isSuperAdminAccount = userAccount?.role === 'superadmin';
 
   const [username, setUsername] = useState(userAccount?.username ?? '');
   const [role, setRole] = useState(userAccount?.role ?? 'employee');
@@ -192,6 +194,18 @@ export function AccountPanel({
       ) : (
         // EDIT ACCOUNT & RESET PASSWORD
         <div className="space-y-6">
+          {isSuperAdminAccount && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-800 flex items-start gap-2.5">
+              <Shield className="size-4 shrink-0 text-amber-600 mt-0.5" />
+              <div>
+                <p className="font-bold">Akun Permanen Developer (Superadmin)</p>
+                <p className="mt-0.5 text-amber-700">
+                  Akun Superadmin bersifat permanen di sistem. Peran dan status aktif akun ini dikunci serta tidak dapat dinonaktifkan demi integritas akses sistem.
+                </p>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleUpdate} className="rounded-lg border border-zinc-200 p-4 space-y-4 bg-white">
             <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
               <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Pengaturan Akun</span>
@@ -213,6 +227,7 @@ export function AccountPanel({
                 <Label htmlFor="edit-username">Username</Label>
                 <Input
                   id="edit-username"
+                  disabled={isSuperAdminAccount}
                   value={username}
                   onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
                   placeholder="username"
@@ -222,41 +237,51 @@ export function AccountPanel({
                 <Label htmlFor="edit-role">Peran / Hak Akses</Label>
                 <select
                   id="edit-role"
+                  disabled={isSuperAdminAccount}
                   value={role}
                   onChange={(e) => setRole(e.target.value as any)}
-                  className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+                  className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 disabled:bg-zinc-100 disabled:text-zinc-500"
                 >
-                  <option value="employee">Karyawan (Staff/Mekanik/Sales)</option>
-                  <option value="manager">Manager / Supervisor</option>
-                  <option value="hrd">HRD / Admin Kantor</option>
-                  <option value="owner">Owner / Direksi</option>
-                  <option value="admin">Administrator IT</option>
+                  {isSuperAdminAccount ? (
+                    <option value="superadmin">Superadmin (Developer) — Permanen</option>
+                  ) : (
+                    <>
+                      <option value="employee">Karyawan (Staff/Mekanik/Sales)</option>
+                      <option value="manager">Manager / Supervisor</option>
+                      <option value="hrd">HRD / Admin Kantor</option>
+                      <option value="owner">Owner / Direksi</option>
+                      <option value="admin">Administrator IT</option>
+                    </>
+                  )}
                 </select>
               </div>
             </div>
-
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="edit-active"
-                  checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                  className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
-                />
-                <Label htmlFor="edit-active" className="cursor-pointer font-normal text-zinc-700">Akun Aktif (Dapat Login)</Label>
+            {!isSuperAdminAccount && (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="edit-active"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
+                    className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+                  />
+                  <Label htmlFor="edit-active" className="cursor-pointer font-normal text-zinc-700">Akun Aktif (Dapat Login)</Label>
+                </div>
               </div>
-            </div>
+            )}
 
-            <Button
-              type="submit"
-              disabled={updateAccount.isPending}
-            >
-              {updateAccount.isPending && (
-                <Loader2 className="mr-1.5 size-4 animate-spin" />
-              )}
-              Simpan Perubahan Akun
-            </Button>
+            {!isSuperAdminAccount && (
+              <Button
+                type="submit"
+                disabled={updateAccount.isPending}
+              >
+                {updateAccount.isPending && (
+                  <Loader2 className="mr-1.5 size-4 animate-spin" />
+                )}
+                Simpan Perubahan Akun
+              </Button>
+            )}
           </form>
 
           <form onSubmit={handleResetPassword} className="rounded-lg border border-zinc-200 p-4 space-y-4 bg-zinc-50/50">
