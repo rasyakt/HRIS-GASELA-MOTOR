@@ -11,8 +11,8 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "clean": "turbo clean",
-    "clean:cache": "turbo clean",
+    "clean": "node -e \"const fs=require('fs'); ['.turbo/cache', 'apps/web/.next', 'apps/backend/dist', 'apps/mobile/.expo'].forEach(p=>{try{fs.rmSync(p,{recursive:true,force:true})}catch{}}); console.log('Semua cache & build artifacts berhasil dibersihkan!')\"",
+    "clean:cache": "node -e \"const fs=require('fs'); ['.turbo/cache', 'apps/web/.next/cache', 'apps/mobile/.expo'].forEach(p=>{try{fs.rmSync(p,{recursive:true,force:true})}catch{}}); console.log('Cache berhasil dibersihkan!')\"",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,prisma,md}\""
   },
   "devDependencies": {

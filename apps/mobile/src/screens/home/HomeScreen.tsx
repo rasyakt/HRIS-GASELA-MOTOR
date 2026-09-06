@@ -20,6 +20,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { FaceCameraModal } from '../../components/FaceCameraModal';
 import { Button } from '../../components/Button';
 import { Card, CardHeader, CardContent } from '../../components/Card';
 import { Badge } from '../../components/Badge';
@@ -91,6 +92,8 @@ export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<'in' | 'out' | null>(null);
+  const [faceModalVisible, setFaceModalVisible] = useState(false);
+  const [pendingActionKind, setPendingActionKind] = useState<'in' | 'out'>('in');
 
   // Animations
   const headerOpacity = useSharedValue(0);
@@ -112,14 +115,23 @@ export function HomeScreen() {
     }, [refetch]),
   );
 
-  async function handleCheck(kind: 'in' | 'out') {
+  function initiateCheck(kind: 'in' | 'out') {
     setActionError(null);
-    setActionLoading(kind);
+    setPendingActionKind(kind);
+    setFaceModalVisible(true);
+  }
+
+  async function handleFaceCaptured(photoUrl: string) {
+    setActionLoading(pendingActionKind);
     try {
       const pos = await getPosition();
-      await authApi(`/api/attendances/check-${kind}`, {
+      await authApi(`/api/attendances/check-${pendingActionKind}`, {
         method: 'POST',
-        body: JSON.stringify({ latitude: pos.latitude, longitude: pos.longitude }),
+        body: JSON.stringify({
+          latitude: pos.latitude,
+          longitude: pos.longitude,
+          photoUrl,
+        }),
       });
       queryClient.invalidateQueries({ queryKey: ['dashboard-summary'] });
       queryClient.invalidateQueries({ queryKey: ['attendance-my'] });
@@ -218,12 +230,12 @@ export function HomeScreen() {
 
                   <View style={styles.heroActionRow}>
                     {!today?.checkInTime && (
-                      <Button variant="gradient" onPress={() => handleCheck('in')} loading={actionLoading === 'in'} fullWidth size="large">
+                      <Button variant="gradient" onPress={() => initiateCheck('in')} loading={actionLoading === 'in'} fullWidth size="large">
                         Check-in Sekarang
                       </Button>
                     )}
                     {today?.checkInTime && !today.checkOutTime && (
-                      <Button variant="primary" onPress={() => handleCheck('out')} loading={actionLoading === 'out'} fullWidth size="large">
+                      <Button variant="primary" onPress={() => initiateCheck('out')} loading={actionLoading === 'out'} fullWidth size="large">
                         Check-out
                       </Button>
                     )}
@@ -281,6 +293,14 @@ export function HomeScreen() {
           </>
         )}
       </ScrollView>
+
+      {/* Face Camera Modal for Live Attendance Verification */}
+      <FaceCameraModal
+        visible={faceModalVisible}
+        onClose={() => setFaceModalVisible(false)}
+        onCapture={handleFaceCaptured}
+        actionKind={pendingActionKind}
+      />
     </View>
   );
 }

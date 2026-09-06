@@ -10,6 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { FaceCameraModal } from '../../components/FaceCameraModal';
 import { Button, Card, CardTitle, ErrorBanner, Row, StatusBadge } from '../../components/ui';
 import { fmtDate, fmtHours, fmtTime, OFFICE_LOCATION } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
@@ -34,6 +35,8 @@ export function AttendanceScreen() {
   const queryClient = useQueryClient();
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<'in' | 'out' | null>(null);
+  const [faceModalVisible, setFaceModalVisible] = useState(false);
+  const [pendingActionKind, setPendingActionKind] = useState<'in' | 'out'>('in');
 
   const dashboard = useQuery({
     queryKey: ['dashboard-summary'],
@@ -54,11 +57,17 @@ export function AttendanceScreen() {
     }, []),
   );
 
-  async function handleCheck(kind: 'in' | 'out') {
+  function initiateCheck(kind: 'in' | 'out') {
     setActionError(null);
-    setActionLoading(kind);
+    setPendingActionKind(kind);
+    setFaceModalVisible(true);
+  }
+
+  async function handleFaceCaptured(photoUrl: string) {
+    setActionError(null);
+    setActionLoading(pendingActionKind);
     try {
-      // 1. Verifikasi Biometrik Face ID / Hardware Security (0 MB database burden)
+      // 1. Biometrik Perangkat Tambahan jika Tersedia
       const hasHardware = await LocalAuthentication.hasHardwareAsync();
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
 
@@ -68,8 +77,8 @@ export function AttendanceScreen() {
           LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION,
         );
         const promptTitle = isFaceId
-          ? `Verifikasi Face ID untuk Check-${kind === 'in' ? 'in' : 'out'}`
-          : `Verifikasi Biometrik Wajah untuk Check-${kind === 'in' ? 'in' : 'out'}`;
+          ? `Konfirmasi Face ID untuk Check-${pendingActionKind === 'in' ? 'in' : 'out'}`
+          : `Konfirmasi Biometrik untuk Check-${pendingActionKind === 'in' ? 'in' : 'out'}`;
 
         const authResult = await LocalAuthentication.authenticateAsync({
           promptMessage: promptTitle,
@@ -79,15 +88,19 @@ export function AttendanceScreen() {
         });
 
         if (!authResult.success) {
-          throw new Error('Verifikasi Face ID / Biometrik dibatalkan atau tidak cocok.');
+          throw new Error('Verifikasi Face ID / Biometrik dibatalkan.');
         }
       }
 
-      // 2. Validasi Lokasi Geofencing GPS
+      // 2. Validasi Lokasi Geofencing GPS & Kirim Foto Wajah
       const pos = await getPosition();
-      await authApi(`/api/attendances/check-${kind}`, {
+      await authApi(`/api/attendances/check-${pendingActionKind}`, {
         method: 'POST',
-        body: JSON.stringify({ latitude: pos.latitude, longitude: pos.longitude }),
+        body: JSON.stringify({
+          latitude: pos.latitude,
+          longitude: pos.longitude,
+          photoUrl,
+        }),
       });
       queryClient.invalidateQueries({ queryKey: ['dashboard-summary'] });
       queryClient.invalidateQueries({ queryKey: ['attendance-my'] });
@@ -141,14 +154,14 @@ export function AttendanceScreen() {
               {!today.checkInTime && (
                 <Button
                   title="Check-in Sekarang"
-                  onPress={() => handleCheck('in')}
+                  onPress={() => initiateCheck('in')}
                   loading={actionLoading === 'in'}
                 />
               )}
               {today.checkInTime && !today.checkOutTime && (
                 <Button
                   title="Check-out"
-                  onPress={() => handleCheck('out')}
+                  onPress={() => initiateCheck('out')}
                   loading={actionLoading === 'out'}
                 />
               )}
@@ -159,7 +172,7 @@ export function AttendanceScreen() {
             <Text style={[styles.emptyText, { color: tokens.colors.textSecondary }]}>Belum ada kehadiran hari ini.</Text>
             <Button
               title="Check-in Sekarang"
-              onPress={() => handleCheck('in')}
+              onPress={() => initiateCheck('in')}
               loading={actionLoading === 'in'}
             />
           </View>
@@ -187,6 +200,13 @@ export function AttendanceScreen() {
           ))
         )}
       </Card>
+
+      <FaceCameraModal
+        visible={faceModalVisible}
+        onClose={() => setFaceModalVisible(false)}
+        onCapture={handleFaceCaptured}
+        actionKind={pendingActionKind}
+      />
     </ScrollView>
   );
 }

@@ -11,6 +11,7 @@ import { writeFile, rm, rename, mkdir } from 'fs/promises';
 import { join, extname, isAbsolute } from 'path';
 import { Readable } from 'stream';
 import { sanitizeSvg } from '../../common/utils/html-sanitizer';
+import { validateHumanFaceInImage } from '../../common/utils/face-validator.util';
 
 export type UploadCategory = 'avatar' | 'attendance' | 'document' | 'landing';
 
@@ -116,6 +117,20 @@ export class UploadsService {
         );
         throw new BadRequestException(
           'Ekstensi file tidak sesuai dengan konten file yang sebenarnya.',
+        );
+      }
+    }
+
+    // FACE RECOGNITION VALIDATION: Attendance photo must contain human facial features
+    if (category === 'attendance') {
+      const faceResult = validateHumanFaceInImage(file.buffer);
+      if (!faceResult.hasFace) {
+        this.logger.warn(
+          `Attendance photo rejected: no human face detected (skinRatio: ${faceResult.skinRatio.toFixed(2)}, contrast: ${faceResult.facialContrast.toFixed(2)})`,
+        );
+        throw new BadRequestException(
+          faceResult.reason ||
+            'Wajah tidak terdeteksi pada foto presensi. Mohon pastikan Anda mengambil foto selfie wajah Anda dengan jelas.',
         );
       }
     }
@@ -240,5 +255,9 @@ export class UploadsService {
       this.logger.error(`Error deleting file ${relative}:`, err);
       throw err;
     }
+  }
+
+  checkFace(buffer: Buffer) {
+    return validateHumanFaceInImage(buffer);
   }
 }

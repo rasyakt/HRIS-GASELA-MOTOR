@@ -3,26 +3,20 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useMemo, useEffect } from 'react';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, StyleSheet, LogBox } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { useAuthStore } from './src/store/auth-store';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
 
-// Suppress Reanimated reduced motion warning in development
-if (__DEV__) {
-  const originalWarn = console.warn;
-  console.warn = (...args) => {
-    if (
-      typeof args[0] === 'string' &&
-      args[0].includes('Reduced motion setting is enabled')
-    ) {
-      return;
-    }
-    originalWarn(...args);
-  };
-}
+// Suppress Reanimated reduced motion & CameraView warnings in development
+LogBox.ignoreLogs([
+  '[Reanimated] Reduced motion setting is enabled',
+  'Reduced motion setting is enabled on this device',
+  'The <CameraView> component does not support children',
+]);
+
 
 function AppContent({ loggedIn }: { loggedIn: boolean }) {
   const { theme, tokens } = useTheme();
