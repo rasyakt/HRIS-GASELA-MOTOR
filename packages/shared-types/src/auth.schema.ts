@@ -61,6 +61,7 @@ export interface AuthUser {
   fullName: string;
   department?: string | null;
   twoFactorEnabled?: boolean;
+  mustChangePassword?: boolean;
 }
 
 export interface LoginResponse {
@@ -70,6 +71,7 @@ export interface LoginResponse {
   refreshToken?: string;
   expiresIn?: number; // Access token TTL in seconds
   user?: AuthUser;
+  mustChangePassword?: boolean;
 }
 
 export interface JwtPayload {

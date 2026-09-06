@@ -71,6 +71,10 @@ export default function LoginPage() {
 
       if (response.accessToken && response.user) {
         setSession(response as any);
+        if (response.user.mustChangePassword || response.mustChangePassword) {
+          router.replace('/force-change-password');
+          return;
+        }
         router.replace(response.user.role === 'landing_admin' ? '/landing-cms' : '/dashboard');
       }
     } catch (err) {
@@ -103,6 +107,10 @@ export default function LoginPage() {
 
       if (response.accessToken && response.user) {
         setSession(response as any);
+        if (response.user.mustChangePassword || response.mustChangePassword) {
+          router.replace('/force-change-password');
+          return;
+        }
         router.replace(response.user.role === 'landing_admin' ? '/landing-cms' : '/dashboard');
       }
     } catch (err) {

@@ -224,4 +224,100 @@ describe('AuthService', () => {
       });
     });
   });
+
+  describe('changePassword', () => {
+    it('menolak jika password lama salah', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 1,
+        username: 'admin',
+        passwordHash: 'hashed-old',
+        employee: { fullName: 'Admin' },
+      });
+      bcryptMock.compare.mockResolvedValueOnce(false);
+
+      await expect(
+        service.changePassword(1, {
+          oldPassword: 'WrongOldPassword123!',
+          newPassword: 'NewValidPassword123!',
+        }),
+      ).rejects.toThrow('Password lama salah');
+    });
+
+    it('menolak jika password baru sama dengan password lama', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 1,
+        username: 'admin',
+        passwordHash: 'hashed-old',
+        employee: { fullName: 'Admin' },
+      });
+      bcryptMock.compare.mockResolvedValueOnce(true);
+
+      await expect(
+        service.changePassword(1, {
+          oldPassword: 'SamePassword123!',
+          newPassword: 'SamePassword123!',
+        }),
+      ).rejects.toThrow('Password baru tidak boleh sama dengan lama');
+    });
+
+    it('menolak jika password baru memuat username karyawan', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 1,
+        username: 'GSM-2024-001',
+        passwordHash: 'hashed-old',
+        employee: { fullName: 'Budi' },
+      });
+      bcryptMock.compare.mockResolvedValueOnce(true);
+
+      await expect(
+        service.changePassword(1, {
+          oldPassword: 'OldPassword123!',
+          newPassword: 'GSM-2024-001@Strong!',
+        }),
+      ).rejects.toThrow();
+    });
+
+    it('berhasil mengubah password dan menerbitkan token baru', async () => {
+      const existingUser = {
+        id: 1,
+        username: 'GSM-2024-001',
+        passwordHash: 'hashed-old',
+        role: 'employee',
+        employeeId: 10,
+        employee: { fullName: 'Budi Santoso', departmentId: 1, isActive: true },
+        isActive: true,
+        mustChangePassword: true,
+        passwordChangedAt: null,
+      };
+      prisma.user.findUnique.mockResolvedValue(existingUser);
+      bcryptMock.compare.mockResolvedValueOnce(true);
+
+      const updatedUser = {
+        ...existingUser,
+        passwordHash: 'hashed-new',
+        mustChangePassword: false,
+        passwordChangedAt: new Date(),
+        jwtVersion: 1,
+      };
+      prisma.user.update.mockResolvedValue(updatedUser);
+
+      const result = await service.changePassword(1, {
+        oldPassword: 'Gasela123!',
+        newPassword: 'SuperSecret2026!#',
+      });
+
+      expect(result.accessToken).toBeDefined();
+      expect(result.mustChangePassword).toBe(false);
+      expect(result.user?.mustChangePassword).toBe(false);
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 1 },
+          data: expect.objectContaining({
+            mustChangePassword: false,
+            jwtVersion: { increment: 1 },
+          }),
+        }),
+      );
+    });
+  });
 });

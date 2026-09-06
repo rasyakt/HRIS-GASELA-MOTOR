@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, X, User, Briefcase, FileText, Upload, Trash2, Loader2, Edit, Award, GraduationCap, Package, Shield, HeartHandshake, Download, RotateCcw } from 'lucide-react';
+import { Search, Plus, X, User, Briefcase, FileText, Upload, Trash2, Loader2, Edit, Award, GraduationCap, Package, Shield, HeartHandshake, Download, RotateCcw, FileSpreadsheet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ import { TrainingPanel } from './training-panel';
 import { AssetPanel } from './assets-panel';
 import { AccountPanel } from './account-panel';
 import { FamilyPanel } from './family-panel';
+import { ImportEmployeesModal } from './import-employees-modal';
 import { useDebounce } from '@/hooks/use-debounce';
 
 interface EmployeeRow {
@@ -102,6 +103,7 @@ export default function EmployeesPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [drawerTab, setDrawerTab] = useState<
     'profile' | 'job' | 'documents' | 'review' | 'training' | 'asset' | 'account'
   >('profile');
@@ -481,10 +483,16 @@ export default function EmployeesPage() {
           </p>
         </div>
         {user && (roleAtLeast(user.role, 'hrd') || user.role === 'owner') && (
-          <Button onClick={handleOpenCreate}>
-            <Plus className="mr-1.5 size-4" />
-            Karyawan Baru
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+              <FileSpreadsheet className="mr-1.5 size-4 text-emerald-600" />
+              Import Excel
+            </Button>
+            <Button onClick={handleOpenCreate}>
+              <Plus className="mr-1.5 size-4" />
+              Karyawan Baru
+            </Button>
+          </div>
         )}
       </div>
 
@@ -1413,6 +1421,13 @@ export default function EmployeesPage() {
         </div>
       );
       })()}
+      <ImportEmployeesModal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onSuccess={() => {
+          qc.invalidateQueries({ queryKey: ['employees'] });
+        }}
+      />
     </div>
   );
 }

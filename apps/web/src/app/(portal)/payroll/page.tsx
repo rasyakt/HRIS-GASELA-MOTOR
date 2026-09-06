@@ -276,16 +276,24 @@ function SalaryComponentsModal({ onClose }: { onClose: () => void }) {
   const [editAmount, setEditAmount] = useState<string>('0');
   const [editType, setEditType] = useState<'fixed' | 'percentage' | 'formula'>('percentage');
 
+  // Form tambah komponen baru
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newCode, setNewCode] = useState('');
+  const [newName, setNewName] = useState('');
+  const [newType, setNewType] = useState<'allowance' | 'deduction'>('allowance');
+  const [newCalcType, setNewCalcType] = useState<'fixed' | 'percentage'>('fixed');
+  const [newAmount, setNewAmount] = useState('0');
+
   const components = useQuery({
     queryKey: ['salary-components'],
     queryFn: () => authApi<SalaryComponentDto[]>('/api/payroll/salary-components?includeInactive=true'),
   });
 
   const updateComp = useMutation({
-    mutationFn: ({ id, defaultAmount, calculationType }: { id: number; defaultAmount?: number; calculationType?: 'fixed' | 'percentage' }) =>
+    mutationFn: ({ id, defaultAmount, calculationType, isActive }: { id: number; defaultAmount?: number; calculationType?: 'fixed' | 'percentage'; isActive?: boolean }) =>
       authApi(`/api/payroll/salary-components/${id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ defaultAmount, calculationType }),
+        body: JSON.stringify({ defaultAmount, calculationType, isActive }),
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['salary-components'] });
@@ -293,17 +301,134 @@ function SalaryComponentsModal({ onClose }: { onClose: () => void }) {
     },
   });
 
+  const createComp = useMutation({
+    mutationFn: (body: { code: string; name: string; type: 'allowance' | 'deduction'; calculationType: 'fixed' | 'percentage'; defaultAmount: number }) =>
+      authApi('/api/payroll/salary-components', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['salary-components'] });
+      setShowAddForm(false);
+      setNewCode('');
+      setNewName('');
+      setNewAmount('0');
+    },
+  });
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCode.trim() || !newName.trim()) return;
+    createComp.mutate({
+      code: newCode.trim().toUpperCase(),
+      name: newName.trim(),
+      type: newType,
+      calculationType: newCalcType,
+      defaultAmount: parseFloat(newAmount) || 0,
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <Card className="w-full max-w-2xl bg-white shadow-xl">
         <CardHeader className="flex flex-row items-center justify-between border-b border-zinc-100 pb-4">
           <div>
             <CardTitle className="text-base font-bold text-zinc-900">Kelola Komponen Gaji &amp; THR</CardTitle>
-            <p className="text-xs text-zinc-500 mt-0.5">Atur persentase THR dan komponen pendapatan/potongan gaji otomatis.</p>
+            <p className="text-xs text-zinc-500 mt-0.5">Tambah, aktifkan/non-aktifkan, atau ubah komponen pendapatan/potongan gaji.</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>✕</Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant={showAddForm ? 'secondary' : 'default'}
+              className="text-xs font-semibold"
+              onClick={() => setShowAddForm(!showAddForm)}
+            >
+              {showAddForm ? 'Batal' : '+ Tambah Komponen'}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={onClose}>✕</Button>
+          </div>
         </CardHeader>
         <CardContent className="pt-4 space-y-4 max-h-[70vh] overflow-y-auto">
+          {/* Form Tambah Komponen Baru */}
+          {showAddForm && (
+            <form onSubmit={handleCreate} className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-3">
+              <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider">Tambah Komponen Gaji Baru</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-zinc-700 block mb-1">Kode Komponen (mis. TJK, KOP)</label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={10}
+                    placeholder="mis. TJK"
+                    value={newCode}
+                    onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+                    className="w-full h-8 px-2.5 text-xs rounded-lg border border-zinc-300 bg-white font-mono uppercase"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-zinc-700 block mb-1">Nama Komponen</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="mis. Tunjangan Kinerja"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="w-full h-8 px-2.5 text-xs rounded-lg border border-zinc-300 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-zinc-700 block mb-1">Tipe Komponen</label>
+                  <select
+                    value={newType}
+                    onChange={(e) => setNewType(e.target.value as any)}
+                    className="w-full h-8 px-2 text-xs rounded-lg border border-zinc-300 bg-white font-medium"
+                  >
+                    <option value="allowance">Pendapatan (Tunjangan / Bonus)</option>
+                    <option value="deduction">Potongan (Iuran / Pinjaman)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-zinc-700 block mb-1">Skema Hitung</label>
+                  <select
+                    value={newCalcType}
+                    onChange={(e) => setNewCalcType(e.target.value as any)}
+                    className="w-full h-8 px-2 text-xs rounded-lg border border-zinc-300 bg-white font-medium"
+                  >
+                    <option value="fixed">Rp (Nominal Tetap)</option>
+                    <option value="percentage">% (Persentase Gaji Pokok)</option>
+                  </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="text-[11px] font-semibold text-zinc-700 block mb-1">Nilai Default / Bawaan</label>
+                  {newCalcType === 'fixed' ? (
+                    <CurrencyInput
+                      className="w-full h-8 text-xs font-bold"
+                      value={newAmount}
+                      onChangeValue={(num, raw) => setNewAmount(raw)}
+                      placeholder="0"
+                    />
+                  ) : (
+                    <PositiveNumberInput
+                      allowDecimal={true}
+                      max={100}
+                      className="w-full h-8 text-xs font-bold"
+                      value={newAmount}
+                      onChangeValue={(num, raw) => setNewAmount(raw)}
+                      placeholder="0"
+                    />
+                  )}
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <Button type="button" variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>Batal</Button>
+                <Button type="submit" size="sm" disabled={createComp.isPending}>
+                  {createComp.isPending ? <Loader2 className="size-3.5 animate-spin" /> : 'Simpan Komponen'}
+                </Button>
+              </div>
+            </form>
+          )}
+
           {components.isLoading ? (
             <p className="text-sm text-zinc-400">Memuat komponen gaji…</p>
           ) : (
@@ -312,22 +437,42 @@ function SalaryComponentsModal({ onClose }: { onClose: () => void }) {
                 const isEditing = editId === c.id;
                 const isThr = c.code === 'THR';
                 const isGajiPokok = c.code === 'GAJI';
+                const isActive = c.isActive ?? true;
+
                 return (
-                  <div key={c.id} className={`rounded-xl border p-4 transition-colors ${isThr ? 'border-amber-300 bg-amber-50/70' : 'border-zinc-200 bg-white'}`}>
+                  <div
+                    key={c.id}
+                    className={`rounded-xl border p-4 transition-colors ${
+                      !isActive
+                        ? 'border-zinc-200 bg-zinc-50 opacity-60'
+                        : isThr
+                        ? 'border-amber-300 bg-amber-50/70'
+                        : 'border-zinc-200 bg-white'
+                    }`}
+                  >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-zinc-900">{c.name}</span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`font-bold text-sm ${isActive ? 'text-zinc-900' : 'text-zinc-500 line-through'}`}>{c.name}</span>
                           <span className="font-mono text-[10px] bg-zinc-100 border border-zinc-200 px-1.5 py-0.5 rounded text-zinc-600 font-semibold">{c.code}</span>
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${c.type === 'allowance' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
                             {c.type === 'allowance' ? 'Pendapatan' : 'Potongan'}
                           </span>
+                          {!isActive && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-600">
+                              Non-aktif (Diabaikan)
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-zinc-500 mt-1">
                           {isGajiPokok ? (
                             <span className="text-emerald-700 font-medium flex items-center gap-1.5 mt-0.5">
                               <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />
                               Gaji Pokok dihitung otomatis dari profil masing-masing karyawan.
+                            </span>
+                          ) : !isActive ? (
+                            <span className="text-zinc-500 font-medium">
+                              Komponen non-aktif tidak akan dihitung pada slip gaji.
                             </span>
                           ) : (
                             <>
@@ -341,24 +486,31 @@ function SalaryComponentsModal({ onClose }: { onClose: () => void }) {
                       </div>
 
                       {!isEditing ? (
-                        <Button
-                          size="sm"
-                          variant={isThr ? 'default' : 'outline'}
-                          className={isThr ? 'bg-amber-600 hover:bg-amber-700 text-white font-semibold flex items-center gap-1.5' : ''}
-                          onClick={() => {
-                            setEditId(c.id);
-                            setEditAmount(String(c.defaultAmount ?? 0));
-                            setEditType(c.calculationType);
-                          }}
-                        >
-                          {isThr ? (
-                            <>
-                              Set THR (Aktifkan/Ubah)
-                            </>
-                          ) : (
-                            'Edit Komponen'
+                        <div className="flex items-center gap-2 shrink-0">
+                          {!isGajiPokok && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className={`text-xs ${isActive ? 'text-amber-700 hover:text-amber-800' : 'text-emerald-700 hover:text-emerald-800'}`}
+                              disabled={updateComp.isPending}
+                              onClick={() => updateComp.mutate({ id: c.id, isActive: !isActive })}
+                            >
+                              {isActive ? 'Nonaktifkan' : 'Aktifkan'}
+                            </Button>
                           )}
-                        </Button>
+                          <Button
+                            size="sm"
+                            variant={isThr ? 'default' : 'outline'}
+                            className={isThr ? 'bg-amber-600 hover:bg-amber-700 text-white font-semibold flex items-center gap-1.5' : ''}
+                            onClick={() => {
+                              setEditId(c.id);
+                              setEditAmount(String(c.defaultAmount ?? 0));
+                              setEditType(c.calculationType);
+                            }}
+                          >
+                            {isThr ? 'Set THR (Aktifkan/Ubah)' : 'Edit Komponen'}
+                          </Button>
+                        </div>
                       ) : (
                         <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1.5">

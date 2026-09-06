@@ -113,14 +113,13 @@ export class AuthController {
     return this.authService.getMe(user.id);
   }
 
-  @HttpCode(204)
   @ApiOperation({ summary: 'Ganti password sendiri' })
   @Post('change-password')
   async changePassword(
     @CurrentUser() user: AuthUser,
     @Body() body: ChangePasswordDto,
-  ): Promise<void> {
-    await this.authService.changePassword(user.id, body);
+  ): Promise<LoginResponse> {
+    return this.authService.changePassword(user.id, body);
   }
 
   // ===================== 2FA / MFA ENDPOINTS =====================

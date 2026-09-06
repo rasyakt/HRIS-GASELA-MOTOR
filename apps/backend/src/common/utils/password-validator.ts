@@ -5,6 +5,11 @@ export interface PasswordValidationResult {
   errors: string[];
 }
 
+export interface PasswordValidationContext {
+  username?: string;
+  oldPassword?: string;
+}
+
 /**
  * Validates password complexity requirements
  * - Minimum 12 characters
@@ -12,9 +17,13 @@ export interface PasswordValidationResult {
  * - At least one lowercase letter
  * - At least one number
  * - At least one special character
+ * - Not in weak passwords dictionary
+ * - No character repeated > 5 times
+ * - Does not match old password or contain username/NIK
  */
 export function validatePasswordComplexity(
   password: string,
+  context?: PasswordValidationContext,
 ): PasswordValidationResult {
   const errors: string[] = [];
 
@@ -93,6 +102,18 @@ export function validatePasswordComplexity(
     errors.push('Password tidak boleh mengandung karakter yang sama berulang lebih dari 5 kali');
   }
 
+  if (context?.oldPassword && password === context.oldPassword) {
+    errors.push('Password baru tidak boleh sama dengan password lama atau default');
+  }
+
+  if (
+    context?.username &&
+    context.username.trim().length >= 3 &&
+    password.toLowerCase().includes(context.username.trim().toLowerCase())
+  ) {
+    errors.push('Password baru tidak boleh memuat username atau NIK Anda');
+  }
+
   return {
     isValid: errors.length === 0,
     errors,
@@ -102,8 +123,11 @@ export function validatePasswordComplexity(
 /**
  * Validates password or throws BadRequestException
  */
-export function assertPasswordComplexity(password: string): void {
-  const result = validatePasswordComplexity(password);
+export function assertPasswordComplexity(
+  password: string,
+  context?: PasswordValidationContext,
+): void {
+  const result = validatePasswordComplexity(password, context);
   if (!result.isValid) {
     throw new BadRequestException({
       message: 'Password tidak memenuhi persyaratan kompleksitas',

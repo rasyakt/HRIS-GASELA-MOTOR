@@ -63,6 +63,8 @@ export default function ProfilePage() {
     queryFn: () => authApi<any[]>('/api/leaves/balances/my'),
   });
 
+  const setSession = useAuthStore((s) => s.setSession);
+
   // Change Password Mutation
   const changePasswordMut = useMutation({
     mutationFn: (body: any) => 
@@ -70,12 +72,15 @@ export default function ProfilePage() {
         method: 'POST',
         body,
       }),
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       setSuccessMsg('Password Anda berhasil diperbarui.');
       setErrorMsg('');
       setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      if (data && data.accessToken && data.user) {
+        setSession(data);
+      }
     },
     onError: (err: any) => {
       setErrorMsg(err.message || 'Gagal memperbarui password.');
@@ -89,8 +94,19 @@ export default function ProfilePage() {
       setErrorMsg('Semua kolom password wajib diisi.');
       return;
     }
-    if (newPassword.length < 8) {
-      setErrorMsg('Password baru minimal harus 8 karakter.');
+    if (newPassword.length < 12) {
+      setErrorMsg('Password baru minimal harus 12 karakter.');
+      return;
+    }
+    if (
+      !/[A-Z]/.test(newPassword) ||
+      !/[a-z]/.test(newPassword) ||
+      !/[0-9]/.test(newPassword) ||
+      !/[^A-Za-z0-9]/.test(newPassword)
+    ) {
+      setErrorMsg(
+        'Password baru harus mengombinasikan huruf besar (A-Z), huruf kecil (a-z), angka (0-9), dan simbol khusus.',
+      );
       return;
     }
     if (newPassword !== confirmPassword) {

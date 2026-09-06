@@ -261,8 +261,10 @@ export default function PortalLayout({
   useEffect(() => {
     if (hasHydrated && !token) {
       router.replace('/login');
+    } else if (hasHydrated && user?.mustChangePassword) {
+      router.replace('/force-change-password');
     }
-  }, [hasHydrated, token, router]);
+  }, [hasHydrated, token, user, router]);
 
   const visibleGroups = useMemo(() => {
     if (!user) return [];
