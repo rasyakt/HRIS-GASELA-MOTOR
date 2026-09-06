@@ -165,11 +165,11 @@ describe('AttendancesService', () => {
         shiftId: 1,
         status: 'present',
       });
-      // Shift berakhir jam 23:00 (jauh di masa depan)
+      // Shift berakhir jam 23:59:59 (jauh di masa depan)
       prisma.shift.findUnique.mockResolvedValue({
         id: 1,
         name: 'Shift Malam',
-        endTime: '23:00:00',
+        endTime: '23:59:59',
       });
 
       await expect(
@@ -197,7 +197,7 @@ describe('AttendancesService', () => {
       prisma.shift.findUnique.mockResolvedValue({
         id: 1,
         name: 'Shift Malam',
-        endTime: '23:00:00',
+        endTime: '23:59:59',
       });
       prisma.attendance.update.mockImplementation(
         ({ data }: { data: Record<string, unknown> }) =>

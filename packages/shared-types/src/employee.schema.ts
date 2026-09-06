@@ -79,3 +79,18 @@ export interface Paginated<T> {
   limit: number;
   totalPages: number;
 }
+
+export interface EmployeeImportErrorItem {
+  row: number;
+  employeeNumber?: string;
+  fullName?: string;
+  field?: string;
+  message: string;
+}
+
+export interface EmployeeImportResultDto {
+  totalRows: number;
+  successCount: number;
+  failedCount: number;
+  errors: EmployeeImportErrorItem[];
+}

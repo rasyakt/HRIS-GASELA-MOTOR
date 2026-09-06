@@ -9,10 +9,17 @@ import {
   Patch,
   Post,
   Query,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { AuthUser } from '@gasela/shared-types';
 import { EmployeesService } from './employees.service';
+import { EmployeeImportService } from './employee-import.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
@@ -33,6 +40,7 @@ import {
 export class EmployeesController {
   constructor(
     private readonly employeesService: EmployeesService,
+    private readonly employeeImportService: EmployeeImportService,
     private readonly auditLogsService: AuditLogsService,
   ) {}
 
@@ -48,6 +56,83 @@ export class EmployeesController {
   @ApiOperation({ summary: 'Dapatkan nomor karyawan (NIK) berikutnya sesuai format aktif' })
   getNextNumber() {
     return this.employeesService.getNextEmployeeNumber();
+  }
+
+  @Roles('admin', 'hrd', 'owner')
+  @Get('import/template')
+  @ApiOperation({ summary: 'Unduh template resmi import karyawan Excel (.xlsx)' })
+  async downloadImportTemplate(@Res() res: Response) {
+    const buffer = await this.employeeImportService.generateTemplate();
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="Template_Import_Karyawan_Gasela.xlsx"',
+    );
+    res.send(buffer);
+  }
+
+  @Roles('admin', 'hrd', 'owner')
+  @Post('import')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 20 * 1024 * 1024 }, // Maksimal 20MB
+      fileFilter: (_req, file, callback) => {
+        const allowedExtensions = /\.(xlsx|xls)$/i;
+        const allowedMimetypes = [
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/vnd.ms-excel',
+          'application/octet-stream',
+        ];
+        if (!file.originalname.match(allowedExtensions)) {
+          return callback(
+            new BadRequestException(
+              'Format file tidak didukung. Hanya file spreadsheet Excel (.xlsx, .xls) yang diperbolehkan.',
+            ),
+            false,
+          );
+        }
+        if (
+          !allowedMimetypes.includes(file.mimetype) &&
+          !file.originalname.match(allowedExtensions)
+        ) {
+          return callback(
+            new BadRequestException(
+              'Tipe MIME file tidak valid untuk spreadsheet Excel.',
+            ),
+            false,
+          );
+        }
+        callback(null, true);
+      },
+    }),
+  )
+  @ApiOperation({ summary: 'Import data karyawan dari file Excel (.xlsx, .xls)' })
+  async importEmployees(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: AuthUser,
+  ) {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('File Excel wajib diunggah.');
+    }
+    const result = await this.employeeImportService.importFromExcel(file.buffer);
+
+    await this.auditLogsService.record({
+      userId: user.id,
+      username: user.username,
+      action: 'IMPORT',
+      resource: 'employees',
+      payload: {
+        totalRows: result.totalRows,
+        successCount: result.successCount,
+        failedCount: result.failedCount,
+        filename: file.originalname,
+      },
+    });
+
+    return result;
   }
 
   @Roles('admin', 'hrd', 'manager', 'owner', 'employee')
