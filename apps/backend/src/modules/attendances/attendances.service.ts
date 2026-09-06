@@ -239,20 +239,27 @@ export class AttendancesService {
       ? parseInt(bufferSetting.value, 10) || 0
       : 30;
 
-    const isEarlyLeave =
+    const isShiftEarly =
       shiftEnd !== null && checkOutMin < shiftEnd - bufferMinutes;
-    const earlyLeaveMinutes = isEarlyLeave
+    const isTooRecent = workedMinutes < 5;
+    const isEarlyLeave = isShiftEarly || isTooRecent;
+    const earlyLeaveMinutes = isShiftEarly
       ? Math.max(0, shiftEnd - checkOutMin)
       : 0;
 
     if (isEarlyLeave) {
-      const earliestCheckoutMin = shiftEnd - bufferMinutes;
+      const earliestCheckoutMin = shiftEnd ? Math.max(0, shiftEnd - bufferMinutes) : 0;
       const hh = String(Math.floor(earliestCheckoutMin / 60)).padStart(2, '0');
       const mm = String(earliestCheckoutMin % 60).padStart(2, '0');
       const earliestTimeStr = `${hh}:${mm}`;
 
-      // Jika belum masuk jam checkout dan tidak ada catatan alasan
+      // Jika belum masuk jam checkout atau baru saja check-in, wajib ada catatan alasan
       if (!input.notes || input.notes.trim().length < 3) {
+        if (isTooRecent && !isShiftEarly) {
+          throw new ForbiddenException(
+            'Anda baru saja melakukan check-in kurang dari 5 menit yang lalu. Untuk melakukan check-out langsung, wajib menyertakan alasan izin/pembatalan pada catatan.',
+          );
+        }
         throw new ForbiddenException(
           `Check-out shift ${shift?.name ?? 'kerja'} baru dibuka pukul ${earliestTimeStr} (${bufferMinutes} menit sebelum shift selesai). Jika izin pulang awal, wajib isi alasan pada catatan.`,
         );

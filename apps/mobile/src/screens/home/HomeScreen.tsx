@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { DashboardSummary } from '@gasela/shared-types';
 import { useCallback, useState, useEffect } from 'react';
 import {
+  Alert,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -21,6 +22,7 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { FaceCameraModal } from '../../components/FaceCameraModal';
+import { EarlyLeaveModal } from '../../components/EarlyLeaveModal';
 import { Button } from '../../components/Button';
 import { Card, CardHeader, CardContent } from '../../components/Card';
 import { Badge } from '../../components/Badge';
@@ -83,6 +85,23 @@ function QuickAction({ icon, label, onPress, color, delay }: { icon: any; label:
   );
 }
 
+function isCheckInTooRecent(checkInTimeStr: string, maxMinutes = 2): boolean {
+  try {
+    const parts = checkInTimeStr.split(':').map(Number);
+    if (parts.length >= 2) {
+      const checkInMinutes = parts[0] * 60 + parts[1];
+      const now = new Date();
+      const wibHours = (now.getUTCHours() + 7) % 24;
+      const nowMinutes = wibHours * 60 + now.getUTCMinutes();
+      const diff = nowMinutes - checkInMinutes;
+      return diff >= 0 && diff < maxMinutes;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
 export function HomeScreen() {
   const { tokens } = useTheme();
   const authApi = useAuthApi();
@@ -100,6 +119,8 @@ export function HomeScreen() {
     formatted: string;
     isWithin: boolean;
   } | null>(null);
+  const [earlyLeaveModalVisible, setEarlyLeaveModalVisible] = useState(false);
+  const [checkoutNotes, setCheckoutNotes] = useState<string>('');
 
   // Animations
   const headerOpacity = useSharedValue(0);
@@ -157,6 +178,25 @@ export function HomeScreen() {
     }
   }
 
+  function handlePressCheckOut() {
+    const todayAtt = data?.today.attendance;
+
+    // 1. Cek aturan jam shift & pencegahan check-out instan (Sesuai Aturan Website HRIS)
+    if (todayAtt && todayAtt.canCheckoutNow === false) {
+      setEarlyLeaveModalVisible(true);
+      return;
+    }
+
+    setCheckoutNotes('');
+    initiateCheck('out');
+  }
+
+  function handleConfirmEarlyLeave(reason: string) {
+    setCheckoutNotes(reason);
+    setEarlyLeaveModalVisible(false);
+    initiateCheck('out');
+  }
+
   async function handleFaceCaptured(photoUrl: string) {
     setActionLoading(pendingActionKind);
     try {
@@ -167,6 +207,7 @@ export function HomeScreen() {
           latitude: pos.latitude,
           longitude: pos.longitude,
           photoUrl,
+          notes: pendingActionKind === 'out' && checkoutNotes ? checkoutNotes : undefined,
         }),
       });
       queryClient.invalidateQueries({ queryKey: ['dashboard-summary'] });
@@ -176,6 +217,7 @@ export function HomeScreen() {
     } finally {
       setActionLoading(null);
       setCapturedPosition(null);
+      setCheckoutNotes('');
     }
   }
 
@@ -372,6 +414,15 @@ export function HomeScreen() {
                     <ErrorBanner description={actionError} onDismiss={() => setActionError(null)} style={{ marginTop: 4, marginBottom: 12 }} />
                   )}
 
+                  {today?.checkInTime && !today.checkOutTime && !today.canCheckoutNow && today.earliestCheckoutTime && (
+                    <View style={[styles.earlyWarningBox, { backgroundColor: 'rgba(217, 119, 6, 0.08)', borderColor: 'rgba(217, 119, 6, 0.22)' }]}>
+                      <Ionicons name="time-outline" size={15} color={tokens.colors.warning} style={{ marginRight: 8, marginTop: 1 }} />
+                      <Text style={[styles.earlyWarningText, { color: tokens.colors.warning }]}>
+                        Shift berakhir <Text style={{ fontWeight: '700' }}>{fmtTime(today.shiftEndTime)}</Text> (Check-out normal <Text style={{ fontWeight: '700' }}>{fmtTime(today.earliestCheckoutTime)}</Text>). Check-out sekarang memerlukan alasan izin.
+                      </Text>
+                    </View>
+                  )}
+
                   <View style={styles.heroActionRow}>
                     {!today?.checkInTime && (
                       <Button
@@ -387,14 +438,18 @@ export function HomeScreen() {
                     )}
                     {today?.checkInTime && !today.checkOutTime && (
                       <Button
-                        variant="primary"
-                        onPress={() => initiateCheck('out')}
+                        variant={today.canCheckoutNow ? "primary" : "outline"}
+                        onPress={handlePressCheckOut}
                         loading={actionLoading === 'out'}
                         fullWidth
                         size="large"
                         icon="log-out-outline"
                       >
-                        {actionLoading === 'out' ? 'Memeriksa Lokasi...' : 'Check-out'}
+                        {actionLoading === 'out'
+                          ? 'Memeriksa Lokasi...'
+                          : today.canCheckoutNow
+                          ? 'Check-out Sekarang'
+                          : 'Izin Pulang Awal'}
                       </Button>
                     )}
                   </View>
@@ -451,6 +506,15 @@ export function HomeScreen() {
           </>
         )}
       </ScrollView>
+
+      {/* Early Leave Modal (Sesuai Aturan Website HRIS) */}
+      <EarlyLeaveModal
+        visible={earlyLeaveModalVisible}
+        onClose={() => setEarlyLeaveModalVisible(false)}
+        onConfirm={handleConfirmEarlyLeave}
+        shiftEndTime={today?.shiftEndTime}
+        earliestCheckoutTime={today?.earliestCheckoutTime}
+      />
 
       {/* Face Camera Modal for Live Attendance Verification */}
       <FaceCameraModal
@@ -561,6 +625,19 @@ const styles = StyleSheet.create({
   proximityNeutralText: {
     fontSize: 11,
     fontWeight: '600',
+  },
+  earlyWarningBox: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    alignItems: 'flex-start',
+  },
+  earlyWarningText: {
+    fontSize: 12,
+    lineHeight: 17,
+    flex: 1,
   },
   heroActionRow: { marginTop: 4 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 28 },

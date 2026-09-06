@@ -36,6 +36,23 @@ function timeToString(value: unknown): string | null {
   return null;
 }
 
+function timeToMinutes(value: unknown): number | null {
+  if (value instanceof Date) {
+    if (value.getUTCFullYear() <= 1970) {
+      return value.getUTCHours() * 60 + value.getUTCMinutes();
+    }
+    const wib = new Date(value.getTime() + 7 * 60 * 60 * 1000);
+    return wib.getUTCHours() * 60 + wib.getUTCMinutes();
+  }
+  if (typeof value === 'string') {
+    const parts = value.split(':').map(Number);
+    if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      return parts[0] * 60 + parts[1];
+    }
+  }
+  return null;
+}
+
 @Injectable()
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
@@ -137,7 +154,15 @@ export class DashboardService {
 
         const nowWib = new Date(Date.now() + 7 * 60 * 60 * 1000);
         const nowMin = nowWib.getUTCHours() * 60 + nowWib.getUTCMinutes();
-        canCheckoutNow = nowMin >= earliestMin;
+        const isPastEarliest = nowMin >= earliestMin;
+
+        // Cegah karyawan langsung check-out instan jika baru saja check-in (< 5 menit)
+        const checkInMin = timeToMinutes(attendance.checkInTime);
+        const workedMinutes =
+          checkInMin !== null ? Math.max(0, nowMin - checkInMin) : null;
+        const isTooRecent = workedMinutes !== null && workedMinutes < 5;
+
+        canCheckoutNow = isPastEarliest && !isTooRecent;
       }
     }
 
