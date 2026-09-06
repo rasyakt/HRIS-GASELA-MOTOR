@@ -91,3 +91,31 @@ export const secureStorage = {
     }
   },
 };
+
+const SAVED_CREDENTIALS_KEY = 'gasela_saved_credentials';
+
+export const savedCredentialsStore = {
+  saveCredentials: async (credentials: { username: string; password?: string }) => {
+    try {
+      await SecureStore.setItemAsync(SAVED_CREDENTIALS_KEY, JSON.stringify(credentials));
+    } catch (e) {
+      console.warn('Failed to save credentials:', e);
+    }
+  },
+  getCredentials: async (): Promise<{ username: string; password?: string } | null> => {
+    try {
+      const raw = await SecureStore.getItemAsync(SAVED_CREDENTIALS_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      console.warn('Failed to get saved credentials:', e);
+      return null;
+    }
+  },
+  clearCredentials: async () => {
+    try {
+      await SecureStore.deleteItemAsync(SAVED_CREDENTIALS_KEY);
+    } catch (e) {
+      console.warn('Failed to delete saved credentials:', e);
+    }
+  },
+};
