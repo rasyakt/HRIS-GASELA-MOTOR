@@ -144,6 +144,18 @@ export function HomeScreen() {
 
   async function initiateCheck(kind: 'in' | 'out') {
     setActionError(null);
+
+    // Opsi 1: Kunci Check-in Setelah Jam Shift Berakhir
+    if (kind === 'in') {
+      const shiftInfo = data?.today.shift;
+      if (shiftInfo?.isEnded) {
+        setActionError(
+          `Shift ${shiftInfo.name} telah berakhir pada pukul ${fmtTime(shiftInfo.endTime)} WIB. Anda tidak dapat melakukan check-in setelah jam shift selesai.`
+        );
+        return;
+      }
+    }
+
     setActionLoading(kind);
     try {
       const office = data?.officeLocation;
@@ -423,17 +435,30 @@ export function HomeScreen() {
                     </View>
                   )}
 
+                  {!today?.checkInTime && data?.today.shift?.isEnded && (
+                    <View style={[styles.earlyWarningBox, { backgroundColor: 'rgba(217, 119, 6, 0.08)', borderColor: 'rgba(217, 119, 6, 0.25)' }]}>
+                      <Ionicons name="information-circle-outline" size={16} color={tokens.colors.warning} style={{ marginRight: 8, marginTop: 1 }} />
+                      <Text style={[styles.earlyWarningText, { color: tokens.colors.warning }]}>
+                        Shift {data.today.shift.name} telah berakhir pukul <Text style={{ fontWeight: '700' }}>{fmtTime(data.today.shift.endTime)} WIB</Text>. Presensi masuk hari ini telah ditutup.
+                      </Text>
+                    </View>
+                  )}
+
                   <View style={styles.heroActionRow}>
                     {!today?.checkInTime && (
                       <Button
-                        variant="gradient"
+                        variant={data?.today.shift?.isEnded ? "secondary" : "gradient"}
                         onPress={() => initiateCheck('in')}
                         loading={actionLoading === 'in'}
                         fullWidth
                         size="large"
-                        icon="log-in-outline"
+                        icon={data?.today.shift?.isEnded ? "lock-closed-outline" : "log-in-outline"}
                       >
-                        {actionLoading === 'in' ? 'Memeriksa Lokasi...' : 'Check-in Sekarang'}
+                        {actionLoading === 'in'
+                          ? 'Memeriksa Lokasi...'
+                          : data?.today.shift?.isEnded
+                          ? 'Presensi Masuk Ditutup'
+                          : 'Check-in Sekarang'}
                       </Button>
                     )}
                     {today?.checkInTime && !today.checkOutTime && (

@@ -101,6 +101,18 @@ export function AttendanceScreen() {
 
   async function initiateCheck(kind: 'in' | 'out') {
     setActionError(null);
+
+    // Opsi 1: Kunci Check-in Setelah Jam Shift Berakhir
+    if (kind === 'in') {
+      const shiftInfo = dashboard.data?.today.shift;
+      if (shiftInfo?.isEnded) {
+        setActionError(
+          `Shift ${shiftInfo.name} telah berakhir pada pukul ${fmtTime(shiftInfo.endTime)} WIB. Anda tidak dapat melakukan check-in setelah jam shift selesai.`
+        );
+        return;
+      }
+    }
+
     setActionLoading(kind);
     try {
       const office = dashboard.data?.officeLocation;
@@ -326,6 +338,16 @@ export function AttendanceScreen() {
             </View>
           )}
 
+          {/* Notice jika shift sudah berakhir dan belum check-in */}
+          {!today?.checkInTime && dashboard.data?.today.shift?.isEnded && (
+            <View style={[styles.earlyWarningCompact, { backgroundColor: 'rgba(217, 119, 6, 0.08)', borderColor: 'rgba(217, 119, 6, 0.25)' }]}>
+              <Ionicons name="information-circle-outline" size={16} color={tokens.colors.warning} style={{ marginRight: 7, marginTop: 1 }} />
+              <Text style={[styles.earlyWarningText, { color: tokens.colors.warning }]}>
+                Shift {dashboard.data.today.shift.name} telah berakhir pukul <Text style={styles.bold}>{fmtTime(dashboard.data.today.shift.endTime)} WIB</Text>. Presensi masuk hari ini telah ditutup.
+              </Text>
+            </View>
+          )}
+
           {/* Error Banner jika ada */}
           {actionError && (
             <ErrorBanner
@@ -339,14 +361,18 @@ export function AttendanceScreen() {
           <View style={styles.actionRow}>
             {!today?.checkInTime && (
               <Button
-                variant="gradient"
+                variant={dashboard.data?.today.shift?.isEnded ? 'secondary' : 'gradient'}
                 onPress={() => initiateCheck('in')}
                 loading={actionLoading === 'in'}
                 fullWidth
                 size="large"
-                icon="camera-outline"
+                icon={dashboard.data?.today.shift?.isEnded ? 'lock-closed-outline' : 'camera-outline'}
               >
-                {actionLoading === 'in' ? 'Memeriksa Lokasi...' : 'Check-in Sekarang'}
+                {actionLoading === 'in'
+                  ? 'Memeriksa Lokasi...'
+                  : dashboard.data?.today.shift?.isEnded
+                  ? 'Presensi Masuk Ditutup'
+                  : 'Check-in Sekarang'}
               </Button>
             )}
 

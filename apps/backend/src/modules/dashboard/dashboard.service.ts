@@ -141,9 +141,18 @@ export class DashboardService {
     let earliestCheckoutTime: string | null = null;
     let canCheckoutNow = true;
 
-    if (attendance?.shift) {
-      shiftStartTime = timeToString(attendance.shift.startTime);
-      shiftEndTime = timeToString(attendance.shift.endTime);
+    const activeShift =
+      attendance?.shift ??
+      (this.prisma.shift?.findFirst
+        ? await this.prisma.shift.findFirst({
+            where: { isActive: true },
+            orderBy: { id: 'asc' },
+          })
+        : null);
+
+    if (activeShift) {
+      shiftStartTime = timeToString(activeShift.startTime);
+      shiftEndTime = timeToString(activeShift.endTime);
       if (shiftEndTime) {
         const [sh, sm] = shiftEndTime.split(':').map(Number);
         const shiftEndMin = sh * 60 + sm;
@@ -157,7 +166,9 @@ export class DashboardService {
         const isPastEarliest = nowMin >= earliestMin;
 
         // Cegah karyawan langsung check-out instan jika baru saja check-in (< 5 menit)
-        const checkInMin = timeToMinutes(attendance.checkInTime);
+        const checkInMin = attendance?.checkInTime
+          ? timeToMinutes(attendance.checkInTime)
+          : null;
         const workedMinutes =
           checkInMin !== null ? Math.max(0, nowMin - checkInMin) : null;
         const isTooRecent = workedMinutes !== null && workedMinutes < 5;
@@ -166,9 +177,25 @@ export class DashboardService {
       }
     }
 
+    const nowWib = new Date(Date.now() + 7 * 60 * 60 * 1000);
+    const nowMin = nowWib.getUTCHours() * 60 + nowWib.getUTCMinutes();
+    let isShiftEnded = false;
+    if (shiftEndTime) {
+      const [sh, sm] = shiftEndTime.split(':').map(Number);
+      isShiftEnded = nowMin >= sh * 60 + sm;
+    }
+
     return {
       today: {
         date: dayKey(today),
+        shift: activeShift
+          ? {
+              name: activeShift.name,
+              startTime: shiftStartTime ?? '',
+              endTime: shiftEndTime ?? '',
+              isEnded: isShiftEnded,
+            }
+          : null,
         attendance: attendance
           ? {
               status: attendance.status,
@@ -176,11 +203,12 @@ export class DashboardService {
               checkOutTime: timeToString(attendance.checkOutTime),
               lateMinutes: attendance.lateMinutes,
               workHours: Number(attendance.workHours),
-              shiftName: attendance.shift?.name ?? null,
+              shiftName: attendance.shift?.name ?? activeShift?.name ?? null,
               shiftStartTime,
               shiftEndTime,
               earliestCheckoutTime,
               canCheckoutNow,
+              isShiftEnded,
             }
           : null,
       },

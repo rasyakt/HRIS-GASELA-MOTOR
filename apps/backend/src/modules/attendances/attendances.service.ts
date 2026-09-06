@@ -137,8 +137,19 @@ export class AttendancesService {
     }
 
     const shiftStart = toMinutes(shift?.startTime) ?? 8 * 60;
+    const shiftEnd = toMinutes(shift?.endTime);
     const grace = shift?.gracePeriodMinutes ?? 15;
     const nowMinutes = toMinutes(now) ?? (now.getHours() * 60 + now.getMinutes());
+
+    // Opsi 1: Kunci Check-in Setelah Jam Shift Berakhir
+    if (shiftEnd !== null && nowMinutes >= shiftEnd) {
+      const hh = String(Math.floor(shiftEnd / 60)).padStart(2, '0');
+      const mm = String(shiftEnd % 60).padStart(2, '0');
+      throw new ForbiddenException(
+        `Shift ${shift?.name ?? 'kerja'} telah berakhir pada pukul ${hh}:${mm} WIB. Anda tidak dapat melakukan check-in setelah jam shift selesai.`,
+      );
+    }
+
     const lateMinutes = Math.max(0, nowMinutes - (shiftStart + grace));
     const status = lateMinutes > 0 ? 'late' : 'present';
 
