@@ -23,7 +23,7 @@ import { AnimationDurations, timingConfig } from '../../animations';
 import { Ionicons } from '@expo/vector-icons';
 
 export function ProfileScreen() {
-  const { tokens, theme, setTheme } = useTheme();
+  const { tokens, theme, setTheme, themeConfig } = useTheme();
   const user = useAuthStore((s) => s.user);
   const accessToken = useAuthStore((s) => s.accessToken);
   const clearSession = useAuthStore((s) => s.clearSession);
@@ -292,6 +292,19 @@ export function ProfileScreen() {
               <Text style={[styles.sectionTitle, { color: tokens.colors.textSecondary }]}>Pengaturan & Keamanan</Text>
               <Card variant="default">
                 <CardContent noPadding>
+                  <ListItem
+                    icon="color-palette-outline"
+                    title="Tema Warna Organisasi"
+                    subtitle="Disinkronkan oleh Superadmin"
+                    trailing={
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: tokens.colors.primary }} />
+                        <Text style={{ fontSize: 12, fontWeight: '600', color: tokens.colors.textPrimary, textTransform: 'capitalize' }}>
+                          {themeConfig?.presetId === 'custom' ? 'Kustom' : themeConfig?.presetId ?? 'Emerald'}
+                        </Text>
+                      </View>
+                    }
+                  />
                   <ListItem
                     icon={theme === 'dark' ? 'moon' : 'sunny'}
                     title="Mode Gelap"

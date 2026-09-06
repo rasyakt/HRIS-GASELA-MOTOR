@@ -4,14 +4,16 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type {
-  AuthUser,
-  CompanySettingDto,
-  CreateHolidayInput,
-  HolidayDto,
-  HolidayQuery,
-  UpdateCompanySettingInput,
-  UpdateHolidayInput,
+import {
+  DEFAULT_PORTAL_THEME,
+  type AuthUser,
+  type CompanySettingDto,
+  type CreateHolidayInput,
+  type HolidayDto,
+  type HolidayQuery,
+  type PortalThemeConfig,
+  type UpdateCompanySettingInput,
+  type UpdateHolidayInput,
 } from '@gasela/shared-types';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -40,6 +42,20 @@ export class SettingsService {
       description: r.description,
       updatedAt: r.updatedAt.toISOString(),
     }));
+  }
+
+  async getPublicThemeConfig(): Promise<PortalThemeConfig> {
+    const row = await this.prisma.companySetting.findUnique({
+      where: { key: 'portal.theme_config' },
+    });
+    if (!row || !row.value) {
+      return DEFAULT_PORTAL_THEME;
+    }
+    try {
+      return { ...DEFAULT_PORTAL_THEME, ...JSON.parse(row.value) };
+    } catch {
+      return DEFAULT_PORTAL_THEME;
+    }
   }
 
   async updateCompanySetting(

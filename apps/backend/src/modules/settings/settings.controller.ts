@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { SettingsService } from './settings.service';
 import type { AuthUser } from '@gasela/shared-types';
@@ -27,6 +28,13 @@ import {
 @Controller('settings')
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
+
+  @Public()
+  @Get('theme')
+  @ApiOperation({ summary: 'Konfigurasi tema portal & mobile publik (tanpa login)' })
+  getPublicTheme() {
+    return this.settingsService.getPublicThemeConfig();
+  }
 
   @Roles('admin', 'hrd', 'owner')
   @Get('company')
