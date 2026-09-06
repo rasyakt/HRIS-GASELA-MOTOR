@@ -112,12 +112,20 @@ export class EmployeesController {
   @ApiOperation({ summary: 'Import data karyawan dari file Excel (.xlsx, .xls)' })
   async importEmployees(
     @UploadedFile() file: Express.Multer.File,
+    @Body('autoCreateAccounts') autoCreateAccounts: string | boolean | undefined,
     @CurrentUser() user: AuthUser,
   ) {
     if (!file || !file.buffer) {
       throw new BadRequestException('File Excel wajib diunggah.');
     }
-    const result = await this.employeeImportService.importFromExcel(file.buffer);
+    const shouldCreateAccounts =
+      autoCreateAccounts === undefined ||
+      autoCreateAccounts === true ||
+      autoCreateAccounts === 'true';
+
+    const result = await this.employeeImportService.importFromExcel(file.buffer, {
+      autoCreateAccounts: shouldCreateAccounts,
+    });
 
     await this.auditLogsService.record({
       userId: user.id,
@@ -128,6 +136,7 @@ export class EmployeesController {
         totalRows: result.totalRows,
         successCount: result.successCount,
         failedCount: result.failedCount,
+        autoCreateAccounts: shouldCreateAccounts,
         filename: file.originalname,
       },
     });

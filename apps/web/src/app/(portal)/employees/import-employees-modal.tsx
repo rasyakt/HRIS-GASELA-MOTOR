@@ -33,6 +33,7 @@ export function ImportEmployeesModal({ isOpen, onClose, onSuccess }: ImportEmplo
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [downloadingTemplate, setDownloadingTemplate] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [autoCreateAccounts, setAutoCreateAccounts] = useState(true);
   const [showGuide, setShowGuide] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [importResult, setImportResult] = useState<EmployeeImportResultDto | null>(null);
@@ -96,6 +97,7 @@ export function ImportEmployeesModal({ isOpen, onClose, onSuccess }: ImportEmplo
     try {
       const formData = new FormData();
       formData.append('file', selectedFile);
+      formData.append('autoCreateAccounts', String(autoCreateAccounts));
 
       const res = await fetch('/api/employees/import', {
         method: 'POST',
@@ -239,7 +241,30 @@ export function ImportEmployeesModal({ isOpen, onClose, onSuccess }: ImportEmplo
             )}
           </div>
 
-          {/* Langkah 3: Upload Area */}
+          {/* Opsi Tambahan: Pembuatan Akun Otomatis */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50/80 p-3.5 space-y-2 dark:border-zinc-800 dark:bg-zinc-900/50">
+            <label className="flex items-start gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={autoCreateAccounts}
+                onChange={(e) => setAutoCreateAccounts(e.target.checked)}
+                className="mt-0.5 size-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+              />
+              <div className="space-y-0.5">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                  Buat akun pengguna (User) otomatis untuk setiap karyawan
+                  <Badge className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400">
+                    Disarankan
+                  </Badge>
+                </span>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                  Username otomatis dari NIK karyawan, password default <code className="px-1 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 font-mono text-[10px] text-zinc-800 dark:text-zinc-200">Gasela123!</code>. Karyawan wajib mengubah ke password kuat pada saat login pertama kali.
+                </p>
+              </div>
+            </label>
+          </div>
+
+          {/* Langkah 2: Upload Area */}
           <div className="space-y-2">
             <h4 className="text-xs font-bold text-zinc-900 flex items-center gap-1.5">
               <span className="flex size-5 items-center justify-center rounded-full bg-emerald-600 text-[11px] font-bold text-white">2</span>

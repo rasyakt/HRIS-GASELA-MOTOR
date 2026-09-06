@@ -22,12 +22,21 @@ export class ApiError extends Error {
 }
 
 export async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
-  const { token, headers = {}, timeoutMs = 30000, signal, ...rest } = options;
+  const { token, headers = {}, timeoutMs = 30000, signal, body, ...rest } = options;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  const isFormData = typeof FormData !== 'undefined' && rest.body instanceof FormData;
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+  const isPlainObject =
+    body !== null &&
+    typeof body === 'object' &&
+    !isFormData &&
+    !(body instanceof URLSearchParams) &&
+    !(body instanceof Blob) &&
+    !(body instanceof ArrayBuffer);
+
+  const requestBody = isPlainObject ? JSON.stringify(body) : (body as BodyInit | null | undefined);
 
   const defaultHeaders: Record<string, string> = {
     ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
@@ -37,6 +46,7 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
   try {
     const res = await fetch(`${API_URL}${path}`, {
       ...rest,
+      body: requestBody,
       signal: signal || controller.signal,
       headers: {
         ...defaultHeaders,
@@ -45,17 +55,18 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
     });
     clearTimeout(timeoutId);
 
-    const body = await res.json().catch(() => null);
+    const resBody = await res.json().catch(() => null);
 
     if (!res.ok) {
-      const message =
-        body && typeof body === 'object' && 'message' in body
-          ? String((body as { message: string | string[] }).message)
-          : `Request failed (${res.status})`;
-      throw new ApiError(res.status, Array.isArray(message) ? message.join(', ') : message);
+      let message = `Request failed (${res.status})`;
+      if (resBody && typeof resBody === 'object' && 'message' in resBody) {
+        const rawMsg = (resBody as any).message;
+        message = Array.isArray(rawMsg) ? rawMsg.join(', ') : String(rawMsg);
+      }
+      throw new ApiError(res.status, message);
     }
 
-    return body as T;
+    return resBody as T;
   } catch (err: any) {
     clearTimeout(timeoutId);
     if (err.name === 'AbortError') {

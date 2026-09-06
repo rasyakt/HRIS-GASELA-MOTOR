@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import * as XLSX from 'xlsx';
 import * as ExcelJS from 'exceljs';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { EmployeeImportResultDto, EmployeeImportErrorItem } from '@gasela/shared-types';
 
@@ -121,7 +122,7 @@ export class EmployeeImportService {
       '2024-01-15',
       'permanent',
       5000000,
-      'permanent',
+      'active',
       departments[0]?.name || 'Teknisi',
       positions[0]?.name || 'Mekanik Senior',
       'TK0',
@@ -270,10 +271,10 @@ export class EmployeeImportService {
     formatTableHeader(subHeader1, '0369A1');
 
     const typeStatusData = [
-      ['permanent', 'Karyawan Tetap', 'probation', 'Masa Percobaan (Default)'],
-      ['contract', 'Karyawan Kontrak (PKWT)', 'permanent', 'Karyawan Tetap Aktif'],
-      ['internship', 'Magang / PKL', 'contract', 'Karyawan Kontrak Aktif'],
-      ['freelance', 'Pekerja Lepas', 'resigned', 'Mengundurkan Diri (Resigned)'],
+      ['permanent', 'Karyawan Tetap', 'active', 'Karyawan Aktif Bekerja (Default)'],
+      ['contract', 'Karyawan Kontrak (PKWT)', 'probation', 'Masa Percobaan (Probation)'],
+      ['magang', 'Magang / PKL / Internship', 'resigned', 'Mengundurkan Diri (Resigned)'],
+      ['', '', 'terminated', 'Diberhentikan (Terminated)'],
     ];
 
     typeStatusData.forEach((d, i) => {
@@ -365,9 +366,32 @@ export class EmployeeImportService {
   }
 
   /**
+   * Menentukan UserRole berdasarkan nama Departemen dan Jabatan
+   */
+  private determineUserRole(deptName: string, posName: string): string {
+    const d = (deptName || '').toLowerCase();
+    const p = (posName || '').toLowerCase();
+    if (p.includes('direktur') || p.includes('director') || p.includes('owner') || p.includes('komisaris')) {
+      return 'owner';
+    }
+    if (p.includes('manager') || p.includes('kepala') || p.includes('head') || p.includes('lead') || p.includes('supervisor')) {
+      return 'manager';
+    }
+    if (d.includes('hrd') || d.includes('human resource') || d.includes('sdm')) {
+      return 'hrd';
+    }
+    return 'employee';
+  }
+
+  /**
    * Membaca file Excel yang diunggah dan memvalidasi serta menyimpan karyawan baru
    */
-  async importFromExcel(fileBuffer: Buffer): Promise<EmployeeImportResultDto> {
+  async importFromExcel(
+    fileBuffer: Buffer,
+    options?: { autoCreateAccounts?: boolean },
+  ): Promise<EmployeeImportResultDto> {
+    const autoCreateAccounts = options?.autoCreateAccounts ?? true;
+
     // 1. Validasi Magic Bytes untuk menangkal MIME / Extension Spoofing
     this.validateExcelMagicBytes(fileBuffer);
 
@@ -425,9 +449,12 @@ export class EmployeeImportService {
     }
 
     // Pre-load reference maps untuk pencocokan cepat O(1)
-    const [existingEmployees, departments, positions] = await Promise.all([
+    const [existingEmployees, existingUsers, departments, positions] = await Promise.all([
       this.prisma.employee.findMany({
         select: { employeeNumber: true, email: true },
+      }),
+      this.prisma.user.findMany({
+        select: { username: true },
       }),
       this.prisma.department.findMany({
         where: { isActive: true },
@@ -441,6 +468,7 @@ export class EmployeeImportService {
 
     const existingNiks = new Set(existingEmployees.map((e) => e.employeeNumber.trim().toLowerCase()));
     const existingEmails = new Set(existingEmployees.map((e) => e.email.trim().toLowerCase()));
+    const existingUsernames = new Set(existingUsers.map((u) => u.username.trim().toLowerCase()));
 
     // Map department by name (lower) and code (lower)
     const deptMap = new Map<string, number>();
@@ -540,6 +568,15 @@ export class EmployeeImportService {
         errors.push({ row: rowNumber, employeeNumber, field: 'NIK', message: `NIK '${employeeNumber}' sudah terdaftar di database.` });
         continue;
       }
+      if (autoCreateAccounts && existingUsernames.has(nikLower)) {
+        errors.push({
+          row: rowNumber,
+          employeeNumber,
+          field: 'NIK',
+          message: `Username '${employeeNumber}' sudah terdaftar di sistem akun pengguna.`,
+        });
+        continue;
+      }
       if (seenNiksInFile.has(nikLower)) {
         errors.push({ row: rowNumber, employeeNumber, field: 'NIK', message: `NIK '${employeeNumber}' duplikat di dalam file Excel ini.` });
         continue;
@@ -587,15 +624,22 @@ export class EmployeeImportService {
         continue;
       }
 
-      // Validasi 5: Tipe Kerja
-      const employmentType = rawType.toLowerCase();
-      if (!employmentType || !ALLOWED_EMPLOYMENT_TYPES.has(employmentType)) {
+      // Validasi 5: Tipe Kerja (Prisma: 'permanent' | 'contract' | 'magang')
+      let employmentType: 'permanent' | 'contract' | 'magang' = 'permanent';
+      const rawTypeLower = rawType.toLowerCase();
+      if (['permanent', 'tetap', 'karyawan tetap'].includes(rawTypeLower)) {
+        employmentType = 'permanent';
+      } else if (['contract', 'kontrak', 'pkwt', 'freelance'].includes(rawTypeLower)) {
+        employmentType = 'contract';
+      } else if (['magang', 'internship', 'intern', 'pkl'].includes(rawTypeLower)) {
+        employmentType = 'magang';
+      } else {
         errors.push({
           row: rowNumber,
           employeeNumber,
           fullName,
           field: 'Tipe Kerja',
-          message: `Tipe kerja '${rawType}' tidak valid. Pilihan: permanent, contract, internship, freelance.`,
+          message: `Tipe kerja '${rawType}' tidak valid. Pilihan: permanent, contract, magang.`,
         });
         continue;
       }
@@ -607,11 +651,19 @@ export class EmployeeImportService {
         continue;
       }
 
-      // Opsional: Status Kerja
-      const rawStatus = getVal(row, 'status kerja', 'employment status');
-      let employmentStatus: 'probation' | 'permanent' | 'contract' | 'resigned' | 'terminated' = 'probation';
-      if (rawStatus && ALLOWED_EMPLOYMENT_STATUSES.has(rawStatus.toLowerCase() as any)) {
-        employmentStatus = rawStatus.toLowerCase() as any;
+      // Opsional: Status Kerja (Prisma: 'active' | 'probation' | 'resigned' | 'terminated')
+      const rawStatusLower = getVal(row, 'status kerja', 'employment status').toLowerCase();
+      let employmentStatus: 'active' | 'probation' | 'resigned' | 'terminated' = 'active';
+      if (['active', 'aktif', 'permanent', 'tetap', 'contract', 'kontrak'].includes(rawStatusLower)) {
+        employmentStatus = 'active';
+      } else if (['probation', 'percobaan', 'masa percobaan'].includes(rawStatusLower)) {
+        employmentStatus = 'probation';
+      } else if (['resigned', 'resign', 'keluar'].includes(rawStatusLower)) {
+        employmentStatus = 'resigned';
+      } else if (['terminated', 'phk', 'diberhentikan'].includes(rawStatusLower)) {
+        employmentStatus = 'terminated';
+      } else if (rawStatusLower) {
+        employmentStatus = 'active';
       }
 
       // Opsional: Status PTKP
@@ -744,9 +796,30 @@ export class EmployeeImportService {
 
     // Seluruh baris 100% lolos validasi -> eksekusi dalam satu transaksi atomik database
     try {
-      await this.prisma.$transaction(
-        validRecords.map((record) => this.prisma.employee.create({ data: record })),
-      );
+      const defaultPasswordHash = autoCreateAccounts
+        ? await bcrypt.hash('Gasela123!', 10)
+        : '';
+
+      await this.prisma.$transaction(async (tx) => {
+        for (const record of validRecords) {
+          const created = await tx.employee.create({ data: record });
+          if (autoCreateAccounts) {
+            const dept = departments.find((d) => d.id === record.departmentId);
+            const pos = positions.find((p) => p.id === record.positionId);
+            const role = this.determineUserRole(dept?.name || '', pos?.name || '');
+            await tx.user.create({
+              data: {
+                employeeId: created.id,
+                username: record.employeeNumber,
+                passwordHash: defaultPasswordHash,
+                role: role as any,
+                mustChangePassword: true,
+                passwordChangedAt: null,
+              },
+            });
+          }
+        }
+      });
     } catch (err: any) {
       throw new BadRequestException(
         `Gagal menyimpan data ke database (Transaksi dibatalkan otomatis / Rollback): ${err?.message || 'Kesalahan database'}`,

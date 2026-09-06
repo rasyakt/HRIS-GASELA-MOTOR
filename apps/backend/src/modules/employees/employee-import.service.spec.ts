@@ -28,7 +28,11 @@ describe('EmployeeImportService', () => {
         ]),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 99, ...data })),
       },
-      $transaction: jest.fn().mockImplementation((promises) => Promise.all(promises)),
+      user: {
+        findMany: jest.fn().mockResolvedValue([]),
+        create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 101, ...data })),
+      },
+      $transaction: jest.fn().mockImplementation((arg) => (typeof arg === 'function' ? arg(prisma) : Promise.all(arg))),
     };
 
     const module = await Test.createTestingModule({
@@ -184,6 +188,32 @@ describe('EmployeeImportService', () => {
       expect(result.failedCount).toBe(1);
       expect(result.errors[0].message).toContain('sudah terdaftar di database');
       expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('membuat akun User dengan mustChangePassword: true saat autoCreateAccounts aktif', async () => {
+      const rows = [
+        ['NIK', 'Nama Lengkap', 'Email', 'Tanggal Bergabung', 'Tipe Kerja', 'Gaji Pokok', 'Departemen', 'Jabatan'],
+        ['EMP-5555', 'Siti Rahma', 'siti@gaselamotor.com', '2024-03-01', 'permanent', 6000000, 'HRD & Admin', 'Staff HRD'],
+      ];
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb, ws, 'Data Karyawan');
+      const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+      const result = await service.importFromExcel(buf, { autoCreateAccounts: true });
+      expect(result.successCount).toBe(1);
+      expect(result.failedCount).toBe(0);
+      expect(prisma.employee.create).toHaveBeenCalled();
+      expect(prisma.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            username: 'EMP-5555',
+            mustChangePassword: true,
+            passwordChangedAt: null,
+            role: 'hrd',
+          }),
+        }),
+      );
     });
   });
 });

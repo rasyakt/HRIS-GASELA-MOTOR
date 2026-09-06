@@ -45,6 +45,8 @@ interface UserWithEmployee {
   twoFactorRecoveryCodes?: string | null;
   isActive: boolean;
   jwtVersion: number | null;
+  passwordChangedAt?: Date | null;
+  mustChangePassword?: boolean;
   employee: { fullName: string; departmentId: number | null };
 }
 
@@ -69,6 +71,7 @@ export class AuthService {
       fullName: u.employee?.fullName ?? u.username,
       department: null,
       twoFactorEnabled: !!u.twoFactorEnabled,
+      mustChangePassword: Boolean((u as any).mustChangePassword || !u.passwordChangedAt),
     };
   }
 
@@ -168,6 +171,7 @@ export class AuthService {
       refreshToken: tokens.refreshToken,
       expiresIn,
       user: this.toAuthUser(user),
+      mustChangePassword: Boolean(user.mustChangePassword || !user.passwordChangedAt),
     };
   }
 
@@ -393,10 +397,10 @@ export class AuthService {
   async changePassword(
     userId: number,
     input: ChangePasswordInput,
-  ): Promise<void> {
+  ): Promise<LoginResponse> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, passwordHash: true },
+      include: { employee: true },
     });
     if (!user) throw new UnauthorizedException('User tidak ditemukan');
 
@@ -408,20 +412,26 @@ export class AuthService {
       throw new ConflictException('Password baru tidak boleh sama dengan lama');
     }
 
-    assertPasswordComplexity(input.newPassword);
+    assertPasswordComplexity(input.newPassword, {
+      username: user.username,
+      oldPassword: input.oldPassword,
+    });
     const newHash = await bcrypt.hash(input.newPassword, 10);
 
-    await this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id: user.id },
       data: {
         passwordHash: newHash,
         passwordChangedAt: new Date(),
+        mustChangePassword: false,
         refreshTokenHash: null,
         refreshTokenExpiry: null,
         jwtVersion: { increment: 1 },
       },
-      select: { id: true },
+      include: { employee: true },
     });
+
+    return this.buildLoginResponse(updatedUser as any);
   }
 
   // ===================== 2FA / MFA METHODS =====================
