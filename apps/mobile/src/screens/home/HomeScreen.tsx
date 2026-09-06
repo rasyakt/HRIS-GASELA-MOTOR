@@ -31,7 +31,7 @@ import { ErrorState, ErrorBanner } from '../../components/ErrorState';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fmtTime, ROLE_LABEL, statusLabel } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
-import { getPosition } from '../../services/location';
+import { getPosition, checkGeofence, type Position } from '../../services/location';
 import { useAuthStore } from '../../store/auth-store';
 import { useTheme } from '../../theme/ThemeProvider';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
@@ -94,6 +94,12 @@ export function HomeScreen() {
   const [actionLoading, setActionLoading] = useState<'in' | 'out' | null>(null);
   const [faceModalVisible, setFaceModalVisible] = useState(false);
   const [pendingActionKind, setPendingActionKind] = useState<'in' | 'out'>('in');
+  const [capturedPosition, setCapturedPosition] = useState<Position | null>(null);
+  const [userDistance, setUserDistance] = useState<{
+    dist: number;
+    formatted: string;
+    isWithin: boolean;
+  } | null>(null);
 
   // Animations
   const headerOpacity = useSharedValue(0);
@@ -115,16 +121,46 @@ export function HomeScreen() {
     }, [refetch]),
   );
 
-  function initiateCheck(kind: 'in' | 'out') {
+  async function initiateCheck(kind: 'in' | 'out') {
     setActionError(null);
-    setPendingActionKind(kind);
-    setFaceModalVisible(true);
+    setActionLoading(kind);
+    try {
+      const office = data?.officeLocation;
+      let pos: Position;
+
+      if (office && typeof office.lat === 'number' && typeof office.lng === 'number') {
+        const check = await checkGeofence(office.lat, office.lng, office.radiusMeters || 500);
+        setUserDistance({
+          dist: check.distance,
+          formatted: check.formattedDistance,
+          isWithin: check.isWithinGeofence,
+        });
+        pos = check.position;
+
+        if (!check.isWithinGeofence) {
+          setActionError(
+            `Anda berada ${check.formattedDistance} dari kantor (maksimal ${check.radius}m). Anda harus berada di radius kantor untuk melakukan presensi.`
+          );
+          return;
+        }
+      } else {
+        pos = await getPosition();
+      }
+
+      setCapturedPosition(pos);
+      setPendingActionKind(kind);
+      setFaceModalVisible(true);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Gagal mendeteksi lokasi perangkat.');
+    } finally {
+      setActionLoading(null);
+    }
   }
 
   async function handleFaceCaptured(photoUrl: string) {
     setActionLoading(pendingActionKind);
     try {
-      const pos = await getPosition();
+      const pos = capturedPosition ?? (await getPosition());
       await authApi(`/api/attendances/check-${pendingActionKind}`, {
         method: 'POST',
         body: JSON.stringify({
@@ -139,6 +175,7 @@ export function HomeScreen() {
       setActionError(err instanceof Error ? err.message : 'Gagal memproses kehadiran.');
     } finally {
       setActionLoading(null);
+      setCapturedPosition(null);
     }
   }
 
@@ -218,25 +255,146 @@ export function HomeScreen() {
                     <View style={[styles.heroTimeDivider, { backgroundColor: tokens.colors.border }]} />
                     <View style={styles.heroTimeBlock}>
                       <Text style={[styles.heroTimeLabel, { color: tokens.colors.textSecondary }]}>Check-out</Text>
-                      <Text style={[styles.heroTimeValue, { color: tokens.colors.primary }]}>
+                      <Text style={[styles.heroTimeValue, { color: today?.checkOutTime ? tokens.colors.primary : tokens.colors.textSecondary }]}>
                         {today?.checkOutTime ? fmtTime(today.checkOutTime) : '--:--'}
                       </Text>
                     </View>
                   </View>
                   
+                  {data?.officeLocation && (
+                    <View
+                      style={[
+                        styles.locationBox,
+                        {
+                          backgroundColor: userDistance
+                            ? userDistance.isWithin
+                              ? 'rgba(16, 185, 129, 0.06)'
+                              : 'rgba(239, 68, 68, 0.06)'
+                            : tokens.colors.surface,
+                          borderColor: userDistance
+                            ? userDistance.isWithin
+                              ? 'rgba(16, 185, 129, 0.3)'
+                              : 'rgba(239, 68, 68, 0.3)'
+                            : tokens.colors.border,
+                        },
+                      ]}
+                    >
+                      <View style={styles.locationHeaderRow}>
+                        <View style={styles.locationTitleGroup}>
+                          <View
+                            style={[
+                              styles.locationIconWrap,
+                              {
+                                backgroundColor: userDistance
+                                  ? userDistance.isWithin
+                                    ? 'rgba(16, 185, 129, 0.15)'
+                                    : 'rgba(239, 68, 68, 0.15)'
+                                  : tokens.colors.neutral100,
+                              },
+                            ]}
+                          >
+                            <Ionicons
+                              name="location-sharp"
+                              size={16}
+                              color={
+                                userDistance
+                                  ? userDistance.isWithin
+                                    ? tokens.colors.success
+                                    : tokens.colors.error
+                                  : tokens.colors.primary
+                              }
+                            />
+                          </View>
+                          <View style={styles.locationTextColumn}>
+                            <Text
+                              style={[styles.locationName, { color: tokens.colors.textPrimary }]}
+                              numberOfLines={1}
+                            >
+                              {data.officeLocation.companyName || 'Kantor'}
+                            </Text>
+                            <Text style={[styles.locationSubtitle, { color: tokens.colors.textSecondary }]}>
+                              Radius kantor: {data.officeLocation.radiusMeters} meter
+                            </Text>
+                          </View>
+                        </View>
+
+                        {userDistance ? (
+                          <View
+                            style={[
+                              styles.proximityPill,
+                              {
+                                backgroundColor: userDistance.isWithin
+                                  ? 'rgba(16, 185, 129, 0.15)'
+                                  : 'rgba(239, 68, 68, 0.15)',
+                                borderColor: userDistance.isWithin
+                                  ? 'rgba(16, 185, 129, 0.35)'
+                                  : 'rgba(239, 68, 68, 0.35)',
+                              },
+                            ]}
+                          >
+                            <View
+                              style={[
+                                styles.proximityDot,
+                                {
+                                  backgroundColor: userDistance.isWithin
+                                    ? tokens.colors.success
+                                    : tokens.colors.error,
+                                },
+                              ]}
+                            />
+                            <Text
+                              style={[
+                                styles.proximityText,
+                                {
+                                  color: userDistance.isWithin
+                                    ? tokens.colors.success
+                                    : tokens.colors.error,
+                                },
+                              ]}
+                            >
+                              {userDistance.isWithin
+                                ? userDistance.formatted
+                                : `Luar (${userDistance.formatted})`}
+                            </Text>
+                          </View>
+                        ) : (
+                          <View style={[styles.proximityPillNeutral, { backgroundColor: tokens.colors.neutral200 }]}>
+                            <Text style={[styles.proximityNeutralText, { color: tokens.colors.textSecondary }]}>
+                              Geofence
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  )}
+
                   {actionError && (
-                    <ErrorBanner description={actionError} onDismiss={() => setActionError(null)} style={{ marginTop: 12, marginBottom: 12 }} />
+                    <ErrorBanner description={actionError} onDismiss={() => setActionError(null)} style={{ marginTop: 4, marginBottom: 12 }} />
                   )}
 
                   <View style={styles.heroActionRow}>
                     {!today?.checkInTime && (
-                      <Button variant="gradient" onPress={() => initiateCheck('in')} loading={actionLoading === 'in'} fullWidth size="large">
-                        Check-in Sekarang
+                      <Button
+                        variant="gradient"
+                        onPress={() => initiateCheck('in')}
+                        loading={actionLoading === 'in'}
+                        fullWidth
+                        size="large"
+                        icon="log-in-outline"
+                      >
+                        {actionLoading === 'in' ? 'Memeriksa Lokasi...' : 'Check-in Sekarang'}
                       </Button>
                     )}
                     {today?.checkInTime && !today.checkOutTime && (
-                      <Button variant="primary" onPress={() => initiateCheck('out')} loading={actionLoading === 'out'} fullWidth size="large">
-                        Check-out
+                      <Button
+                        variant="primary"
+                        onPress={() => initiateCheck('out')}
+                        loading={actionLoading === 'out'}
+                        fullWidth
+                        size="large"
+                        icon="log-out-outline"
+                      >
+                        {actionLoading === 'out' ? 'Memeriksa Lokasi...' : 'Check-out'}
                       </Button>
                     )}
                   </View>
@@ -338,6 +496,72 @@ const styles = StyleSheet.create({
   heroTimeLabel: { fontSize: 12, marginBottom: 4 },
   heroTimeValue: { fontSize: 20, fontWeight: 'bold' },
   heroTimeDivider: { width: 1, marginHorizontal: 16 },
+  locationBox: {
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 16,
+  },
+  locationHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  locationTitleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 10,
+  },
+  locationIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  locationTextColumn: {
+    flex: 1,
+  },
+  locationName: {
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+  },
+  locationSubtitle: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  proximityPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  proximityPillNeutral: {
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  proximityDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 5,
+  },
+  proximityText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  proximityNeutralText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
   heroActionRow: { marginTop: 4 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 28 },
   quickAction: { 

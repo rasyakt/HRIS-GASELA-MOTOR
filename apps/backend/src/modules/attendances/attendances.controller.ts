@@ -20,6 +20,12 @@ export class AttendancesController {
     private readonly retentionService: AttendanceRetentionService,
   ) {}
 
+  @Get('office-location')
+  @ApiOperation({ summary: 'Lokasi kantor dan radius presensi geofence' })
+  officeLocation() {
+    return this.attendancesService.getOfficeLocation();
+  }
+
   @Post('check-in')
   @ApiOperation({ summary: 'Check-in (validasi geofence kantor)' })
   checkIn(@CurrentUser() user: AuthUser, @Body() body: CheckInDto) {

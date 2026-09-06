@@ -41,12 +41,14 @@ export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
   async summary(user: AuthUser): Promise<DashboardSummary> {
-    const employeePart = await this.employeePart(user.employeeId);
+    const [employeePart, officeLocation] = await Promise.all([
+      this.employeePart(user.employeeId),
+      this.getOfficeLocationInfo(),
+    ]);
     if (roleAtLeast('hrd', user.role)) {
-      const [stats, departments, officeLocation] = await Promise.all([
+      const [stats, departments] = await Promise.all([
         this.companyStats(),
         this.departmentDistribution(),
-        this.getOfficeLocationInfo(),
       ]);
       return {
         ...employeePart,
@@ -66,9 +68,10 @@ export class DashboardService {
         role: 'manager',
         approvals,
         team,
+        officeLocation,
       };
     }
-    return { ...employeePart, role: 'employee' };
+    return { ...employeePart, role: 'employee', officeLocation };
   }
 
   // ===================== PER ROLE =====================

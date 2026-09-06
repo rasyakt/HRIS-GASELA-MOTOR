@@ -1,7 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { DashboardSummary, Paginated } from '@gasela/shared-types';
-import * as LocalAuthentication from 'expo-local-authentication';
 import { useCallback, useState } from 'react';
 import {
   RefreshControl,
@@ -12,9 +11,9 @@ import {
 } from 'react-native';
 import { FaceCameraModal } from '../../components/FaceCameraModal';
 import { Button, Card, CardTitle, ErrorBanner, Row, StatusBadge } from '../../components/ui';
-import { fmtDate, fmtHours, fmtTime, OFFICE_LOCATION } from '../../lib/format';
+import { fmtDate, fmtHours, fmtTime } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
-import { getPosition } from '../../services/location';
+import { getPosition, checkGeofence, type Position } from '../../services/location';
 
 import { useTheme } from '../../theme/ThemeProvider';
 
@@ -37,6 +36,12 @@ export function AttendanceScreen() {
   const [actionLoading, setActionLoading] = useState<'in' | 'out' | null>(null);
   const [faceModalVisible, setFaceModalVisible] = useState(false);
   const [pendingActionKind, setPendingActionKind] = useState<'in' | 'out'>('in');
+  const [capturedPosition, setCapturedPosition] = useState<Position | null>(null);
+  const [userDistance, setUserDistance] = useState<{
+    dist: number;
+    formatted: string;
+    isWithin: boolean;
+  } | null>(null);
 
   const dashboard = useQuery({
     queryKey: ['dashboard-summary'],
@@ -57,43 +62,47 @@ export function AttendanceScreen() {
     }, []),
   );
 
-  function initiateCheck(kind: 'in' | 'out') {
+  async function initiateCheck(kind: 'in' | 'out') {
     setActionError(null);
-    setPendingActionKind(kind);
-    setFaceModalVisible(true);
+    setActionLoading(kind);
+    try {
+      const office = dashboard.data?.officeLocation;
+      let pos: Position;
+
+      if (office && typeof office.lat === 'number' && typeof office.lng === 'number') {
+        const check = await checkGeofence(office.lat, office.lng, office.radiusMeters || 500);
+        setUserDistance({
+          dist: check.distance,
+          formatted: check.formattedDistance,
+          isWithin: check.isWithinGeofence,
+        });
+        pos = check.position;
+
+        if (!check.isWithinGeofence) {
+          setActionError(
+            `Anda berada ${check.formattedDistance} dari kantor (maksimal ${check.radius}m). Anda harus berada di radius kantor untuk melakukan presensi.`
+          );
+          return;
+        }
+      } else {
+        pos = await getPosition();
+      }
+
+      setCapturedPosition(pos);
+      setPendingActionKind(kind);
+      setFaceModalVisible(true);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Gagal mendeteksi lokasi perangkat.');
+    } finally {
+      setActionLoading(null);
+    }
   }
 
   async function handleFaceCaptured(photoUrl: string) {
     setActionError(null);
     setActionLoading(pendingActionKind);
     try {
-      // 1. Biometrik Perangkat Tambahan jika Tersedia
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-
-      if (hasHardware && isEnrolled) {
-        const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
-        const isFaceId = supportedTypes.includes(
-          LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION,
-        );
-        const promptTitle = isFaceId
-          ? `Konfirmasi Face ID untuk Check-${pendingActionKind === 'in' ? 'in' : 'out'}`
-          : `Konfirmasi Biometrik untuk Check-${pendingActionKind === 'in' ? 'in' : 'out'}`;
-
-        const authResult = await LocalAuthentication.authenticateAsync({
-          promptMessage: promptTitle,
-          fallbackLabel: 'Gunakan Kredensial Perangkat',
-          cancelLabel: 'Batal',
-          disableDeviceFallback: false,
-        });
-
-        if (!authResult.success) {
-          throw new Error('Verifikasi Face ID / Biometrik dibatalkan.');
-        }
-      }
-
-      // 2. Validasi Lokasi Geofencing GPS & Kirim Foto Wajah
-      const pos = await getPosition();
+      const pos = capturedPosition ?? (await getPosition());
       await authApi(`/api/attendances/check-${pendingActionKind}`, {
         method: 'POST',
         body: JSON.stringify({
@@ -108,6 +117,7 @@ export function AttendanceScreen() {
       setActionError(err instanceof Error ? err.message : 'Gagal memproses kehadiran.');
     } finally {
       setActionLoading(null);
+      setCapturedPosition(null);
     }
   }
 
@@ -150,17 +160,29 @@ export function AttendanceScreen() {
             <Row label="Keterlambatan" value={today.lateMinutes > 0 ? `${today.lateMinutes} menit` : 'Tepat waktu'} />
             <Row label="Jam kerja" value={`${fmtHours(today.workHours)} jam`} />
             {today.shiftName && <Row label="Shift" value={today.shiftName} />}
+            {dashboard.data?.officeLocation && (
+              <Row
+                label="Area Presensi"
+                value={`${dashboard.data.officeLocation.companyName || 'Kantor'} (Maks. ${dashboard.data.officeLocation.radiusMeters}m)`}
+              />
+            )}
+            {userDistance && (
+              <Row
+                label="Status Jarak"
+                value={`${userDistance.isWithin ? '🟢 Terjangkau' : '🔴 Di Luar'} (${userDistance.formatted})`}
+              />
+            )}
             <View style={styles.actionRow}>
               {!today.checkInTime && (
                 <Button
-                  title="Check-in Sekarang"
+                  title={actionLoading === 'in' ? 'Memeriksa Lokasi...' : 'Check-in Sekarang'}
                   onPress={() => initiateCheck('in')}
                   loading={actionLoading === 'in'}
                 />
               )}
               {today.checkInTime && !today.checkOutTime && (
                 <Button
-                  title="Check-out"
+                  title={actionLoading === 'out' ? 'Memeriksa Lokasi...' : 'Check-out'}
                   onPress={() => initiateCheck('out')}
                   loading={actionLoading === 'out'}
                 />
@@ -170,8 +192,20 @@ export function AttendanceScreen() {
         ) : (
           <View>
             <Text style={[styles.emptyText, { color: tokens.colors.textSecondary }]}>Belum ada kehadiran hari ini.</Text>
+            {dashboard.data?.officeLocation && (
+              <Row
+                label="Area Presensi"
+                value={`${dashboard.data.officeLocation.companyName || 'Kantor'} (Maks. ${dashboard.data.officeLocation.radiusMeters}m)`}
+              />
+            )}
+            {userDistance && (
+              <Row
+                label="Status Jarak"
+                value={`${userDistance.isWithin ? '🟢 Terjangkau' : '🔴 Di Luar'} (${userDistance.formatted})`}
+              />
+            )}
             <Button
-              title="Check-in Sekarang"
+              title={actionLoading === 'in' ? 'Memeriksa Lokasi...' : 'Check-in Sekarang'}
               onPress={() => initiateCheck('in')}
               loading={actionLoading === 'in'}
             />

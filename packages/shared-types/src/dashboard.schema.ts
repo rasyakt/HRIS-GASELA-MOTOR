@@ -29,6 +29,7 @@ export interface EmployeeDashboard {
   pendingLeave: number;
   pendingOvertime: number;
   recentAttendance: RecentAttendanceDto[];
+  officeLocation?: OfficeLocationDto | null;
 }
 
 export interface PendingApprovalLeaveDto {

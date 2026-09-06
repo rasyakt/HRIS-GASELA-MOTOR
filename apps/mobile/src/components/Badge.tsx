@@ -88,7 +88,7 @@ export function Badge({
           borderColor,
           borderWidth: variant === 'outlined' ? 1 : 0,
         },
-        tokens.shadows.sm,
+        variant === 'solid' ? tokens.shadows.sm : {},
         style,
       ]}
     >

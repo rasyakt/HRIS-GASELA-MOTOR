@@ -83,7 +83,7 @@ function localDateKey(d: Date): Date {
 export class AttendancesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async getOfficeLocation() {
+  async getOfficeLocation() {
     const [locSetting, radiusSetting] = await Promise.all([
       this.prisma.companySetting.findUnique({
         where: { key: 'office.location' },
