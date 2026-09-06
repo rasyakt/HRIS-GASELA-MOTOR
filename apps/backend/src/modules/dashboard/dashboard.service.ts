@@ -36,17 +36,36 @@ function timeToString(value: unknown): string | null {
   return null;
 }
 
+function timeToMinutes(value: unknown): number | null {
+  if (value instanceof Date) {
+    if (value.getUTCFullYear() <= 1970) {
+      return value.getUTCHours() * 60 + value.getUTCMinutes();
+    }
+    const wib = new Date(value.getTime() + 7 * 60 * 60 * 1000);
+    return wib.getUTCHours() * 60 + wib.getUTCMinutes();
+  }
+  if (typeof value === 'string') {
+    const parts = value.split(':').map(Number);
+    if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      return parts[0] * 60 + parts[1];
+    }
+  }
+  return null;
+}
+
 @Injectable()
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
   async summary(user: AuthUser): Promise<DashboardSummary> {
-    const employeePart = await this.employeePart(user.employeeId);
+    const [employeePart, officeLocation] = await Promise.all([
+      this.employeePart(user.employeeId),
+      this.getOfficeLocationInfo(),
+    ]);
     if (roleAtLeast('hrd', user.role)) {
-      const [stats, departments, officeLocation] = await Promise.all([
+      const [stats, departments] = await Promise.all([
         this.companyStats(),
         this.departmentDistribution(),
-        this.getOfficeLocationInfo(),
       ]);
       return {
         ...employeePart,
@@ -66,9 +85,10 @@ export class DashboardService {
         role: 'manager',
         approvals,
         team,
+        officeLocation,
       };
     }
-    return { ...employeePart, role: 'employee' };
+    return { ...employeePart, role: 'employee', officeLocation };
   }
 
   // ===================== PER ROLE =====================
@@ -121,9 +141,18 @@ export class DashboardService {
     let earliestCheckoutTime: string | null = null;
     let canCheckoutNow = true;
 
-    if (attendance?.shift) {
-      shiftStartTime = timeToString(attendance.shift.startTime);
-      shiftEndTime = timeToString(attendance.shift.endTime);
+    const activeShift =
+      attendance?.shift ??
+      (this.prisma.shift?.findFirst
+        ? await this.prisma.shift.findFirst({
+            where: { isActive: true },
+            orderBy: { id: 'asc' },
+          })
+        : null);
+
+    if (activeShift) {
+      shiftStartTime = timeToString(activeShift.startTime);
+      shiftEndTime = timeToString(activeShift.endTime);
       if (shiftEndTime) {
         const [sh, sm] = shiftEndTime.split(':').map(Number);
         const shiftEndMin = sh * 60 + sm;
@@ -134,13 +163,39 @@ export class DashboardService {
 
         const nowWib = new Date(Date.now() + 7 * 60 * 60 * 1000);
         const nowMin = nowWib.getUTCHours() * 60 + nowWib.getUTCMinutes();
-        canCheckoutNow = nowMin >= earliestMin;
+        const isPastEarliest = nowMin >= earliestMin;
+
+        // Cegah karyawan langsung check-out instan jika baru saja check-in (< 5 menit)
+        const checkInMin = attendance?.checkInTime
+          ? timeToMinutes(attendance.checkInTime)
+          : null;
+        const workedMinutes =
+          checkInMin !== null ? Math.max(0, nowMin - checkInMin) : null;
+        const isTooRecent = workedMinutes !== null && workedMinutes < 5;
+
+        canCheckoutNow = isPastEarliest && !isTooRecent;
       }
+    }
+
+    const nowWib = new Date(Date.now() + 7 * 60 * 60 * 1000);
+    const nowMin = nowWib.getUTCHours() * 60 + nowWib.getUTCMinutes();
+    let isShiftEnded = false;
+    if (shiftEndTime) {
+      const [sh, sm] = shiftEndTime.split(':').map(Number);
+      isShiftEnded = nowMin >= sh * 60 + sm;
     }
 
     return {
       today: {
         date: dayKey(today),
+        shift: activeShift
+          ? {
+              name: activeShift.name,
+              startTime: shiftStartTime ?? '',
+              endTime: shiftEndTime ?? '',
+              isEnded: isShiftEnded,
+            }
+          : null,
         attendance: attendance
           ? {
               status: attendance.status,
@@ -148,11 +203,12 @@ export class DashboardService {
               checkOutTime: timeToString(attendance.checkOutTime),
               lateMinutes: attendance.lateMinutes,
               workHours: Number(attendance.workHours),
-              shiftName: attendance.shift?.name ?? null,
+              shiftName: attendance.shift?.name ?? activeShift?.name ?? null,
               shiftStartTime,
               shiftEndTime,
               earliestCheckoutTime,
               canCheckoutNow,
+              isShiftEnded,
             }
           : null,
       },

@@ -6,6 +6,7 @@ export const ROLE_ORDER: Partial<Record<UserRole, number>> = {
   hrd: 2,
   admin: 3,
   owner: 4,
+  superadmin: 5,
 };
 
 export function roleAtLeast(role: UserRole, min: UserRole): boolean {
@@ -22,6 +23,7 @@ export const ROLE_LABEL: Record<UserRole, string> = {
   admin: 'Admin',
   owner: 'Owner',
   landing_admin: 'Admin Landing',
+  superadmin: 'Superadmin',
 };
 
 export function fmtTime(value: string | null | undefined): string {

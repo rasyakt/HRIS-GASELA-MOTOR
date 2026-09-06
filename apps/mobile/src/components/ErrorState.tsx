@@ -68,14 +68,16 @@ export function ErrorState({
 export interface ErrorBannerProps {
   title?: string;
   description: string;
+  type?: 'error' | 'warning' | 'info';
   onDismiss?: () => void;
   autoDismiss?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
 export function ErrorBanner({
-  title = 'Error',
+  title,
   description,
+  type,
   onDismiss,
   autoDismiss = true,
   style,
@@ -84,6 +86,40 @@ export function ErrorBanner({
   const [visible, setVisible] = useState(true);
   const translateY = useSharedValue(-100);
   const opacity = useSharedValue(0);
+
+  // Auto-detect business/informational rules vs system crashes
+  const isBusinessNotice =
+    type === 'warning' ||
+    type === 'info' ||
+    /shift|berakhir|jangkauan|radius|kantor|ditutup/i.test(description);
+
+  const bannerType = type || (isBusinessNotice ? 'warning' : 'error');
+
+  const bannerTitle =
+    title && title !== 'Error'
+      ? title
+      : bannerType === 'warning'
+      ? 'Peringatan!'
+      : bannerType === 'info'
+      ? 'Pemberitahuan'
+      : 'Pemberitahuan';
+
+  let mainColor = tokens.colors.error;
+  let iconName: keyof typeof Ionicons.glyphMap = 'alert-circle-outline';
+  let bgColor = 'rgba(239, 68, 68, 0.08)';
+  let borderColor = 'rgba(239, 68, 68, 0.25)';
+
+  if (bannerType === 'warning') {
+    mainColor = tokens.colors.warning || '#d97706';
+    iconName = 'information-circle-outline';
+    bgColor = 'rgba(217, 119, 6, 0.08)';
+    borderColor = 'rgba(217, 119, 6, 0.25)';
+  } else if (bannerType === 'info') {
+    mainColor = '#2563eb';
+    iconName = 'information-circle-outline';
+    bgColor = 'rgba(37, 99, 235, 0.08)';
+    borderColor = 'rgba(37, 99, 235, 0.25)';
+  }
 
   const handleDismiss = () => {
     translateY.value = withTiming(-100, timingConfig(AnimationDurations.fast));
@@ -104,7 +140,7 @@ export function ErrorBanner({
     if (autoDismiss) {
       const timer = setTimeout(() => {
         handleDismiss();
-      }, 5000);
+      }, 6000);
       return () => clearTimeout(timer);
     }
   }, [autoDismiss]);
@@ -123,24 +159,24 @@ export function ErrorBanner({
       style={[
         styles.bannerContainer,
         {
-          backgroundColor: tokens.colors.error + '1A', // 10% opacity hex hack
-          borderColor: tokens.colors.error + '40',
+          backgroundColor: bgColor,
+          borderColor: borderColor,
         },
         animatedStyle,
         style,
       ]}
     >
-      <Ionicons name="alert-circle" size={24} color={tokens.colors.error} style={styles.bannerIcon} />
+      <Ionicons name={iconName} size={24} color={mainColor} style={styles.bannerIcon} />
       <View style={styles.bannerContent}>
-        <Text style={[styles.bannerTitle, { color: tokens.colors.error, fontSize: tokens.typography.fontSize.lg }]}>
-          {title}
+        <Text style={[styles.bannerTitle, { color: mainColor, fontSize: tokens.typography.fontSize.base }]}>
+          {bannerTitle}
         </Text>
-        <Text style={[styles.bannerDescription, { color: tokens.colors.textPrimary, fontSize: tokens.typography.fontSize.base }]}>
+        <Text style={[styles.bannerDescription, { color: tokens.colors.textPrimary, fontSize: tokens.typography.fontSize.sm }]}>
           {description}
         </Text>
       </View>
       <Pressable onPress={handleDismiss} style={styles.closeButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-        <Ionicons name="close" size={20} color={tokens.colors.textSecondary} />
+        <Ionicons name="close" size={18} color={tokens.colors.textSecondary} />
       </Pressable>
     </Animated.View>
   );

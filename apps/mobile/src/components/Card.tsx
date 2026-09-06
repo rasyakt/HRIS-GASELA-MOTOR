@@ -125,11 +125,11 @@ export function CardHeader({ icon, title, action, hasDivider = false }: CardHead
     <View style={[styles.header, hasDivider && { borderBottomWidth: 1, borderBottomColor: tokens.colors.border }]}>
       <View style={styles.headerLeft}>
         {icon && <Ionicons name={icon} size={20} color={tokens.colors.textPrimary} style={styles.headerIcon} />}
-        <Text style={[styles.title, { color: tokens.colors.textPrimary, fontSize: tokens.typography.fontSize.lg }]}>
+        <Text style={[styles.title, { color: tokens.colors.textPrimary, fontSize: tokens.typography.fontSize.lg }]} numberOfLines={1}>
           {title}
         </Text>
       </View>
-      {action && <View>{action}</View>}
+      {action && <View style={styles.headerAction}>{action}</View>}
     </View>
   );
 }
@@ -161,17 +161,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
+    gap: 8,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    marginRight: 8,
+  },
+  headerAction: {
+    flexShrink: 0,
   },
   headerIcon: {
     marginRight: 8,
   },
   title: {
     fontWeight: '600',
+    flexShrink: 1,
   },
   content: {
     paddingHorizontal: 16,

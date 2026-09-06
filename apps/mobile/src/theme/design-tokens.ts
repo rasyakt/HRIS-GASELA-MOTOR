@@ -176,6 +176,24 @@ export const borderRadius: BorderRadiusScale = {
   full: 999,
 };
 
+export function generateDynamicBorderRadius(
+  radiusType?: 'none' | 'sm' | 'md' | 'lg' | 'full',
+): BorderRadiusScale {
+  switch (radiusType) {
+    case 'none':
+      return { xs: 0, sm: 0, md: 0, base: 0, lg: 0, xl: 0, '2xl': 0, '3xl': 0, full: 999 };
+    case 'sm':
+      return { xs: 2, sm: 4, md: 6, base: 8, lg: 10, xl: 12, '2xl': 14, '3xl': 16, full: 999 };
+    case 'lg':
+      return { xs: 6, sm: 10, md: 14, base: 16, lg: 20, xl: 24, '2xl': 28, '3xl': 36, full: 999 };
+    case 'full':
+      return { xs: 8, sm: 12, md: 16, base: 20, lg: 24, xl: 32, '2xl': 36, '3xl': 48, full: 999 };
+    case 'md':
+    default:
+      return borderRadius;
+  }
+}
+
 export const gradients: GradientPresets = {
   primary: ['#18181b', '#3f3f46'],
   secondary: ['#52525b', '#a1a1aa'],

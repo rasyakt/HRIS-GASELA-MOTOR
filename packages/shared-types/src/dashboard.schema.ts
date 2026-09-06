@@ -1,6 +1,13 @@
 import type { AttendanceStatus } from './enums';
 import type { LeaveBalanceDto } from './leave-request.schema';
 
+export interface ShiftInfoDto {
+  name: string;
+  startTime: string;
+  endTime: string;
+  isEnded: boolean;
+}
+
 export interface TodayAttendanceDto {
   status: AttendanceStatus | null;
   checkInTime: string | null;
@@ -12,6 +19,7 @@ export interface TodayAttendanceDto {
   shiftEndTime?: string | null;
   earliestCheckoutTime?: string | null;
   canCheckoutNow?: boolean;
+  isShiftEnded?: boolean;
 }
 
 export interface RecentAttendanceDto {
@@ -24,11 +32,16 @@ export interface RecentAttendanceDto {
 
 export interface EmployeeDashboard {
   role: 'employee';
-  today: { date: string; attendance: TodayAttendanceDto | null };
+  today: {
+    date: string;
+    attendance: TodayAttendanceDto | null;
+    shift?: ShiftInfoDto | null;
+  };
   leaveBalances: LeaveBalanceDto[];
   pendingLeave: number;
   pendingOvertime: number;
   recentAttendance: RecentAttendanceDto[];
+  officeLocation?: OfficeLocationDto | null;
 }
 
 export interface PendingApprovalLeaveDto {

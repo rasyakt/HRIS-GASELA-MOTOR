@@ -83,7 +83,7 @@ function localDateKey(d: Date): Date {
 export class AttendancesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async getOfficeLocation() {
+  async getOfficeLocation() {
     const [locSetting, radiusSetting] = await Promise.all([
       this.prisma.companySetting.findUnique({
         where: { key: 'office.location' },
@@ -137,8 +137,19 @@ export class AttendancesService {
     }
 
     const shiftStart = toMinutes(shift?.startTime) ?? 8 * 60;
+    const shiftEnd = toMinutes(shift?.endTime);
     const grace = shift?.gracePeriodMinutes ?? 15;
     const nowMinutes = toMinutes(now) ?? (now.getHours() * 60 + now.getMinutes());
+
+    // Opsi 1: Kunci Check-in Setelah Jam Shift Berakhir
+    if (shiftEnd !== null && nowMinutes >= shiftEnd) {
+      const hh = String(Math.floor(shiftEnd / 60)).padStart(2, '0');
+      const mm = String(shiftEnd % 60).padStart(2, '0');
+      throw new ForbiddenException(
+        `Shift ${shift?.name ?? 'kerja'} telah berakhir pada pukul ${hh}:${mm} WIB. Anda tidak dapat melakukan check-in setelah jam shift selesai.`,
+      );
+    }
+
     const lateMinutes = Math.max(0, nowMinutes - (shiftStart + grace));
     const status = lateMinutes > 0 ? 'late' : 'present';
 
@@ -239,20 +250,27 @@ export class AttendancesService {
       ? parseInt(bufferSetting.value, 10) || 0
       : 30;
 
-    const isEarlyLeave =
+    const isShiftEarly =
       shiftEnd !== null && checkOutMin < shiftEnd - bufferMinutes;
-    const earlyLeaveMinutes = isEarlyLeave
+    const isTooRecent = workedMinutes < 5;
+    const isEarlyLeave = isShiftEarly || isTooRecent;
+    const earlyLeaveMinutes = isShiftEarly
       ? Math.max(0, shiftEnd - checkOutMin)
       : 0;
 
     if (isEarlyLeave) {
-      const earliestCheckoutMin = shiftEnd - bufferMinutes;
+      const earliestCheckoutMin = shiftEnd ? Math.max(0, shiftEnd - bufferMinutes) : 0;
       const hh = String(Math.floor(earliestCheckoutMin / 60)).padStart(2, '0');
       const mm = String(earliestCheckoutMin % 60).padStart(2, '0');
       const earliestTimeStr = `${hh}:${mm}`;
 
-      // Jika belum masuk jam checkout dan tidak ada catatan alasan
+      // Jika belum masuk jam checkout atau baru saja check-in, wajib ada catatan alasan
       if (!input.notes || input.notes.trim().length < 3) {
+        if (isTooRecent && !isShiftEarly) {
+          throw new ForbiddenException(
+            'Anda baru saja melakukan check-in kurang dari 5 menit yang lalu. Untuk melakukan check-out langsung, wajib menyertakan alasan izin/pembatalan pada catatan.',
+          );
+        }
         throw new ForbiddenException(
           `Check-out shift ${shift?.name ?? 'kerja'} baru dibuka pukul ${earliestTimeStr} (${bufferMinutes} menit sebelum shift selesai). Jika izin pulang awal, wajib isi alasan pada catatan.`,
         );

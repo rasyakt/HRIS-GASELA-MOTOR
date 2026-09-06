@@ -5,6 +5,14 @@ import { join } from 'path';
 import { UploadsService } from './uploads.service';
 import { ConfigService } from '@nestjs/config';
 
+jest.mock('../../common/utils/face-validator.util', () => ({
+  validateHumanFaceInImage: jest.fn(() => ({
+    hasFace: true,
+    skinRatio: 0.35,
+    facialContrast: 25,
+  })),
+}));
+
 describe('UploadsService', () => {
   let service: UploadsService;
 

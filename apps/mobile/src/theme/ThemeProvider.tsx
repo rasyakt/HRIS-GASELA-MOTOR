@@ -1,13 +1,25 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
-import { DesignTokens, GradientPresets, typography, spacing, borderRadius } from './design-tokens';
-import { lightTheme, darkTheme } from './themes';
+import { useQuery } from '@tanstack/react-query';
+import {
+  DEFAULT_PORTAL_THEME,
+  type PortalThemeConfig,
+} from '@gasela/shared-types';
+import {
+  DesignTokens,
+  typography,
+  spacing,
+  generateDynamicBorderRadius,
+} from './design-tokens';
+import {
+  generateDynamicPalette,
+  generateDynamicGradients,
+} from './themes';
+import api from '../services/api-client';
+import { storage } from '../services/storage';
 
-// Dummy storage for Expo Go compatibility in MVP
-export const themeStorage = {
-  getString: (key: string): string | undefined => undefined,
-  set: (key: string, value: string) => {},
-};
+export const THEME_PREF_KEY = 'app-theme-preference';
+export const PORTAL_THEME_CACHE_KEY = 'cached-portal-theme-config';
 
 type ThemeType = 'light' | 'dark';
 type ThemePreference = ThemeType | 'system';
@@ -16,16 +28,14 @@ export interface ThemeContextValue {
   theme: ThemeType;
   preference: ThemePreference;
   tokens: DesignTokens;
+  themeConfig: PortalThemeConfig;
   toggleTheme: () => void;
   setTheme: (theme: ThemePreference) => void;
+  refetchTheme: () => void;
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-const THEME_STORAGE_KEY = 'app-theme-preference';
-
-// Default shadow values. In a real app we might animate these or keep them static
-// based on theme. Here we compute them quickly.
 const generateShadows = (isDark: boolean) => {
   const color = isDark ? '#000000' : '#18181b';
   return {
@@ -37,59 +47,81 @@ const generateShadows = (isDark: boolean) => {
   };
 };
 
-// Generate gradients based on theme
-const generateGradients = (isDark: boolean): GradientPresets => {
-  if (isDark) {
-    return {
-      primary: ['#1e40af', '#3b82f6'], // Blue gradient for dark mode
-      secondary: ['#374151', '#52525b'],
-      accent: ['#2563eb', '#60a5fa'],
-      success: ['#047857', '#34d399'],
-      warning: ['#d97706', '#fbbf24'],
-      brand: ['#1e293b', '#334155'],
-    } as const;
-  }
-  return {
-    primary: ['#18181b', '#3f3f46'],
-    secondary: ['#52525b', '#a1a1aa'],
-    accent: ['#3b82f6', '#2563eb'],
-    success: ['#10b981', '#059669'],
-    warning: ['#f59e0b', '#d97706'],
-    brand: ['#18181b', '#27272a'],
-  } as const;
-};
-
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemColorScheme = useColorScheme() as ThemeType | null;
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
 
-  useEffect(() => {
-    // Load persisted theme on mount
+  // 1. Initial cached theme config from storage
+  const initialCachedConfig = useMemo<PortalThemeConfig>(() => {
     try {
-      const storedTheme = themeStorage.getString(THEME_STORAGE_KEY) as ThemePreference;
-      if (storedTheme) {
-        setPreferenceState(storedTheme);
+      const raw = storage.getString(PORTAL_THEME_CACHE_KEY);
+      if (raw) {
+        return { ...DEFAULT_PORTAL_THEME, ...JSON.parse(raw) };
+      }
+    } catch {}
+    return DEFAULT_PORTAL_THEME;
+  }, []);
+
+  const [cachedThemeConfig, setCachedThemeConfig] = useState<PortalThemeConfig>(initialCachedConfig);
+
+  // 2. Fetch active theme config from backend
+  const themeQuery = useQuery<PortalThemeConfig>({
+    queryKey: ['portal-theme-config'],
+    queryFn: () => api<PortalThemeConfig>('/api/settings/theme'),
+    staleTime: 60_000,
+    refetchInterval: 30_000,
+  });
+
+  // 3. Persist latest theme config when received
+  useEffect(() => {
+    if (themeQuery.data) {
+      setCachedThemeConfig(themeQuery.data);
+      try {
+        storage.set(PORTAL_THEME_CACHE_KEY, JSON.stringify(themeQuery.data));
+      } catch (e) {
+        console.warn('Failed to cache theme config in mobile storage:', e);
+      }
+    }
+  }, [themeQuery.data]);
+
+  // 4. Load persisted theme preference on mount
+  useEffect(() => {
+    try {
+      const stored = storage.getString(THEME_PREF_KEY) as ThemePreference;
+      if (stored) {
+        setPreferenceState(stored);
       }
     } catch (e) {
       console.warn('Failed to load theme preference', e);
     }
   }, []);
 
-  const activeTheme: ThemeType = preference === 'system' ? (systemColorScheme || 'light') : preference;
+  const activeTheme: ThemeType =
+    preference === 'system' ? systemColorScheme || 'light' : preference;
   const isDark = activeTheme === 'dark';
 
-  const tokens: DesignTokens = {
-    colors: isDark ? darkTheme : lightTheme,
-    typography,
-    spacing,
-    borderRadius,
-    shadows: generateShadows(isDark),
-    gradients: generateGradients(isDark),
-  };
+  const currentThemeConfig = themeQuery.data || cachedThemeConfig;
+
+  // 5. Generate dynamic design tokens
+  const tokens = useMemo<DesignTokens>(() => {
+    const palette = generateDynamicPalette(currentThemeConfig, isDark);
+    const grad = generateDynamicGradients(palette, isDark);
+    const rad = generateDynamicBorderRadius(currentThemeConfig.radius);
+    return {
+      colors: palette,
+      typography,
+      spacing,
+      borderRadius: rad,
+      shadows: generateShadows(isDark),
+      gradients: grad,
+    };
+  }, [currentThemeConfig, isDark]);
 
   const setTheme = (newPreference: ThemePreference) => {
     setPreferenceState(newPreference);
-    themeStorage.set(THEME_STORAGE_KEY, newPreference);
+    try {
+      storage.set(THEME_PREF_KEY, newPreference);
+    } catch {}
   };
 
   const toggleTheme = () => {
@@ -101,8 +133,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     theme: activeTheme,
     preference,
     tokens,
+    themeConfig: currentThemeConfig,
     toggleTheme,
     setTheme,
+    refetchTheme: () => themeQuery.refetch(),
   };
 
   return (
