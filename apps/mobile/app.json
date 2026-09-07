@@ -50,6 +50,7 @@
         "expo-build-properties",
         {
           "android": {
+            "usesCleartextTraffic": true,
             "buildArchs": ["arm64-v8a", "armeabi-v7a"]
           }
         }
