@@ -3,6 +3,17 @@
     "name": "Gasela HRIS",
     "slug": "gasela-hris",
     "version": "0.1.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b0371f60-3fe2-4cf6-8122-47e42d7dd012"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b0371f60-3fe2-4cf6-8122-47e42d7dd012"
+      }
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
