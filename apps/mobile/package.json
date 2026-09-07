@@ -38,6 +38,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "postinstall": "cd ../.. && pnpm --filter @gasela/shared-types build && pnpm --filter @gasela/shared-utils build",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
