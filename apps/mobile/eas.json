@@ -16,6 +16,9 @@
     "production": {
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://IP_SERVER_ANDA:8080"
       }
     }
   },
