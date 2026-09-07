@@ -11,6 +11,9 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://10.10.45.45:8080"
       }
     },
     "production": {
@@ -18,7 +21,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://IP_SERVER_ANDA:8080"
+        "EXPO_PUBLIC_API_URL": "http://10.10.45.45:8080"
       }
     }
   },
