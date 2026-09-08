@@ -65,6 +65,32 @@ interface ManagerItem {
   id: number;
   fullName: string;
   employeeNumber: string;
+  department?: { id: number; code?: string; name: string } | null;
+  position?: { id: number; code?: string; name: string; level?: number | null } | null;
+  user?: { id: number; username: string; role: string; isActive: boolean } | null;
+}
+
+function isEligibleManager(m: ManagerItem): boolean {
+  if (m.user?.role === 'landing_admin') return false;
+
+  const managerialRoles = ['manager', 'owner', 'superadmin', 'admin', 'hrd'];
+  const hasManagerialRole = m.user?.role && managerialRoles.includes(m.user.role);
+
+  const isStructuralLevel = typeof m.position?.level === 'number' && m.position.level <= 2 && m.position.level > 0;
+
+  const posName = m.position?.name?.toLowerCase() || '';
+  const hasStructuralTitle =
+    posName.includes('manager') ||
+    posName.includes('supervisor') ||
+    posName.includes('direktur') ||
+    posName.includes('head') ||
+    posName.includes('lead');
+
+  if (m.user?.role === 'employee' && !isStructuralLevel && !hasStructuralTitle) {
+    return false;
+  }
+
+  return Boolean(hasManagerialRole || isStructuralLevel || hasStructuralTitle);
 }
 
 interface DocumentItem {
@@ -197,7 +223,7 @@ export default function EmployeesPage() {
 
   const managers = useQuery({
     queryKey: ['managers-list'],
-    queryFn: () => authApi<{ items: ManagerItem[] }>('/api/employees?limit=100'),
+    queryFn: () => authApi<{ items: ManagerItem[] }>('/api/employees?limit=100&managerCandidatesOnly=true'),
     enabled: drawerOpen,
   });
 
@@ -1199,11 +1225,21 @@ export default function EmployeesPage() {
                             >
                               <option value="">Pilih Manager</option>
                               {managers.data?.items
-                                .filter((m) => m.id !== selectedEmployeeId)
-                                .map((m) => (
-                                  <option key={m.id} value={m.id}>{m.fullName} ({m.employeeNumber})</option>
-                                ))}
+                                .filter((m) => m.id !== selectedEmployeeId && (isEligibleManager(m) || m.id === Number(formData.managerId)))
+                                .map((m) => {
+                                  const positionName = m.position?.name;
+                                  const deptName = m.department?.name;
+                                  const meta = [positionName, deptName].filter(Boolean).join(' • ');
+                                  return (
+                                    <option key={m.id} value={m.id}>
+                                      {m.fullName} ({m.employeeNumber}){meta ? ` — ${meta}` : ''}
+                                    </option>
+                                  );
+                                })}
                             </select>
+                            <p className="mt-1 text-xs text-zinc-500">
+                              Hanya role manajerial (Manager, Owner, Direktur, Supervisor, HRD) yang dapat dipilih sebagai atasan.
+                            </p>
                           </div>
                         </div>
                       </div>

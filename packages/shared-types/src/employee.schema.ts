@@ -66,6 +66,7 @@ export const employeeQuerySchema = z.object({
   positionId: z.coerce.number().int().optional(),
   employmentStatus: z.enum(EMPLOYMENT_STATUSES).optional(),
   role: z.string().optional(),
+  managerCandidatesOnly: z.coerce.boolean().optional(),
 });
 
 export type CreateEmployeeInput = z.infer<typeof createEmployeeSchema>;
