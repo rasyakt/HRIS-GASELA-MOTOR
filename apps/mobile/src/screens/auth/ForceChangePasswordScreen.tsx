@@ -115,7 +115,7 @@ export function ForceChangePasswordScreen() {
 
       Alert.alert(
         'Berhasil',
-        'Password Anda berhasil diperbarui! Selamat datang di Gasela HRIS.',
+        'Password Anda berhasil diperbarui! Selamat datang di GaselaPulse.',
         [
           {
             text: 'Masuk ke Aplikasi',
