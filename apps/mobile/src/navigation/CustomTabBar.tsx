@@ -15,24 +15,17 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-      <BlurView
-        intensity={80}
-        tint={theme === 'dark' ? 'dark' : 'light'}
-        style={[
-          StyleSheet.absoluteFill,
-          { backgroundColor: theme === 'dark' ? 'rgba(9, 9, 11, 0.7)' : 'rgba(255, 255, 255, 0.8)' }
-        ]}
-      />
-      <View
-        style={[
-          styles.content,
-          {
-            borderTopColor: tokens.colors.border,
-            ...tokens.shadows.sm,
-          }
-        ]}
-      >
+    <View
+      style={[
+        styles.container,
+        {
+          paddingBottom: Math.max(insets.bottom, 6),
+          backgroundColor: tokens.colors.surface,
+          borderTopColor: tokens.colors.border,
+        },
+      ]}
+    >
+      <View style={styles.content}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
@@ -53,15 +46,7 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
           // Scale animation
           const animatedStyle = useAnimatedStyle(() => {
             return {
-              transform: [{ scale: withTiming(isFocused ? 1.15 : 1, timingConfig(AnimationDurations.fast)) }],
-            };
-          });
-
-          // Indicator animation
-          const indicatorStyle = useAnimatedStyle(() => {
-            return {
-              opacity: withTiming(isFocused ? 1 : 0, timingConfig(AnimationDurations.fast)),
-              transform: [{ translateY: withTiming(isFocused ? 0 : 4, timingConfig(AnimationDurations.fast)) }],
+              transform: [{ scale: withTiming(isFocused ? 1.1 : 1, timingConfig(AnimationDurations.fast)) }],
             };
           });
 
@@ -78,11 +63,15 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
               <Animated.View style={[styles.iconContainer, animatedStyle]}>
                 {options.tabBarIcon && options.tabBarIcon({ focused: isFocused, color, size: 24 })}
               </Animated.View>
-              
+
               <Text
                 style={[
                   styles.label,
-                  { color, fontSize: 10, fontWeight: isFocused ? '600' : '500' }
+                  {
+                    color,
+                    fontSize: 11,
+                    fontWeight: isFocused ? '700' : '500',
+                  },
                 ]}
               >
                 {options.title !== undefined ? options.title : route.name}
@@ -101,30 +90,29 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    overflow: 'hidden',
+    borderTopWidth: 1,
+    elevation: 12,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
   content: {
     flexDirection: 'row',
-    height: 60,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    height: 58,
+    alignItems: 'center',
   },
   tabItem: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 4,
   },
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
-    height: 32,
-  },
-  indicator: {
-    position: 'absolute',
-    bottom: -6,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    marginBottom: 2,
+    height: 28,
   },
   label: {
     textAlign: 'center',

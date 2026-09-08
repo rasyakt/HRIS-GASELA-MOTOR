@@ -7,6 +7,7 @@ import { AttendanceScreen } from '../screens/attendance/AttendanceScreen';
 import { OvertimeScreen } from '../screens/overtime/OvertimeScreen';
 import { PayslipScreen } from '../screens/payroll/PayslipScreen';
 import { useAuthStore } from '../store/auth-store';
+import { useTheme } from '../theme/ThemeProvider';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -21,11 +22,20 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator({ loggedIn }: { loggedIn: boolean }) {
+  const { tokens } = useTheme();
   const user = useAuthStore((s) => s.user);
   const mustChangePassword = loggedIn && Boolean(user?.mustChangePassword);
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        headerStyle: { backgroundColor: tokens.colors.surface },
+        headerTintColor: tokens.colors.textPrimary,
+        headerTitleStyle: { fontWeight: '700' },
+        headerShadowVisible: false,
+      }}
+    >
       {loggedIn ? (
         mustChangePassword ? (
           <Stack.Screen

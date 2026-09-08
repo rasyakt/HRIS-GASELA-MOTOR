@@ -160,7 +160,9 @@ export function StatCard({ title, value, subtitle, icon, style }: StatCardProps)
         {
           backgroundColor: tokens.colors.surface,
           borderRadius: tokens.borderRadius.lg,
-          ...tokens.shadows.md,
+          borderWidth: 1,
+          borderColor: tokens.colors.border,
+          ...tokens.shadows.sm,
         },
         animatedStyle,
         style,

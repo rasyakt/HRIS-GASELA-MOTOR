@@ -12,13 +12,17 @@ const normalizeApiUrl = (rawUrl?: string): string => {
 };
 
 const getDevApiUrl = () => {
-  if (process.env.EXPO_PUBLIC_API_URL) {
-    return normalizeApiUrl(process.env.EXPO_PUBLIC_API_URL);
-  }
-
   // Release/standalone APK build (!__DEV__) defaults to production domain
   if (typeof __DEV__ !== 'undefined' && !__DEV__) {
+    const envUrl = process.env.EXPO_PUBLIC_API_URL;
+    if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('10.') && !envUrl.includes('192.168.') && !envUrl.includes('127.0.0.1')) {
+      return normalizeApiUrl(envUrl);
+    }
     return 'https://gasela.my.id';
+  }
+
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return normalizeApiUrl(process.env.EXPO_PUBLIC_API_URL);
   }
 
   // Metro Bundler's host IP (e.g., "192.168.1.X:8081") mapped to backend port 3001
@@ -30,7 +34,7 @@ const getDevApiUrl = () => {
     }
   }
 
-  return 'http://10.169.180.16:3001'; // Fallback to local dev IP
+  return 'http://10.169.180.132:3001'; // Fallback to local dev IP
 };
 
 const API_URL = getDevApiUrl();

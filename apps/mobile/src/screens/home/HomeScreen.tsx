@@ -44,15 +44,27 @@ type NavProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-function QuickAction({ icon, label, onPress, color, delay }: { icon: any; label: string; onPress: () => void; color: string; delay: number }) {
+function QuickAction({
+  icon,
+  label,
+  subtitle,
+  onPress,
+  delay,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  subtitle: string;
+  onPress: () => void;
+  delay: number;
+}) {
   const { tokens } = useTheme();
   const isPressed = useSharedValue(false);
   const opacity = useSharedValue(0);
-  const translateY = useSharedValue(20);
+  const translateY = useSharedValue(16);
 
   useEffect(() => {
     opacity.value = withDelay(delay, withTiming(1, timingConfig(AnimationDurations.normal)));
-    translateY.value = withDelay(delay, withSpring(0, { damping: 15, stiffness: 100 }));
+    translateY.value = withDelay(delay, withSpring(0, { damping: 16, stiffness: 120 }));
   }, [delay, opacity, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -74,13 +86,32 @@ function QuickAction({ icon, label, onPress, color, delay }: { icon: any; label:
 
   return (
     <AnimatedPressable
-      style={[styles.quickAction, { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border, ...tokens.shadows.sm }]}
+      style={[
+        styles.quickAction,
+        {
+          backgroundColor: tokens.colors.surface,
+          borderColor: tokens.colors.border,
+          ...tokens.shadows.sm,
+        },
+      ]}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       onPress={handlePress}
     >
-      <Ionicons name={icon} size={32} color={color} style={styles.quickActionIconDirect} />
-      <Text style={[styles.quickActionLabel, { color: tokens.colors.textPrimary }]}>{label}</Text>
+      <View style={styles.quickActionTopRow}>
+        <View style={[styles.quickActionIconFrame, { backgroundColor: tokens.colors.neutral100, borderColor: tokens.colors.border }]}>
+          <Ionicons name={icon} size={18} color={tokens.colors.textPrimary} />
+        </View>
+        <Ionicons name="chevron-forward" size={13} color={tokens.colors.textTertiary} />
+      </View>
+      <View style={styles.quickActionTextGroup}>
+        <Text style={[styles.quickActionLabel, { color: tokens.colors.textPrimary }]} numberOfLines={1}>
+          {label}
+        </Text>
+        <Text style={[styles.quickActionSubtitle, { color: tokens.colors.textSecondary }]} numberOfLines={1}>
+          {subtitle}
+        </Text>
+      </View>
     </AnimatedPressable>
   );
 }
@@ -261,15 +292,32 @@ export function HomeScreen() {
           >
             <View style={styles.header}>
               <View style={styles.headerText}>
-                <Text style={[styles.greeting, { color: tokens.colors.surface }]}>
+                <Text style={[styles.greeting, { color: '#ffffff' }]}>
                   Halo, {user?.fullName?.split(' ')[0] ?? 'Karyawan'}
                 </Text>
-                <Text style={[styles.date, { color: 'rgba(255,255,255,0.8)' }]}>
-                  {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                  {user ? ` · ${ROLE_LABEL[user.role]}` : ''}
-                </Text>
+                <View style={styles.headerSubtitleRow}>
+                  <Text style={[styles.date, { color: 'rgba(255,255,255,0.85)' }]}>
+                    {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  </Text>
+                  {user && (
+                    <View style={styles.roleBadge}>
+                      <Text style={styles.roleBadgeText}>{ROLE_LABEL[user.role]}</Text>
+                    </View>
+                  )}
+                </View>
               </View>
-              <Avatar name={user?.fullName || '?'} size="md" border />
+              <Pressable
+                onPress={() => {
+                  triggerHapticFeedback('light');
+                  (navigation as any).navigate('Profile');
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Buka Profil"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={({ pressed }) => [{ opacity: pressed ? 0.75 : 1 }]}
+              >
+                <Avatar name={user?.fullName || '?'} size="md" border />
+              </Pressable>
             </View>
           </LinearGradient>
         </Animated.View>
@@ -299,10 +347,10 @@ export function HomeScreen() {
                   }
                 />
                 <CardContent>
-                  <View style={[styles.heroTimes, { backgroundColor: tokens.colors.neutral100 }]}>
+                  <View style={[styles.heroTimes, { backgroundColor: tokens.colors.neutral100, borderWidth: 1, borderColor: tokens.colors.border }]}>
                     <View style={styles.heroTimeBlock}>
                       <Text style={[styles.heroTimeLabel, { color: tokens.colors.textSecondary }]}>Check-in</Text>
-                      <Text style={[styles.heroTimeValue, { color: tokens.colors.primary }]}>
+                      <Text style={[styles.heroTimeValue, { color: today?.checkInTime ? tokens.colors.primary : tokens.colors.textSecondary }]}>
                         {today?.checkInTime ? fmtTime(today.checkInTime) : '--:--'}
                       </Text>
                     </View>
@@ -484,10 +532,34 @@ export function HomeScreen() {
 
             <Text style={[styles.sectionTitle, { color: tokens.colors.textPrimary }]}>Menu Utama</Text>
             <View style={styles.grid}>
-              <QuickAction icon="list-outline" label="Riwayat" onPress={() => navigation.navigate('Attendance')} color={tokens.colors.primary} delay={100} />
-              <QuickAction icon="calendar-clear-outline" label="Cuti" onPress={() => navigation.navigate('Leave')} color={tokens.colors.primary} delay={150} />
-              <QuickAction icon="time-outline" label="Lembur" onPress={() => navigation.navigate('Overtime')} color={tokens.colors.primary} delay={200} />
-              <QuickAction icon="document-text-outline" label="Slip Gaji" onPress={() => navigation.navigate('Payslip')} color={tokens.colors.primary} delay={250} />
+              <QuickAction
+                icon="calendar-outline"
+                label="Riwayat"
+                subtitle="Rekap presensi"
+                onPress={() => navigation.navigate('Attendance')}
+                delay={80}
+              />
+              <QuickAction
+                icon="document-text-outline"
+                label="Cuti"
+                subtitle="Pengajuan & kuota"
+                onPress={() => navigation.navigate('Leave')}
+                delay={120}
+              />
+              <QuickAction
+                icon="timer-outline"
+                label="Lembur"
+                subtitle="Klaim jam kerja"
+                onPress={() => navigation.navigate('Overtime')}
+                delay={160}
+              />
+              <QuickAction
+                icon="receipt-outline"
+                label="Slip Gaji"
+                subtitle="Rincian bulanan"
+                onPress={() => navigation.navigate('Payslip')}
+                delay={200}
+              />
             </View>
 
             <Text style={[styles.sectionTitle, { color: tokens.colors.textPrimary }]}>Informasi Anda</Text>
@@ -501,13 +573,13 @@ export function HomeScreen() {
                 <StatCard
                   title="Cuti Pending"
                   value={data?.pendingLeave ?? 0}
-                  icon={<Ionicons name="hourglass-outline" size={20} color={tokens.colors.warning} />}
+                  icon={<Ionicons name="document-text-outline" size={18} color={tokens.colors.textSecondary} />}
                   style={{ marginRight: 8 }}
                 />
                 <StatCard
                   title="Lembur Pending"
                   value={data?.pendingOvertime ?? 0}
-                  icon={<Ionicons name="hourglass-outline" size={20} color={tokens.colors.warning} />}
+                  icon={<Ionicons name="timer-outline" size={18} color={tokens.colors.textSecondary} />}
                   style={{ marginLeft: 8 }}
                 />
               </View>
@@ -556,21 +628,33 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   container: { paddingHorizontal: 20, paddingBottom: 130 },
   headerBackground: {
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
     paddingHorizontal: 20,
     paddingBottom: 24,
     marginHorizontal: -20,
     marginBottom: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
   header: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     alignItems: 'center',
   },
-  headerText: { flex: 1 },
+  headerText: { flex: 1, paddingRight: 12 },
   greeting: { fontSize: 26, fontWeight: '800', letterSpacing: -0.5, lineHeight: 32 },
-  date: { fontSize: 13, marginTop: 4, fontWeight: '500', opacity: 0.9, letterSpacing: 0.1 },
+  headerSubtitleRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6, flexWrap: 'wrap', gap: 6 },
+  date: { fontSize: 13, fontWeight: '500', opacity: 0.9, letterSpacing: 0.1 },
+  roleBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  roleBadgeText: { color: '#ffffff', fontSize: 11, fontWeight: '600' },
   sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16, marginTop: 8 },
   heroCard: { marginBottom: 28 },
   heroTimes: { 
@@ -665,22 +749,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   heroActionRow: { marginTop: 4 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 28 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 24 },
   quickAction: { 
     width: '48%', 
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-    alignItems: 'center', 
-    marginBottom: 16,
-    minHeight: 120,
-    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    marginBottom: 12,
+    justifyContent: 'space-between',
+    minHeight: 96,
   },
-  quickActionIconDirect: {
+  quickActionTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 12,
   },
-  quickActionLabel: { fontSize: 15, fontWeight: '600', textAlign: 'center' },
+  quickActionIconFrame: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickActionTextGroup: {
+    alignItems: 'flex-start',
+  },
+  quickActionLabel: { fontSize: 14, fontWeight: '700', letterSpacing: -0.2 },
+  quickActionSubtitle: { fontSize: 11, fontWeight: '500', marginTop: 2 },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
   marginCard: { marginBottom: 24 },
   leaveRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },

@@ -105,7 +105,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // 5. Generate dynamic design tokens
   const tokens = useMemo<DesignTokens>(() => {
     const palette = generateDynamicPalette(currentThemeConfig, isDark);
-    const grad = generateDynamicGradients(palette, isDark);
+    const grad = generateDynamicGradients(palette, isDark, currentThemeConfig?.presetId);
     const rad = generateDynamicBorderRadius(currentThemeConfig.radius);
     return {
       colors: palette,
