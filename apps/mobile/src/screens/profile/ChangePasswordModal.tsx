@@ -126,7 +126,7 @@ export function ChangePasswordModal({ visible, onClose, accessToken }: ChangePas
               {/* Old Password */}
               <View style={styles.inputGroup}>
                 <Text style={[styles.label, { color: tokens.colors.textSecondary }]}>
-                  Password Lama
+                  Password Lama <Text style={{ color: tokens.colors.error, fontWeight: '700' }}>*</Text>
                 </Text>
                 <View style={[styles.inputWrapper, { backgroundColor: tokens.colors.neutral100, borderColor: tokens.colors.border }]}>
                   <TextInput
@@ -151,7 +151,7 @@ export function ChangePasswordModal({ visible, onClose, accessToken }: ChangePas
               {/* New Password */}
               <View style={styles.inputGroup}>
                 <Text style={[styles.label, { color: tokens.colors.textSecondary }]}>
-                  Password Baru
+                  Password Baru <Text style={{ color: tokens.colors.error, fontWeight: '700' }}>*</Text>
                 </Text>
                 <View style={[styles.inputWrapper, { backgroundColor: tokens.colors.neutral100, borderColor: tokens.colors.border }]}>
                   <TextInput
@@ -176,7 +176,7 @@ export function ChangePasswordModal({ visible, onClose, accessToken }: ChangePas
               {/* Confirm Password */}
               <View style={styles.inputGroup}>
                 <Text style={[styles.label, { color: tokens.colors.textSecondary }]}>
-                  Konfirmasi Password Baru
+                  Konfirmasi Password Baru <Text style={{ color: tokens.colors.error, fontWeight: '700' }}>*</Text>
                 </Text>
                 <View style={[styles.inputWrapper, { backgroundColor: tokens.colors.neutral100, borderColor: tokens.colors.border }]}>
                   <TextInput

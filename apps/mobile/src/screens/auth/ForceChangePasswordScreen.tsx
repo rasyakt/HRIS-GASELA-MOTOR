@@ -213,7 +213,7 @@ export function ForceChangePasswordScreen() {
             {/* Old Password */}
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: tokens.colors.textSecondary }]}>
-                Password Default / Password Lama
+                Password Default / Password Lama <Text style={{ color: tokens.colors.error, fontWeight: '700' }}>*</Text>
               </Text>
               <View
                 style={[
@@ -246,7 +246,7 @@ export function ForceChangePasswordScreen() {
             {/* New Password */}
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: tokens.colors.textSecondary }]}>
-                Password Baru
+                Password Baru <Text style={{ color: tokens.colors.error, fontWeight: '700' }}>*</Text>
               </Text>
               <View
                 style={[
@@ -297,7 +297,7 @@ export function ForceChangePasswordScreen() {
             {/* Confirm Password */}
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: tokens.colors.textSecondary }]}>
-                Konfirmasi Password Baru
+                Konfirmasi Password Baru <Text style={{ color: tokens.colors.error, fontWeight: '700' }}>*</Text>
               </Text>
               <View
                 style={[

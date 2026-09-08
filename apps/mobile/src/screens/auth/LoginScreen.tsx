@@ -207,6 +207,7 @@ export function LoginScreen() {
                 importantForAutofill="yes"
                 prefixIcon="person-outline"
                 containerStyle={styles.inputSpacing}
+                required
               />
               
               <Input
@@ -220,6 +221,7 @@ export function LoginScreen() {
                 importantForAutofill="yes"
                 prefixIcon="lock-closed-outline"
                 containerStyle={styles.inputSpacing}
+                required
               />
 
               <View style={styles.rememberMeRow}>
