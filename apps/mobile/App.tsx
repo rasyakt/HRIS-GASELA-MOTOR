@@ -3,13 +3,16 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useMemo, useEffect } from 'react';
-import { ActivityIndicator, View, StyleSheet, LogBox } from 'react-native';
+import { LogBox } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Updates from 'expo-updates';
+import * as SplashScreen from 'expo-splash-screen';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { useAuthStore } from './src/store/auth-store';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // Suppress Reanimated reduced motion & CameraView warnings in development
 LogBox.ignoreLogs([
@@ -86,12 +89,14 @@ export default function App() {
     [],
   );
 
+  useEffect(() => {
+    if (isHydrated) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [isHydrated]);
+
   if (!isHydrated) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#18181b" />
-      </View>
-    );
+    return null;
   }
 
   return (
@@ -104,12 +109,3 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fafafa',
-  },
-});
