@@ -13,7 +13,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://localhost:8080"
+        "EXPO_PUBLIC_API_URL": "https://gasela.my.id"
       }
     },
     "production": {
@@ -21,7 +21,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://localhost:8080"
+        "EXPO_PUBLIC_API_URL": "https://gasela.my.id"
       }
     }
   },
