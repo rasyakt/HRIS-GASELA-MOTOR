@@ -16,7 +16,12 @@ const getDevApiUrl = () => {
     return normalizeApiUrl(process.env.EXPO_PUBLIC_API_URL);
   }
 
-  // Get Metro Bundler's host IP (e.g., "192.168.1.X:8081") and map to backend port 3001
+  // Release/standalone APK build (!__DEV__) defaults to production domain
+  if (typeof __DEV__ !== 'undefined' && !__DEV__) {
+    return 'https://gasela.my.id';
+  }
+
+  // Metro Bundler's host IP (e.g., "192.168.1.X:8081") mapped to backend port 3001
   const hostUri = Constants.expoConfig?.hostUri || (Constants.expoGoConfig as any)?.debuggerHost;
   if (hostUri) {
     const ip = hostUri.split(':')[0];
@@ -25,7 +30,7 @@ const getDevApiUrl = () => {
     }
   }
 
-  return 'http://10.89.194.47:3001'; // Fallback to current IP if not detected
+  return 'http://10.169.180.16:3001'; // Fallback to local dev IP
 };
 
 const API_URL = getDevApiUrl();
@@ -80,11 +85,11 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
   } catch (err: any) {
     clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
-      throw new Error('Koneksi terputus (Request Timeout 30s). Silakan coba lagi.');
+      throw new Error(`Koneksi terputus (Request Timeout 30s ke ${API_URL}). Silakan coba lagi.`);
     }
     if (err instanceof TypeError || err.message?.includes('Network request failed')) {
       useOnlineStore.getState().setOnline(false);
-      throw new Error('Gagal terhubung ke server. Periksa koneksi internet Anda.');
+      throw new Error(`Gagal terhubung ke server (${API_URL}). Periksa koneksi internet & alamat API.`);
     }
     throw err;
   }
