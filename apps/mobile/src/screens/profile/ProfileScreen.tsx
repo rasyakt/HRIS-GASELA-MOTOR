@@ -14,7 +14,7 @@ import { Avatar } from '../../components/Avatar';
 import { Badge } from '../../components/Badge';
 import { ChangePasswordModal } from './ChangePasswordModal';
 import { EmployeeDetailModal } from './EmployeeDetailModal';
-import { ROLE_LABEL, fmtDate } from '../../lib/format';
+import { ROLE_LABEL, fmtDate, maskBankAccount, maskPhone, maskEmail } from '../../lib/format';
 import { api } from '../../services/api-client';
 import { useAuthStore } from '../../store/auth-store';
 import { useTheme } from '../../theme/ThemeProvider';
@@ -30,6 +30,9 @@ export function ProfileScreen() {
   const clearSession = useAuthStore((s) => s.clearSession);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showBankAccount, setShowBankAccount] = useState(false);
+  const [showPhone, setShowPhone] = useState(false);
+  const [showEmail, setShowEmail] = useState(false);
   const authApi = useAuthApi();
 
   // Animations
@@ -144,13 +147,39 @@ export function ProfileScreen() {
                   <ListItem
                     icon="mail-outline"
                     title="Email"
-                    trailing={<Text style={{ color: tokens.colors.textSecondary }}>{emp?.email ?? '—'}</Text>}
+                    onPress={() => setShowEmail(!showEmail)}
+                    trailing={
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={{ color: tokens.colors.textSecondary }}>
+                          {showEmail ? (emp?.email ?? '—') : maskEmail(emp?.email)}
+                        </Text>
+                        {emp?.email && (
+                          <Ionicons
+                            name={showEmail ? 'eye-off-outline' : 'eye-outline'}
+                            size={16}
+                            color={tokens.colors.textSecondary}
+                          />
+                        )}
+                      </View>
+                    }
                   />
                   {emp?.phone && (
                     <ListItem
                       icon="call-outline"
                       title="Nomor Telepon"
-                      trailing={<Text style={{ color: tokens.colors.textSecondary }}>{emp.phone}</Text>}
+                      onPress={() => setShowPhone(!showPhone)}
+                      trailing={
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={{ color: tokens.colors.textSecondary }}>
+                            {showPhone ? emp.phone : maskPhone(emp.phone)}
+                          </Text>
+                          <Ionicons
+                            name={showPhone ? 'eye-off-outline' : 'eye-outline'}
+                            size={16}
+                            color={tokens.colors.textSecondary}
+                          />
+                        </View>
+                      }
                     />
                   )}
                   {emp?.joinDate && (
@@ -198,10 +227,18 @@ export function ProfileScreen() {
                       icon="wallet-outline"
                       title={emp?.bankName ? `Bank ${emp.bankName}` : 'Rekening Bank'}
                       subtitle={emp?.bankAccountName ? `a.n. ${emp.bankAccountName}` : undefined}
+                      onPress={() => setShowBankAccount(!showBankAccount)}
                       trailing={
-                        <Text style={{ color: tokens.colors.textPrimary, fontWeight: '700', letterSpacing: 0.5 }}>
-                          {emp.bankAccountNumber}
-                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={{ color: tokens.colors.textPrimary, fontWeight: '700', letterSpacing: 0.5 }}>
+                            {showBankAccount ? emp.bankAccountNumber : maskBankAccount(emp.bankAccountNumber)}
+                          </Text>
+                          <Ionicons
+                            name={showBankAccount ? 'eye-off-outline' : 'eye-outline'}
+                            size={16}
+                            color={tokens.colors.primary}
+                          />
+                        </View>
                       }
                       hasDivider={false}
                     />

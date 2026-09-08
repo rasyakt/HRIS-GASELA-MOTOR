@@ -51,4 +51,69 @@ const PasswordInput = React.forwardRef<HTMLInputElement, React.ComponentProps<"i
 )
 PasswordInput.displayName = "PasswordInput"
 
-export { Input, PasswordInput }
+interface MaskedInputProps extends React.ComponentProps<"input"> {
+  maskType?: 'nik' | 'npwp' | 'bank' | 'phone' | 'email';
+}
+
+const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
+  ({ className, value, maskType, disabled, ...props }, ref) => {
+    const [revealed, setRevealed] = React.useState(false);
+
+    const getDisplayValue = () => {
+      if (revealed || !disabled || value === undefined || value === null) {
+        return value ?? '';
+      }
+      const str = String(value);
+      if (!str) return '';
+      switch (maskType) {
+        case 'nik':
+          return str.length < 10 ? str.replace(/.(?=.{2})/g, '*') : `${str.slice(0, 6)}******${str.slice(-4)}`;
+        case 'npwp':
+          return str.length < 8 ? str.replace(/.(?=.{2})/g, '*') : `${str.slice(0, 6)}******${str.slice(-3)}`;
+        case 'bank':
+          return str.length <= 6 ? str.replace(/.(?=.{2})/g, '•') : `${str.slice(0, 4)}••••${str.slice(-4)}`;
+        case 'phone':
+          return str.length <= 6 ? str.replace(/.(?=.{2})/g, '*') : `${str.slice(0, 4)}****${str.slice(-4)}`;
+        case 'email': {
+          const at = str.indexOf('@');
+          if (at <= 1) return str;
+          const u = str.slice(0, at);
+          const d = str.slice(at);
+          return u.length <= 2 ? `${u[0]}***${d}` : `${u[0]}***${u[u.length - 1]}${d}`;
+        }
+        default:
+          return str;
+      }
+    };
+
+    return (
+      <div className="relative w-full">
+        <Input
+          className={cn(disabled && value ? "pr-9" : "", className)}
+          value={getDisplayValue()}
+          disabled={disabled}
+          ref={ref}
+          {...props}
+        />
+        {disabled && value ? (
+          <button
+            type="button"
+            onClick={() => setRevealed(!revealed)}
+            title={revealed ? 'Sembunyikan data' : 'Tampilkan data lengkap'}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors focus:outline-none p-0.5"
+          >
+            {revealed ? (
+              <EyeOff className="size-3.5" />
+            ) : (
+              <Eye className="size-3.5" />
+            )}
+          </button>
+        ) : null}
+      </div>
+    );
+  }
+);
+MaskedInput.displayName = "MaskedInput";
+
+export { Input, PasswordInput, MaskedInput }
+

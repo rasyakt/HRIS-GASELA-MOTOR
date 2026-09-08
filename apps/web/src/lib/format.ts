@@ -167,3 +167,61 @@ export function badgeClass(status: string | null | undefined): string {
 }
 
 export const OFFICE_LOCATION = { lat: -6.914744, lng: 107.60981 };
+
+/** Sensor NIK (KTP): menampilkan 6 digit awal dan 4 digit akhir, contoh: 320101******0001 */
+export function maskNik(nik?: string | null): string {
+  if (!nik || typeof nik !== 'string') return '—';
+  const trimmed = nik.trim();
+  if (trimmed.length < 10) return trimmed.replace(/.(?=.{2})/g, '*');
+  const start = trimmed.slice(0, 6);
+  const end = trimmed.slice(-4);
+  return `${start}******${end}`;
+}
+
+/** Sensor NPWP: menampilkan digit awal dan akhir, contoh: 12.345.***.*-***.345 */
+export function maskNpwp(npwp?: string | null): string {
+  if (!npwp || typeof npwp !== 'string') return '—';
+  const trimmed = npwp.trim();
+  if (trimmed.length < 8) return trimmed.replace(/.(?=.{2})/g, '*');
+  if (trimmed.includes('.') || trimmed.includes('-')) {
+    const parts = trimmed.split(/[-.]/);
+    if (parts.length >= 4) {
+      return `${parts[0]}.${parts[1]}.***.*-***.${parts[parts.length - 1]}`;
+    }
+  }
+  const start = trimmed.slice(0, 6);
+  const end = trimmed.slice(-3);
+  return `${start}******${end}`;
+}
+
+/** Sensor Nomor Rekening Bank: menampilkan 4 digit depan dan 4 digit belakang */
+export function maskBankAccount(accountNumber?: string | null): string {
+  if (!accountNumber || typeof accountNumber !== 'string') return '—';
+  const trimmed = accountNumber.trim();
+  if (trimmed.length <= 6) return trimmed.replace(/.(?=.{2})/g, '•');
+  const start = trimmed.slice(0, 4);
+  const end = trimmed.slice(-4);
+  return `${start}••••${end}`;
+}
+
+/** Sensor Nomor Telepon: menampilkan 4 digit awal dan 4 digit akhir */
+export function maskPhone(phone?: string | null): string {
+  if (!phone || typeof phone !== 'string') return '—';
+  const trimmed = phone.trim();
+  if (trimmed.length <= 6) return trimmed.replace(/.(?=.{2})/g, '*');
+  const start = trimmed.slice(0, 4);
+  const end = trimmed.slice(-4);
+  return `${start}****${end}`;
+}
+
+/** Sensor Email: contoh rasya@gasela.com -> r***a@gasela.com */
+export function maskEmail(email?: string | null): string {
+  if (!email || typeof email !== 'string') return '—';
+  const trimmed = email.trim();
+  const atIndex = trimmed.indexOf('@');
+  if (atIndex <= 1) return trimmed;
+  const user = trimmed.slice(0, atIndex);
+  const domain = trimmed.slice(atIndex);
+  if (user.length <= 2) return `${user[0]}***${domain}`;
+  return `${user[0]}***${user[user.length - 1]}${domain}`;
+}

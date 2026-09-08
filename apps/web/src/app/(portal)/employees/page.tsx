@@ -7,7 +7,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Input, MaskedInput } from '@/components/ui/input';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
@@ -963,8 +963,9 @@ export default function EmployeesPage() {
                           </div>
                           <div>
                             <Label htmlFor="idCardNumber">Nomor KTP (16 Digit)</Label>
-                            <Input
+                            <MaskedInput
                               id="idCardNumber"
+                              maskType="nik"
                               inputMode="numeric"
                               maxLength={16}
                               disabled={!isEditMode}
@@ -1002,8 +1003,9 @@ export default function EmployeesPage() {
                             </div>
                             <div>
                               <Label htmlFor="emergencyContactPhone">Nomor Telepon</Label>
-                              <Input
+                              <MaskedInput
                                 id="emergencyContactPhone"
+                                maskType="phone"
                                 type="tel"
                                 inputMode="tel"
                                 disabled={!isEditMode}
@@ -1155,8 +1157,9 @@ export default function EmployeesPage() {
                           </div>
                           <div className="col-span-1">
                             <Label htmlFor="bankAccountNumber">Nomor Rekening</Label>
-                            <Input
+                            <MaskedInput
                               id="bankAccountNumber"
+                              maskType="bank"
                               inputMode="numeric"
                               disabled={!isEditMode}
                               value={formData.bankAccountNumber}
@@ -1179,8 +1182,9 @@ export default function EmployeesPage() {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="taxNumber">Nomor NPWP</Label>
-                            <Input
+                            <MaskedInput
                               id="taxNumber"
+                              maskType="npwp"
                               disabled={!isEditMode}
                               value={formData.taxNumber}
                               onChange={(e) => handleInputChange('taxNumber', e.target.value)}
