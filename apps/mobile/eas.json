@@ -5,10 +5,7 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "env": {
-        "EXPO_PUBLIC_API_URL": "http://10.169.180.16:3001"
-      }
+      "distribution": "internal"
     },
     "preview": {
       "distribution": "internal",
@@ -16,7 +13,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://gasela.my.id/api"
+        "EXPO_PUBLIC_API_URL": "http://localhost:8080"
       }
     },
     "production": {
@@ -24,7 +21,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://gasela.my.id/api"
+        "EXPO_PUBLIC_API_URL": "http://localhost:8080"
       }
     }
   },
