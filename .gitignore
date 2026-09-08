@@ -81,3 +81,5 @@ docs/~$*
 
 # kiro config
 .kiro/
+
+eas.json

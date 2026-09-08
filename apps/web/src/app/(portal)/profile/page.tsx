@@ -29,6 +29,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { badgeClass, fmtDate } from '@/lib/format';
 import { TwoFactorAuthCard } from '@/components/profile/TwoFactorAuthCard';
+import { MaskedField } from '@/components/ui/masked-field';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -191,14 +192,14 @@ export default function ProfilePage() {
                   <Label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500">Email Pribadi</Label>
                   <div className="mt-1 flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-zinc-100">
                     <Mail className="size-4 text-zinc-400 dark:text-zinc-500" />
-                    <span>{emp?.email ?? '—'}</span>
+                    <MaskedField value={emp?.email} type="email" allowCopy />
                   </div>
                 </div>
                 <div>
                   <Label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500">Nomor Telepon</Label>
                   <div className="mt-1 flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-zinc-100">
                     <Phone className="size-4 text-zinc-400 dark:text-zinc-500" />
-                    <span>{emp?.phone ?? '—'}</span>
+                    <MaskedField value={emp?.phone} type="phone" allowCopy />
                   </div>
                 </div>
                 <div>
@@ -210,11 +211,15 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <Label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500">Nomor KTP (ID Card)</Label>
-                  <p className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">{emp?.idCardNumber ?? '—'}</p>
+                  <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    <MaskedField value={emp?.idCardNumber} type="nik" allowCopy />
+                  </div>
                 </div>
                 <div>
                   <Label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500">NPWP (Nomor Pajak)</Label>
-                  <p className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">{emp?.taxNumber ?? '—'}</p>
+                  <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    <MaskedField value={emp?.taxNumber} type="npwp" allowCopy />
+                  </div>
                 </div>
                 <div className="sm:col-span-2">
                   <Label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500">Alamat Domisili</Label>
@@ -282,9 +287,9 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <Label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500">Nomor Rekening</Label>
-                    <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 tracking-wider">
-                      {emp?.bankAccountNumber ?? '—'}
-                    </p>
+                    <div className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                      <MaskedField value={emp?.bankAccountNumber} type="bank" allowCopy textClassName="tracking-wider font-bold" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>

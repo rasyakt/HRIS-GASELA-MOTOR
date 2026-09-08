@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Modal,
   StyleSheet,
@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../theme/ThemeProvider';
-import { fmtDate } from '../../lib/format';
+import { fmtDate, maskNik, maskNpwp, maskBankAccount, maskPhone, maskEmail } from '../../lib/format';
 import { Card, CardContent } from '../../components/Card';
 import { ListItem } from '../../components/ListItem';
 import { Badge } from '../../components/Badge';
@@ -22,6 +22,11 @@ interface EmployeeDetailModalProps {
 
 export function EmployeeDetailModal({ visible, onClose, emp }: EmployeeDetailModalProps) {
   const { tokens } = useTheme();
+  const [showKtp, setShowKtp] = useState(false);
+  const [showNpwp, setShowNpwp] = useState(false);
+  const [showBank, setShowBank] = useState(false);
+  const [showPhone, setShowPhone] = useState(false);
+  const [showEmail, setShowEmail] = useState(false);
 
   if (!visible) return null;
 
@@ -64,12 +69,40 @@ export function EmployeeDetailModal({ visible, onClose, emp }: EmployeeDetailMod
                   <ListItem
                     icon="document-text-outline"
                     title="Nomor KTP"
-                    trailing={<Text style={{ color: tokens.colors.textSecondary }}>{emp?.idCardNumber ?? '—'}</Text>}
+                    onPress={() => setShowKtp(!showKtp)}
+                    trailing={
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={{ color: tokens.colors.textSecondary }}>
+                          {showKtp ? (emp?.idCardNumber ?? '—') : maskNik(emp?.idCardNumber)}
+                        </Text>
+                        {emp?.idCardNumber && (
+                          <Ionicons
+                            name={showKtp ? 'eye-off-outline' : 'eye-outline'}
+                            size={16}
+                            color={tokens.colors.textSecondary}
+                          />
+                        )}
+                      </View>
+                    }
                   />
                   <ListItem
                     icon="receipt-outline"
                     title="NPWP"
-                    trailing={<Text style={{ color: tokens.colors.textSecondary }}>{emp?.taxNumber ?? '—'}</Text>}
+                    onPress={() => setShowNpwp(!showNpwp)}
+                    trailing={
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={{ color: tokens.colors.textSecondary }}>
+                          {showNpwp ? (emp?.taxNumber ?? '—') : maskNpwp(emp?.taxNumber)}
+                        </Text>
+                        {emp?.taxNumber && (
+                          <Ionicons
+                            name={showNpwp ? 'eye-off-outline' : 'eye-outline'}
+                            size={16}
+                            color={tokens.colors.textSecondary}
+                          />
+                        )}
+                      </View>
+                    }
                   />
                   <ListItem
                     icon="calendar-outline"
@@ -159,12 +192,40 @@ export function EmployeeDetailModal({ visible, onClose, emp }: EmployeeDetailMod
                   <ListItem
                     icon="mail-outline"
                     title="Email"
-                    trailing={<Text style={{ color: tokens.colors.textSecondary }}>{emp?.email ?? '—'}</Text>}
+                    onPress={() => setShowEmail(!showEmail)}
+                    trailing={
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={{ color: tokens.colors.textSecondary }}>
+                          {showEmail ? (emp?.email ?? '—') : maskEmail(emp?.email)}
+                        </Text>
+                        {emp?.email && (
+                          <Ionicons
+                            name={showEmail ? 'eye-off-outline' : 'eye-outline'}
+                            size={16}
+                            color={tokens.colors.textSecondary}
+                          />
+                        )}
+                      </View>
+                    }
                   />
                   <ListItem
                     icon="call-outline"
                     title="Nomor Telepon"
-                    trailing={<Text style={{ color: tokens.colors.textSecondary }}>{emp?.phone ?? '—'}</Text>}
+                    onPress={() => setShowPhone(!showPhone)}
+                    trailing={
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={{ color: tokens.colors.textSecondary }}>
+                          {showPhone ? (emp?.phone ?? '—') : maskPhone(emp?.phone)}
+                        </Text>
+                        {emp?.phone && (
+                          <Ionicons
+                            name={showPhone ? 'eye-off-outline' : 'eye-outline'}
+                            size={16}
+                            color={tokens.colors.textSecondary}
+                          />
+                        )}
+                      </View>
+                    }
                     hasDivider={false}
                   />
                 </CardContent>
@@ -191,10 +252,20 @@ export function EmployeeDetailModal({ visible, onClose, emp }: EmployeeDetailMod
                   <ListItem
                     icon="card-outline"
                     title="Nomor Rekening"
+                    onPress={() => setShowBank(!showBank)}
                     trailing={
-                      <Text style={{ color: tokens.colors.textPrimary, fontWeight: '700', letterSpacing: 0.5 }}>
-                        {emp?.bankAccountNumber ?? '—'}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={{ color: tokens.colors.textPrimary, fontWeight: '700', letterSpacing: 0.5 }}>
+                          {showBank ? (emp?.bankAccountNumber ?? '—') : maskBankAccount(emp?.bankAccountNumber)}
+                        </Text>
+                        {emp?.bankAccountNumber && (
+                          <Ionicons
+                            name={showBank ? 'eye-off-outline' : 'eye-outline'}
+                            size={16}
+                            color={tokens.colors.primary}
+                          />
+                        )}
+                      </View>
                     }
                     hasDivider={false}
                   />

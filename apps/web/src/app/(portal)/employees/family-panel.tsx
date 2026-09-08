@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useAuthApi } from '@/lib/auth-api';
+import { MaskedField } from '@/components/ui/masked-field';
 
 interface FamilyMember {
   id: number;
@@ -271,7 +272,10 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
                   </Badge>
                 </div>
                 {member.idCardNumber && (
-                  <p className="text-xs text-zinc-500 font-mono">NIK: {member.idCardNumber}</p>
+                  <div className="text-xs text-zinc-500 flex items-center gap-1.5 font-mono">
+                    <span>NIK:</span>
+                    <MaskedField value={member.idCardNumber} type="nik" allowCopy />
+                  </div>
                 )}
                 <div className="flex items-center gap-2 pt-1">
                   {member.isBpjsDependent ? (
