@@ -157,23 +157,74 @@ UNIT_DETAILS['makaroni'] = UNIT_DETAILS['makaronikantawes'];
 // Next.js Config
 // ─────────────────────────────────────────────────────────────
 
+// Per-unit SEO keywords dictionary
+const UNIT_KEYWORDS: Record<string, string[]> = {
+  motor: [
+    'DN Gasela Motor', 'Gasela Motor', 'bengkel Gasela',
+    'bengkel mobil ciamis', 'bengkel mobil cikoneng', 'bengkel ciamis',
+    'servis mobil ciamis', 'cuci steam ciamis', 'cuci steam cikoneng',
+    'cuci mobil ciamis', 'steam mobil ciamis', 'salon mobil ciamis',
+    'spooring ciamis', 'balancing ciamis', 'tune up ciamis',
+    'sparepart mobil ciamis', 'suku cadang mobil ciamis',
+    'otomotif cikoneng', 'otomotif ciamis', 'service kendaraan ciamis',
+    'bengkel terlengkap ciamis', 'pusat otomotif cikoneng',
+    'CV GASELA', 'Gasela Group', 'Cikoneng', 'Ciamis', 'Jawa Barat',
+  ],
+  futsal: [
+    'DN Gasela Futsal', 'Gasela Futsal Stadium', 'futsal Gasela',
+    'lapangan futsal ciamis', 'lapangan futsal cikoneng',
+    'sewa lapangan futsal ciamis', 'booking futsal ciamis',
+    'futsal ciamis', 'GOR futsal ciamis', 'futsal cikoneng',
+    'futsal Priangan Timur', 'futsal premium ciamis',
+    'stadium futsal ciamis', 'lapangan futsal bagus ciamis',
+    'lapangan futsal terdekat ciamis', 'rumput sintetis supergrass',
+    'CV GASELA', 'Gasela Group', 'Cikoneng', 'Ciamis', 'Jawa Barat',
+  ],
+  sellular: [
+    'DN Gasela Sellular', 'Gasela Plastik', 'toko plastik ciamis',
+    'toko plastik cikoneng', 'distributor plastik ciamis',
+    'plastik kemasan ciamis', 'plastik kemasan cikoneng',
+    'voucher pulsa cikoneng', 'voucher seluler ciamis',
+    'cetak foto cikoneng', 'fotocopy cikoneng', 'atk cikoneng',
+    'alat tulis kantor ciamis', 'laminating cikoneng',
+    'bahan kerupuk babanggi', 'bumbu industri pangan ciamis',
+    'grosir plastik ciamis', 'supplier plastik cikoneng',
+    'CV GASELA', 'Gasela Group', 'Cikoneng', 'Ciamis', 'Jawa Barat',
+  ],
+  makaronikantawes: [
+    'Makaroni Cap Ikan Tawes', 'Makaroni Spesial Cap Ikan Tawes',
+    'Makroni Ikan Tawes', 'makaroni cap ikan tawes',
+    'Makaroni Ikan Tawes Ciamis', 'makaroni goreng ciamis',
+    'camilan ciamis', 'camilan khas ciamis', 'snack cikoneng',
+    'oleh-oleh ciamis', 'oleh oleh cikoneng',
+    'makanan ringan ciamis', 'kerupuk ciamis',
+    'makaroni goreng khas cikoneng', 'jajan ciamis',
+    'produk UMKM ciamis', 'KUKM berprestasi Jawa Barat',
+    'industri pangan cikoneng', 'pabrik makaroni ciamis',
+    'CV GASELA', 'Gasela Group', 'Cikoneng', 'Ciamis', 'Jawa Barat',
+  ],
+  makaroni: [
+    'Makaroni Cap Ikan Tawes', 'makaroni cap ikan tawes',
+    'makaroni goreng ciamis', 'camilan ciamis', 'snack cikoneng',
+    'oleh-oleh ciamis', 'CV GASELA', 'Cikoneng', 'Ciamis',
+  ],
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const unit = UNIT_DETAILS[id];
   if (!unit) return { title: 'Lini Bisnis tidak ditemukan' };
 
-  const canonicalUrl = `https://gasela.my.id/landing/unit/${id}`;
+  const canonicalId = id === 'makaroni' ? 'makaronikantawes' : id;
+  const canonicalUrl = `https://gasela.my.id/landing/unit/${canonicalId}`;
+  const unitKeywords = UNIT_KEYWORDS[id] ?? [];
+  const descSnippet = unit.description.slice(0, 150);
 
   return {
-    title: `${unit.name} — ${unit.tagline} | CV GASELA GROUP`,
-    description: `${unit.description.slice(0, 160)}... Hubungi ${unit.phone} atau kunjungi lokasi kami di Cikoneng, Ciamis.`,
+    title: `${unit.name} — ${unit.tagline} | CV GASELA GROUP Cikoneng, Ciamis`,
+    description: `${descSnippet}... Hubungi ${unit.phone} atau kunjungi kami di ${unit.location.slice(0, 60)}...`,
     keywords: [
-      unit.name,
-      unit.tagline,
-      'CV GASELA',
-      'Cikoneng',
-      'Ciamis',
-      'Jawa Barat',
+      ...unitKeywords,
       ...(unit.features || []),
       ...(unit.menus || []),
     ],
@@ -181,8 +232,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${unit.name} — CV GASELA GROUP`,
-      description: `${unit.tagline} — ${unit.description.slice(0, 150)}...`,
+      title: `${unit.name} — CV GASELA GROUP Cikoneng, Ciamis`,
+      description: `${unit.tagline} — ${descSnippet}...`,
       url: canonicalUrl,
       siteName: 'CV GASELA GROUP',
       images: [
@@ -190,20 +241,21 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
           url: unit.image,
           width: 1200,
           height: 630,
-          alt: `${unit.name} Cikoneng Ciamis`,
+          alt: `${unit.name} — CV GASELA GROUP Cikoneng, Ciamis, Jawa Barat`,
         },
       ],
-      type: 'article',
+      type: 'website',
       locale: 'id_ID',
     },
     twitter: {
       card: 'summary_large_image',
       title: `${unit.name} — CV GASELA GROUP`,
-      description: unit.tagline,
+      description: `${unit.tagline} di Cikoneng, Ciamis. ${descSnippet.slice(0, 80)}...`,
       images: [unit.image],
     },
   };
 }
+
 
 export async function generateStaticParams() {
   return [{ id: 'futsal' }, { id: 'motor' }, { id: 'sellular' }, { id: 'makaronikantawes' }, { id: 'makaroni' }];
