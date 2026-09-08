@@ -17,6 +17,7 @@ import {
 } from './themes';
 import api from '../services/api-client';
 import { storage } from '../services/storage';
+import * as SecureStore from 'expo-secure-store';
 
 export const THEME_PREF_KEY = 'app-theme-preference';
 export const PORTAL_THEME_CACHE_KEY = 'cached-portal-theme-config';
@@ -86,14 +87,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // 4. Load persisted theme preference on mount
   useEffect(() => {
-    try {
-      const stored = storage.getString(THEME_PREF_KEY) as ThemePreference;
-      if (stored) {
-        setPreferenceState(stored);
+    async function loadThemePref() {
+      try {
+        const storedSync = storage.getString(THEME_PREF_KEY) as ThemePreference;
+        if (storedSync && (storedSync === 'light' || storedSync === 'dark' || storedSync === 'system')) {
+          setPreferenceState(storedSync);
+        }
+        const storedAsync = await SecureStore.getItemAsync(THEME_PREF_KEY);
+        if (storedAsync && (storedAsync === 'light' || storedAsync === 'dark' || storedAsync === 'system')) {
+          setPreferenceState(storedAsync as ThemePreference);
+          storage.set(THEME_PREF_KEY, storedAsync);
+        }
+      } catch (e) {
+        console.warn('Failed to load theme preference', e);
       }
-    } catch (e) {
-      console.warn('Failed to load theme preference', e);
     }
+    loadThemePref();
   }, []);
 
   const activeTheme: ThemeType =
@@ -121,6 +130,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setPreferenceState(newPreference);
     try {
       storage.set(THEME_PREF_KEY, newPreference);
+      SecureStore.setItemAsync(THEME_PREF_KEY, newPreference).catch(() => {});
     } catch {}
   };
 

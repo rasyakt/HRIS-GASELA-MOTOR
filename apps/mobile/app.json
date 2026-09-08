@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Gasela HRIS",
+    "name": "GaselaPulse",
     "slug": "gasela-hris",
     "version": "0.1.0",
     "runtimeVersion": {
@@ -23,7 +23,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#18181b"
     },
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "scheme": "gaselahris",
     "ios": {
       "supportsTablet": true,
@@ -35,7 +35,7 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Lokasi digunakan untuk validasi check-in/check-out kantor",
         "NSCameraUsageDescription": "Kamera digunakan untuk foto check-in/check-out",
-        "NSFaceIDUsageDescription": "Face ID digunakan untuk verifikasi identitas saat melakukan presensi check-in dan check-out."
+        "NSFaceIDUsageDescription": "Face ID digunakan untuk verifikasi identitas saat melakukan presensi di GaselaPulse."
       }
     },
     "android": {
@@ -73,7 +73,7 @@
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "Izinkan Gasela HRIS menggunakan Face ID untuk verifikasi kehadiran."
+          "faceIDPermission": "Izinkan GaselaPulse menggunakan Face ID untuk verifikasi kehadiran."
         }
       ],
       [

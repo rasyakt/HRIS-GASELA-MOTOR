@@ -1,8 +1,31 @@
 import type { AuthUser } from '@gasela/shared-types';
 import * as SecureStore from 'expo-secure-store';
 
-class InMemoryMMKV {
+class PersistentSecureMMKV {
   private map = new Map<string, any>();
+
+  constructor() {
+    this.preload();
+  }
+
+  private async preload() {
+    const keys = [
+      'app-theme-preference',
+      'cached-portal-theme-config',
+      'access_token',
+      'refresh_token',
+      'token_expires_at',
+      'user',
+    ];
+    for (const key of keys) {
+      try {
+        const val = await SecureStore.getItemAsync(key);
+        if (val !== null && val !== undefined) {
+          this.map.set(key, val);
+        }
+      } catch {}
+    }
+  }
 
   getString(key: string): string | undefined {
     const val = this.map.get(key);
@@ -11,20 +34,31 @@ class InMemoryMMKV {
 
   getNumber(key: string): number {
     const val = this.map.get(key);
-    return typeof val === 'number' ? val : 0;
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const num = Number(val);
+      return isNaN(num) ? 0 : num;
+    }
+    return 0;
   }
 
   set(key: string, value: string | number | boolean) {
-    this.map.set(key, value);
+    const strVal = String(value);
+    this.map.set(key, strVal);
+    try {
+      SecureStore.setItemAsync(key, strVal).catch(() => {});
+    } catch {}
   }
 
   remove(key: string) {
     this.map.delete(key);
+    try {
+      SecureStore.deleteItemAsync(key).catch(() => {});
+    } catch {}
   }
 }
 
-let storageInstance: any = new InMemoryMMKV();
-console.log('Using in-memory storage fallback because react-native-mmkv v4 requires NitroModules, which is not supported in Expo Go.');
+let storageInstance: any = new PersistentSecureMMKV();
 
 export const storage = storageInstance;
 

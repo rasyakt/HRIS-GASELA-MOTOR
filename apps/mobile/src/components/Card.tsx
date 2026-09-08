@@ -25,6 +25,7 @@ export interface CardHeaderProps {
 export interface CardContentProps {
   children: React.ReactNode;
   noPadding?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 export interface CardFooterProps {
@@ -134,8 +135,8 @@ export function CardHeader({ icon, title, action, hasDivider = false }: CardHead
   );
 }
 
-export function CardContent({ children, noPadding = false }: CardContentProps) {
-  return <View style={[styles.content, noPadding && styles.noPadding]}>{children}</View>;
+export function CardContent({ children, noPadding = false, style }: CardContentProps) {
+  return <View style={[styles.content, noPadding && styles.noPadding, style]}>{children}</View>;
 }
 
 export function CardFooter({ children, hasDivider = false }: CardFooterProps) {

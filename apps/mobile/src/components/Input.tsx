@@ -72,8 +72,8 @@ export function Input({
   const labelAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
-        { translateY: floatAnim.value * -12 },
-        { scale: 1 - floatAnim.value * 0.15 }, // scale down to 0.85
+        { translateY: floatAnim.value * -13 },
+        { scale: 1 - floatAnim.value * 0.18 }, // scale down to 0.82
       ],
       color: error
         ? tokens.colors.error
@@ -95,6 +95,7 @@ export function Input({
         );
     return {
       borderColor,
+      borderWidth: focusAnim.value > 0.5 ? 1.5 : 1,
     };
   });
 
@@ -112,7 +113,7 @@ export function Input({
         style={[
           styles.inputContainer,
           {
-            borderRadius: tokens.borderRadius.md,
+            borderRadius: tokens.borderRadius.base,
             backgroundColor: tokens.colors.surface,
           },
           borderAnimatedStyle,
@@ -123,7 +124,7 @@ export function Input({
           <Ionicons
             name={prefixIcon}
             size={20}
-            color={tokens.colors.textTertiary}
+            color={isFocused ? tokens.colors.primary : tokens.colors.textTertiary}
             style={styles.prefixIcon}
           />
         )}
@@ -206,7 +207,7 @@ export function Input({
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 8,
+    marginVertical: 4,
     width: '100%',
   },
   inputContainer: {
@@ -214,7 +215,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     height: 56, // Fixed height to prevent infinite stretch on Android
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
   },
   inputWrapper: {
     flex: 1,
@@ -225,7 +226,7 @@ const styles = StyleSheet.create({
   label: {
     position: 'absolute',
     left: 0,
-    top: 14,
+    top: 15,
   },
   input: {
     flex: 1,
@@ -234,11 +235,11 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   prefixIcon: {
-    marginRight: 8,
+    marginRight: 10,
   },
   suffixIcon: {
     marginLeft: 8,
-    padding: 4,
+    padding: 6,
   },
   footer: {
     flexDirection: 'row',

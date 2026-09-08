@@ -27,6 +27,7 @@ export interface ButtonProps {
   children: string | React.ReactNode;
   style?: StyleProp<ViewStyle>;
   fullWidth?: boolean;
+  gradientColors?: readonly [string, string, ...string[]];
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -42,6 +43,7 @@ export function Button({
   children,
   style,
   fullWidth = false,
+  gradientColors,
 }: ButtonProps) {
   const { tokens } = useTheme();
   const isPressed = useSharedValue(false);
@@ -134,6 +136,9 @@ export function Button({
     </View>
   );
 
+  const flatStyle = StyleSheet.flatten(style);
+  const currentBorderRadius = flatStyle?.borderRadius ?? tokens.borderRadius.base;
+
   const buttonStyle = [
     styles.button,
     {
@@ -141,7 +146,7 @@ export function Button({
       backgroundColor,
       borderColor,
       borderWidth: variant === 'outline' ? 1 : 0,
-      borderRadius: tokens.borderRadius.base,
+      borderRadius: currentBorderRadius,
       opacity: disabled ? 0.5 : 1,
       minWidth: fullWidth ? '100%' : undefined,
     },
@@ -166,8 +171,8 @@ export function Button({
       <Animated.View style={[styles.inner, animatedStyle]}>
         {variant === 'gradient' && (
           <LinearGradient
-            colors={tokens.gradients.primary as [string, string, ...string[]]}
-            style={[StyleSheet.absoluteFill, { borderRadius: tokens.borderRadius.base }]}
+            colors={(gradientColors || tokens.gradients.primary) as [string, string, ...string[]]}
+            style={[StyleSheet.absoluteFill, { borderRadius: currentBorderRadius }]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           />
@@ -183,7 +188,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     overflow: 'hidden', // to contain gradient
   },
   inner: {
@@ -198,6 +203,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 16,
     zIndex: 1,
   },
   text: {

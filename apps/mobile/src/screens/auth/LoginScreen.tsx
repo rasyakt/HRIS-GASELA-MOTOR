@@ -212,8 +212,8 @@ export function LoginScreen() {
         </Animated.View>
 
         <Animated.View style={[styles.formWrapper, animatedFormStyle]}>
-          <Card variant="elevated" elevation="lg">
-            <CardContent>
+          <Card variant="elevated" elevation="lg" style={styles.loginCard}>
+            <CardContent style={styles.cardContent}>
               {error && (
                 <ErrorBanner 
                   description={error} 
@@ -245,7 +245,6 @@ export function LoginScreen() {
                 importantForAutofill="yes"
                 prefixIcon="person-outline"
                 containerStyle={styles.inputSpacing}
-                required
                 onFocus={() => {
                   setTimeout(() => {
                     scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -264,7 +263,6 @@ export function LoginScreen() {
                 importantForAutofill="yes"
                 prefixIcon="lock-closed-outline"
                 containerStyle={styles.inputSpacing}
-                required
                 onFocus={() => {
                   setTimeout(() => {
                     scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -276,12 +274,19 @@ export function LoginScreen() {
                 <Pressable
                   onPress={() => setRememberMe(!rememberMe)}
                   style={styles.checkboxContainer}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Ionicons
-                    name={rememberMe ? 'checkbox' : 'square-outline'}
-                    size={20}
-                    color={rememberMe ? tokens.colors.primary : tokens.colors.textTertiary}
-                  />
+                  <View
+                    style={[
+                      styles.customCheckbox,
+                      {
+                        borderColor: rememberMe ? tokens.colors.primary : tokens.colors.border,
+                        backgroundColor: rememberMe ? tokens.colors.primary : 'transparent',
+                      },
+                    ]}
+                  >
+                    {rememberMe && <Ionicons name="checkmark" size={13} color="#ffffff" />}
+                  </View>
                   <Text style={[styles.rememberMeText, { color: tokens.colors.textSecondary }]}>
                     Ingat Saya
                   </Text>
@@ -290,6 +295,7 @@ export function LoginScreen() {
               
               <Button 
                 variant="gradient"
+                gradientColors={['#10B981', '#059669']}
                 onPress={handleLogin} 
                 loading={loading}
                 fullWidth
@@ -340,24 +346,40 @@ const styles = StyleSheet.create({
   formWrapper: {
     width: '100%',
   },
+  loginCard: {
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  cardContent: {
+    padding: 22,
+  },
   inputSpacing: {
-    marginBottom: 16,
+    marginVertical: 0,
+    marginBottom: 14,
   },
   rememberMeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
-    marginTop: -4,
+    marginBottom: 22,
+    marginTop: 4,
     paddingHorizontal: 2,
   },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  customCheckbox: {
+    width: 19,
+    height: 19,
+    borderRadius: 5,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
   rememberMeText: {
     fontSize: 14,
-    marginLeft: 8,
     fontWeight: '500',
   },
   savedAccountBanner: {
@@ -383,6 +405,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   loginButton: {
-    marginTop: 8,
+    borderRadius: 14,
+    marginTop: 4,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
 });
