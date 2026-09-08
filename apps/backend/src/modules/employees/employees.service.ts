@@ -34,6 +34,15 @@ import type {
   UpdateFamilyMemberInput,
 } from './dto/employee.dto';
 
+function normalizeIndonesianPhone(phone?: string | null): string | null {
+  if (!phone || typeof phone !== 'string') return null;
+  let str = phone.trim().replace(/[^\d+]/g, '');
+  if (str.startsWith('+62')) str = str.slice(3);
+  else if (str.startsWith('62')) str = str.slice(2);
+  while (str.startsWith('0')) str = str.slice(1);
+  return str ? `+62${str}` : null;
+}
+
 @Injectable()
 export class EmployeesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -193,6 +202,8 @@ export class EmployeesService {
       birthDate,
       joinDate,
       permanentDate,
+      phone,
+      emergencyContactPhone,
       ...restInput
     } = input;
 
@@ -213,6 +224,8 @@ export class EmployeesService {
     return this.prisma.employee.create({
       data: {
         ...restInput,
+        phone: normalizeIndonesianPhone(phone),
+        emergencyContactPhone: normalizeIndonesianPhone(emergencyContactPhone),
         basicSalary: String(basicSalary),
         birthDate: birthDate ? new Date(birthDate) : null,
         joinDate: new Date(joinDate),
@@ -318,6 +331,8 @@ export class EmployeesService {
       birthDate: _bd,
       joinDate: _jd,
       permanentDate: _pd,
+      phone,
+      emergencyContactPhone,
       ...restInput
     } = input;
 
@@ -325,6 +340,12 @@ export class EmployeesService {
       where: { id },
       data: {
         ...restInput,
+        ...(input.phone !== undefined && {
+          phone: normalizeIndonesianPhone(phone),
+        }),
+        ...(input.emergencyContactPhone !== undefined && {
+          emergencyContactPhone: normalizeIndonesianPhone(emergencyContactPhone),
+        }),
         ...(basicSalary !== undefined && {
           basicSalary: String(basicSalary),
         }),

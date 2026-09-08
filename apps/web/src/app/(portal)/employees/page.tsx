@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input, MaskedInput } from '@/components/ui/input';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
@@ -382,14 +383,14 @@ export default function EmployeesPage() {
     if (formData.phone.trim()) {
       const cleanPhone = formData.phone.trim();
       if (!/^(?:\+62|62|0)[0-9\- ]{7,18}$/.test(cleanPhone)) {
-        return setFormError('Nomor telepon tidak valid (contoh: 081234567890)');
+        return setFormError('Nomor telepon tidak valid (contoh: 81234567890)');
       }
     }
 
     if (formData.emergencyContactPhone.trim()) {
       const cleanEmerg = formData.emergencyContactPhone.trim();
       if (!/^(?:\+62|62|0)[0-9\- ]{7,18}$/.test(cleanEmerg)) {
-        return setFormError('Nomor telepon kontak darurat tidak valid (contoh: 081234567890)');
+        return setFormError('Nomor telepon kontak darurat tidak valid (contoh: 81234567890)');
       }
     }
 
@@ -937,14 +938,12 @@ export default function EmployeesPage() {
                           </div>
                           <div>
                             <Label htmlFor="phone">Nomor Telepon</Label>
-                            <Input
+                            <PhoneInput
                               id="phone"
-                              type="tel"
-                              inputMode="tel"
                               disabled={!isEditMode}
                               value={formData.phone}
-                              onChange={(e) => handleInputChange('phone', e.target.value.replace(/[^0-9+\-\s]/g, ''))}
-                              placeholder="081234567890"
+                              onChange={(val) => handleInputChange('phone', val)}
+                              placeholder="81234567890"
                             />
                           </div>
                         </div>
@@ -1003,15 +1002,13 @@ export default function EmployeesPage() {
                             </div>
                             <div>
                               <Label htmlFor="emergencyContactPhone">Nomor Telepon</Label>
-                              <MaskedInput
+                              <PhoneInput
                                 id="emergencyContactPhone"
                                 maskType="phone"
-                                type="tel"
-                                inputMode="tel"
                                 disabled={!isEditMode}
                                 value={formData.emergencyContactPhone}
-                                onChange={(e) => handleInputChange('emergencyContactPhone', e.target.value.replace(/[^0-9+\-\s]/g, ''))}
-                                placeholder="081234567890"
+                                onChange={(val) => handleInputChange('emergencyContactPhone', val)}
+                                placeholder="81234567890"
                               />
                             </div>
                           </div>

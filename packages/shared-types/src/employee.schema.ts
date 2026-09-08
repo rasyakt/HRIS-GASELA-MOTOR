@@ -19,8 +19,8 @@ const phoneString = z
   .string()
   .max(20)
   .refine(
-    (val) => !val || /^(?:\+62|62|0)[0-9\- ]{7,18}$/.test(val.trim()),
-    { message: 'Format nomor telepon tidak valid (contoh: 081234567890)' }
+    (val) => !val || /^(?:\+62|62|0)?[0-9\- ]{7,18}$/.test(val.trim()),
+    { message: 'Format nomor telepon tidak valid (contoh: 81234567890 atau +6281234567890)' }
   );
 
 const idCardString = z

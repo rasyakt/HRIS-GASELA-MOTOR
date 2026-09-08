@@ -712,10 +712,18 @@ export class EmployeeImportService {
       }
 
       // Opsional: Nomor Telepon
-      const phone = getVal(row, 'nomor telepon', 'telepon', 'phone', 'no hp');
-      if (phone && !/^(?:\+62|62|0)[0-9\- ]{7,18}$/.test(phone)) {
-        errors.push({ row: rowNumber, employeeNumber, fullName, field: 'Nomor Telepon', message: `Format nomor telepon '${phone}' tidak valid.` });
-        continue;
+      const rawPhone = getVal(row, 'nomor telepon', 'telepon', 'phone', 'no hp');
+      let phone: string | null = null;
+      if (rawPhone) {
+        if (!/^(?:\+62|62|0)?[0-9\- ]{7,18}$/.test(rawPhone.trim())) {
+          errors.push({ row: rowNumber, employeeNumber, fullName, field: 'Nomor Telepon', message: `Format nomor telepon '${rawPhone}' tidak valid.` });
+          continue;
+        }
+        let clean = rawPhone.trim().replace(/[^\d+]/g, '');
+        if (clean.startsWith('+62')) clean = clean.slice(3);
+        else if (clean.startsWith('62')) clean = clean.slice(2);
+        while (clean.startsWith('0')) clean = clean.slice(1);
+        phone = clean ? `+62${clean}` : null;
       }
 
       // Opsional: Tanggal Lahir
