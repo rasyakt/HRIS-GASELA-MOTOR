@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  BookOpen,
   Building2,
   CalendarDays,
   CalendarPlus,
@@ -9,6 +10,7 @@ import {
   Clock,
   Crosshair,
   ExternalLink,
+  FileText,
   Loader2,
   MapPin,
   MoreHorizontal,
@@ -274,6 +276,123 @@ function BpjsSettingForm({
               <span className="absolute right-2.5 top-2 text-xs text-zinc-400 font-bold pointer-events-none">%</span>
             </div>
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Standar resmi: 0.3%</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Official Government Regulation Reference Box */}
+      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4">
+        <div className="rounded-lg bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-800/40 p-3.5 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BookOpen className="size-4 text-emerald-700 dark:text-emerald-400" />
+              <h5 className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                Dasar Hukum &amp; Referensi Dokumen Resmi Pemerintah
+              </h5>
+            </div>
+            <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/50 px-2 py-0.5 rounded-full">
+              Sesuai Regulasi Berlaku
+            </span>
+          </div>
+          <p className="text-[11px] text-zinc-600 dark:text-zinc-300 leading-relaxed">
+            Seluruh persentase iuran dan batas upah standar di atas mengacu pada regulasi ketenagakerjaan resmi Republik Indonesia:
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2 pt-1 text-[11px]">
+            <div className="flex items-start gap-2 bg-white/80 dark:bg-zinc-900/70 p-2.5 rounded-md border border-emerald-100 dark:border-zinc-800">
+              <FileText className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100 block">BPJS Kesehatan (Iuran 5% &amp; Cap Rp 12 Jt)</span>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  Perpres No. 82/2018 jo. Perpres No. 64/2020 &amp; Perpres No. 59/2024 (Pasal 30 &amp; 32)
+                </p>
+                <div className="flex items-center gap-2 pt-1">
+                  <a
+                    href="https://peraturan.bpk.go.id/Details/136650/perpres-no-64-tahun-2020"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-400 hover:underline font-medium"
+                  >
+                    Dokumen JDIH BPK <ExternalLink className="size-2.5" />
+                  </a>
+                  <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                  <a
+                    href="https://bpjs-kesehatan.go.id"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-400 hover:underline font-medium"
+                  >
+                    Portal Resmi BPJS Kes <ExternalLink className="size-2.5" />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2 bg-white/80 dark:bg-zinc-900/70 p-2.5 rounded-md border border-emerald-100 dark:border-zinc-800">
+              <FileText className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100 block">BPJS Ketenagakerjaan (JHT, JKK, JKM)</span>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  PP No. 44/2015 (JKK &amp; JKM) jo. PP No. 46/2015 (JHT 5.7%)
+                </p>
+                <div className="flex items-center gap-2 pt-1 flex-wrap">
+                  <a
+                    href="https://peraturan.bpk.go.id/Details/5614/pp-no-46-tahun-2015"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-400 hover:underline font-medium"
+                  >
+                    PP 46/2015 (JHT) <ExternalLink className="size-2.5" />
+                  </a>
+                  <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                  <a
+                    href="https://peraturan.bpk.go.id/Details/5612/pp-no-44-tahun-2015"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-400 hover:underline font-medium"
+                  >
+                    PP 44/2015 (JKK/JKM) <ExternalLink className="size-2.5" />
+                  </a>
+                  <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                  <a
+                    href="https://www.bpjsketenagakerjaan.go.id"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-400 hover:underline font-medium"
+                  >
+                    Portal BPJS TK <ExternalLink className="size-2.5" />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2 bg-white/80 dark:bg-zinc-900/70 p-2.5 rounded-md border border-emerald-100 dark:border-zinc-800 sm:col-span-2">
+              <FileText className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100 block">Jaminan Pensiun / JP (Tarif 3% &amp; Batas Upah Rp 10.547.400)</span>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  PP No. 45/2015 (Pasal 28 &amp; 29) jo. Surat Edaran/Pengumuman Resmi Penyesuaian Batas Upah JP 2024
+                </p>
+                <div className="flex items-center gap-2 pt-1">
+                  <a
+                    href="https://peraturan.bpk.go.id/Details/5613/pp-no-45-tahun-2015"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-400 hover:underline font-medium"
+                  >
+                    Dokumen PP 45/2015 (JDIH BPK) <ExternalLink className="size-2.5" />
+                  </a>
+                  <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                  <a
+                    href="https://www.bpjsketenagakerjaan.go.id"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-400 hover:underline font-medium"
+                  >
+                    Portal Resmi BPJS Ketenagakerjaan <ExternalLink className="size-2.5" />
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
