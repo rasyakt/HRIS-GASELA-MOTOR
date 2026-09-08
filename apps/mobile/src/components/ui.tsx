@@ -28,6 +28,7 @@ LocaleConfig.locales['id'] = {
 LocaleConfig.defaultLocale = 'id';
 
 import { useTheme } from '../theme/ThemeProvider';
+import { getContrastForeground } from '../theme/themes';
 
 type ButtonVariant = 'primary' | 'outline' | 'destructive' | 'ghost';
 
@@ -71,7 +72,7 @@ export function Button({
   const getTextColor = () => {
     switch (variant) {
       case 'primary':
-        return tokens.colors.surface;
+        return getContrastForeground(tokens.colors.primary);
       case 'destructive':
         return tokens.colors.error;
       case 'outline':
@@ -79,7 +80,7 @@ export function Button({
       case 'ghost':
         return tokens.colors.primary;
       default:
-        return tokens.colors.surface;
+        return getContrastForeground(tokens.colors.primary);
     }
   };
 
@@ -287,12 +288,12 @@ export function DateField({
                   calendarBackground: tokens.colors.surface,
                   textSectionTitleColor: tokens.colors.textSecondary,
                   selectedDayBackgroundColor: tokens.colors.primary,
-                  selectedDayTextColor: tokens.colors.surface,
+                  selectedDayTextColor: '#ffffff',
                   todayTextColor: tokens.colors.error,
                   dayTextColor: tokens.colors.textPrimary,
                   textDisabledColor: tokens.colors.textTertiary,
                   dotColor: tokens.colors.primary,
-                  selectedDotColor: tokens.colors.surface,
+                  selectedDotColor: '#ffffff',
                   arrowColor: tokens.colors.textPrimary,
                   disabledArrowColor: tokens.colors.textTertiary,
                   monthTextColor: tokens.colors.textPrimary,

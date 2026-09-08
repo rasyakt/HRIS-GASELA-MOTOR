@@ -30,7 +30,7 @@ const getDevApiUrl = () => {
     }
   }
 
-  return 'http://10.169.180.16:3001'; // Fallback to local dev IP
+  return 'http://10.169.180.132:3001'; // Fallback to local dev IP
 };
 
 const API_URL = getDevApiUrl();

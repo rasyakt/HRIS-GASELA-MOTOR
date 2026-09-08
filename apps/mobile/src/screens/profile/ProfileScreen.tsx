@@ -112,7 +112,7 @@ export function ProfileScreen() {
                 border
                 style={{ marginBottom: 12 }}
               />
-              <Text style={[styles.userName, { color: tokens.colors.textInverse }]}>
+              <Text style={[styles.userName, { color: '#ffffff' }]}>
                 {user?.fullName ?? '—'}
               </Text>
 

@@ -16,6 +16,17 @@ export function adjustHex(hexColor: string, percent: number): string {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
 
+/** Helper to determine whether text should be dark or light based on background hex */
+export function getContrastForeground(hexColor: string): string {
+  const hex = hexColor.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16) || 0;
+  const g = parseInt(hex.substring(2, 4), 16) || 0;
+  const b = parseInt(hex.substring(4, 6), 16) || 0;
+  // Perceived luminance formula (YIQ)
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 150 ? '#09090b' : '#ffffff';
+}
+
 export const lightTheme: ColorPalette = {
   primary: '#059669', // Default Gasela Emerald
   primaryLight: '#34d399',
@@ -43,14 +54,14 @@ export const lightTheme: ColorPalette = {
   info: '#3b82f6',
   infoLight: '#dbeafe',
 
-  background: '#fafafa',
+  background: '#f8fafc',
   surface: '#ffffff',
   surfaceElevated: '#ffffff',
-  border: '#e4e4e7',
+  border: '#e2e8f0',
 
-  textPrimary: '#18181b',
-  textSecondary: '#52525b',
-  textTertiary: '#a1a1aa',
+  textPrimary: '#0f172a',
+  textSecondary: '#475569',
+  textTertiary: '#94a3b8',
   textInverse: '#ffffff',
 };
 
@@ -58,37 +69,37 @@ export const darkTheme: ColorPalette = {
   primary: '#10b981', // Emerald in dark mode
   primaryLight: '#34d399',
   primaryDark: '#047857',
-  secondary: '#27272a',
+  secondary: '#1e2433',
   accent: '#34d399',
 
-  neutral50: '#18181b',
-  neutral100: '#27272a',
-  neutral200: '#3f3f46',
-  neutral300: '#52525b',
-  neutral400: '#71717a',
-  neutral500: '#a1a1aa',
-  neutral600: '#d4d4d8',
-  neutral700: '#e4e4e7',
-  neutral800: '#f4f4f5',
-  neutral900: '#fafafa',
+  neutral50: '#141824',
+  neutral100: '#1c2233',
+  neutral200: '#2b344c',
+  neutral300: '#475569',
+  neutral400: '#64748b',
+  neutral500: '#94a3b8',
+  neutral600: '#cbd5e1',
+  neutral700: '#e2e8f0',
+  neutral800: '#f1f5f9',
+  neutral900: '#f8fafc',
 
-  success: '#34d399',
+  success: '#10b981',
   successLight: '#064e3b',
   warning: '#fbbf24',
   warningLight: '#78350f',
   error: '#f87171',
   errorLight: '#7f1d1d',
-  info: '#60a5fa',
-  infoLight: '#1e3a8a',
+  info: '#38bdf8',
+  infoLight: '#0c4a6e',
 
-  background: '#09090b',
-  surface: '#18181b',
-  surfaceElevated: '#27272a',
-  border: '#27272a',
+  background: '#0b0f17', // Deep Obsidian Slate
+  surface: '#131823',   // Refined Slate Surface
+  surfaceElevated: '#1a2233',
+  border: '#232c3f',    // Crisp Slate Border
 
   textPrimary: '#ffffff',
-  textSecondary: '#a1a1aa',
-  textTertiary: '#71717a',
+  textSecondary: '#94a3b8',
+  textTertiary: '#64748b',
   textInverse: '#09090b',
 };
 
@@ -117,7 +128,20 @@ export function generateDynamicPalette(
       base.accent = hex;
     }
   } else if (preset) {
-    if (isDark) {
+    if (preset.id === 'zinc') {
+      // Classic Slate - Executive Monochrome / Slate Palette
+      if (isDark) {
+        base.primary = '#e2e8f0';        // Platinum Slate for crisp primary buttons/highlights
+        base.primaryLight = '#f8fafc';
+        base.primaryDark = '#94a3b8';    // Cool Slate 400
+        base.accent = '#cbd5e1';
+      } else {
+        base.primary = '#1e293b';        // Slate 800
+        base.primaryLight = '#334155';   // Slate 700
+        base.primaryDark = '#0f172a';    // Slate 900
+        base.accent = '#475569';
+      }
+    } else if (isDark) {
       base.primary = preset.primaryDark;
       base.primaryLight = preset.primaryHoverDark || adjustHex(preset.primaryDark, 20);
       base.primaryDark = preset.primaryHoverLight || adjustHex(preset.primaryDark, -20);
@@ -137,23 +161,37 @@ export function generateDynamicPalette(
 export function generateDynamicGradients(
   palette: ColorPalette,
   isDark: boolean,
+  presetId?: string,
 ): GradientPresets {
   if (isDark) {
+    // Special sleek metallic slate gradient for Classic Slate
+    const primaryGrad: readonly [string, string, ...string[]] =
+      presetId === 'zinc'
+        ? (['#1e293b', '#0f172a'] as const)
+        : ([palette.primaryDark, palette.primary] as const);
+
     return {
-      primary: [palette.primaryDark, palette.primary] as const,
-      secondary: ['#27272a', '#3f3f46'] as const,
-      accent: [palette.primary, palette.primaryLight] as const,
+      primary: primaryGrad,
+      secondary: ['#1e2433', '#2a3449'] as const,
+      accent: [palette.primaryDark, palette.accent] as const,
       success: ['#064e3b', '#059669'] as const,
       warning: ['#78350f', '#d97706'] as const,
-      brand: ['#18181b', '#27272a'] as const,
+      brand: primaryGrad,
     };
   }
+
+  // Light mode
+  const lightPrimaryGrad: readonly [string, string, ...string[]] =
+    presetId === 'zinc'
+      ? (['#1e293b', '#0f172a'] as const)
+      : ([palette.primary, palette.primaryDark] as const);
+
   return {
-    primary: [palette.primary, palette.primaryDark] as const,
-    secondary: ['#52525b', '#71717a'] as const,
+    primary: lightPrimaryGrad,
+    secondary: ['#475569', '#334155'] as const,
     accent: [palette.primaryLight, palette.primary] as const,
     success: ['#10b981', '#059669'] as const,
     warning: ['#f59e0b', '#d97706'] as const,
-    brand: [palette.primary, palette.primaryDark] as const,
+    brand: lightPrimaryGrad,
   };
 }

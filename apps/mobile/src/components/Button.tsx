@@ -12,6 +12,7 @@ import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanima
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeProvider';
+import { getContrastForeground } from '../theme/themes';
 import { scalePress } from '../animations';
 import { triggerHapticFeedback } from '../animations/gestures';
 
@@ -99,7 +100,10 @@ export function Button({
       return tokens.colors.primary;
     }
     if (variant === 'secondary') return tokens.colors.textPrimary;
-    return tokens.colors.textInverse; // primary, destructive, gradient
+    if (variant === 'destructive') return '#ffffff';
+    if (variant === 'gradient') return '#ffffff';
+    // For primary variant, use luminance contrast based on primary color
+    return getContrastForeground(tokens.colors.primary);
   };
 
   const getBorderColor = () => {

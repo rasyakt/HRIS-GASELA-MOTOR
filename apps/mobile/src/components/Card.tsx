@@ -35,7 +35,7 @@ export interface CardFooterProps {
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export function Card({ variant = 'default', elevation = 'md', children, onPress, style }: CardProps) {
-  const { tokens } = useTheme();
+  const { tokens, theme } = useTheme();
   const isPressed = useSharedValue(false);
 
   const handlePressIn = () => {
@@ -65,7 +65,7 @@ export function Card({ variant = 'default', elevation = 'md', children, onPress,
   };
 
   const getBorderProps = () => {
-    if (variant === 'outlined') {
+    if (variant === 'outlined' || theme === 'dark') {
       return { borderWidth: 1, borderColor: tokens.colors.border };
     }
     return { borderWidth: 0, borderColor: 'transparent' };

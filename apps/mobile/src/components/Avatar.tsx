@@ -83,7 +83,7 @@ export function Avatar({
     },
     border && {
       borderWidth: 2,
-      borderColor: tokens.colors.surface,
+      borderColor: 'rgba(255, 255, 255, 0.4)',
     },
     style,
   ];
@@ -98,7 +98,7 @@ export function Avatar({
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <Text style={[styles.initials, { fontSize: getFontSize(), color: tokens.colors.textInverse }]}>
+            <Text style={[styles.initials, { fontSize: getFontSize(), color: '#ffffff' }]}>
               {initials}
             </Text>
           </LinearGradient>
