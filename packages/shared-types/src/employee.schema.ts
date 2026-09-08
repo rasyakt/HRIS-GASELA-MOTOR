@@ -19,8 +19,8 @@ const phoneString = z
   .string()
   .max(20)
   .refine(
-    (val) => !val || /^(?:\+62|62|0)[0-9\- ]{7,18}$/.test(val.trim()),
-    { message: 'Format nomor telepon tidak valid (contoh: 081234567890)' }
+    (val) => !val || /^(?:\+62|62|0)?[0-9\- ]{7,18}$/.test(val.trim()),
+    { message: 'Format nomor telepon tidak valid (contoh: 81234567890 atau +6281234567890)' }
   );
 
 const idCardString = z
@@ -66,6 +66,7 @@ export const employeeQuerySchema = z.object({
   positionId: z.coerce.number().int().optional(),
   employmentStatus: z.enum(EMPLOYMENT_STATUSES).optional(),
   role: z.string().optional(),
+  managerCandidatesOnly: z.coerce.boolean().optional(),
 });
 
 export type CreateEmployeeInput = z.infer<typeof createEmployeeSchema>;

@@ -163,7 +163,7 @@ export default function LeavePage() {
               ) : (
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="leaveTypeId">Jenis Cuti</Label>
+                    <Label htmlFor="leaveTypeId" required>Jenis Cuti</Label>
                     <select
                       id="leaveTypeId"
                       className="h-9 w-full rounded-lg border border-input bg-transparent dark:bg-zinc-900 px-2.5 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus-visible:border-ring"
@@ -183,7 +183,7 @@ export default function LeavePage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label htmlFor="startDate">Tanggal Mulai</Label>
+                      <Label htmlFor="startDate" required>Tanggal Mulai</Label>
                       <Input
                         id="startDate"
                         type="date"
@@ -196,7 +196,7 @@ export default function LeavePage() {
                       )}
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="endDate">Tanggal Selesai</Label>
+                      <Label htmlFor="endDate" required>Tanggal Selesai</Label>
                       <Input
                         id="endDate"
                         type="date"
@@ -210,7 +210,7 @@ export default function LeavePage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="reason">Alasan</Label>
+                    <Label htmlFor="reason" required>Alasan</Label>
                     <textarea
                       id="reason"
                       rows={3}

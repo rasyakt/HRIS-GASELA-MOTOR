@@ -155,7 +155,7 @@ export function AssetPanel({ employeeId }: { employeeId: number }) {
         >
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="as-name">Nama Aset</Label>
+              <Label htmlFor="as-name" required>Nama Aset</Label>
               <Input
                 id="as-name"
                 value={form.assetName}
@@ -164,7 +164,7 @@ export function AssetPanel({ employeeId }: { employeeId: number }) {
               />
             </div>
             <div>
-              <Label htmlFor="as-code">Kode Aset</Label>
+              <Label htmlFor="as-code" optional>Kode Aset</Label>
               <Input
                 id="as-code"
                 value={form.assetCode}
@@ -176,7 +176,7 @@ export function AssetPanel({ employeeId }: { employeeId: number }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="as-serial">Nomor Seri (Opsional)</Label>
+              <Label htmlFor="as-serial" optional>Nomor Seri</Label>
               <Input
                 id="as-serial"
                 value={form.serialNumber}
@@ -185,7 +185,7 @@ export function AssetPanel({ employeeId }: { employeeId: number }) {
               />
             </div>
             <div>
-              <Label htmlFor="as-status">Status</Label>
+              <Label htmlFor="as-status" required>Status</Label>
               <select
                 id="as-status"
                 value={form.status}
@@ -200,7 +200,7 @@ export function AssetPanel({ employeeId }: { employeeId: number }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="as-assign">Tanggal Penugasan</Label>
+              <Label htmlFor="as-assign" required>Tanggal Penugasan</Label>
               <Input
                 id="as-assign"
                 type="date"
@@ -209,7 +209,7 @@ export function AssetPanel({ employeeId }: { employeeId: number }) {
               />
             </div>
             <div>
-              <Label htmlFor="as-return">Tanggal Kembali (Opsional)</Label>
+              <Label htmlFor="as-return" optional>Tanggal Kembali</Label>
               <Input
                 id="as-return"
                 type="date"
@@ -220,7 +220,7 @@ export function AssetPanel({ employeeId }: { employeeId: number }) {
           </div>
 
           <div>
-            <Label htmlFor="as-notes">Catatan Kondisi</Label>
+            <Label htmlFor="as-notes" optional>Catatan Kondisi</Label>
             <textarea
               id="as-notes"
               value={form.conditionNotes}

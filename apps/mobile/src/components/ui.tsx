@@ -154,6 +154,8 @@ export function TextField({
   secureTextEntry,
   multiline,
   autoCapitalize,
+  required,
+  optional,
 }: {
   label: string;
   value: string;
@@ -163,13 +165,19 @@ export function TextField({
   secureTextEntry?: boolean;
   multiline?: boolean;
   autoCapitalize?: 'none' | 'sentences' | 'words';
+  required?: boolean;
+  optional?: boolean;
 }) {
   const { tokens } = useTheme();
   const [isSecure, setIsSecure] = useState(secureTextEntry);
 
   return (
     <View style={styles.field}>
-      <Text style={[styles.fieldLabel, { color: tokens.colors.textSecondary }]}>{label}</Text>
+      <Text style={[styles.fieldLabel, { color: tokens.colors.textSecondary }]}>
+        {label}
+        {required && <Text style={{ color: tokens.colors.error, fontWeight: '700' }}> *</Text>}
+        {optional && <Text style={{ color: tokens.colors.textTertiary, fontWeight: '400', fontSize: 11 }}> (Opsional)</Text>}
+      </Text>
       <View style={[styles.inputContainer, { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border }]}>
         <TextInput
           value={value}
@@ -205,11 +213,15 @@ export function DateField({
   value,
   onChange,
   mode = 'date',
+  required,
+  optional,
 }: {
   label: string;
   value: string; // YYYY-MM-DD or HH:MM
   onChange: (v: string) => void;
   mode?: 'date' | 'time';
+  required?: boolean;
+  optional?: boolean;
 }) {
   const { tokens } = useTheme();
   const [show, setShow] = useState(false);
@@ -268,7 +280,11 @@ export function DateField({
 
   return (
     <View style={styles.field}>
-      <Text style={[styles.fieldLabel, { color: tokens.colors.textSecondary }]}>{label}</Text>
+      <Text style={[styles.fieldLabel, { color: tokens.colors.textSecondary }]}>
+        {label}
+        {required && <Text style={{ color: tokens.colors.error, fontWeight: '700' }}> *</Text>}
+        {optional && <Text style={{ color: tokens.colors.textTertiary, fontWeight: '400', fontSize: 11 }}> (Opsional)</Text>}
+      </Text>
       <Pressable onPress={() => setShow(true)} style={[styles.input, { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border }]}>
         <Text style={{ color: value ? tokens.colors.textPrimary : tokens.colors.textTertiary, paddingTop: Platform.OS === 'ios' ? 0 : 3 }}>
           {value || (mode === 'date' ? 'Pilih Tanggal' : 'Pilih Waktu')}

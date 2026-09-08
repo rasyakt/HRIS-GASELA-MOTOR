@@ -210,7 +210,9 @@ export function LeaveListScreen() {
             <Text style={[styles.modalTitle, { color: tokens.colors.textPrimary }]}>Ajukan Cuti</Text>
             <ScrollView keyboardShouldPersistTaps="handled">
               {formError && <ErrorBanner message={formError} />}
-              <Text style={[styles.fieldLabel, { color: tokens.colors.textSecondary }]}>Jenis Cuti</Text>
+              <Text style={[styles.fieldLabel, { color: tokens.colors.textSecondary }]}>
+                Jenis Cuti <Text style={{ color: tokens.colors.error, fontWeight: '700' }}>*</Text>
+              </Text>
               {activeTypes.length === 0 ? (
                 <Text style={[styles.emptyText, { color: tokens.colors.textSecondary }]}>Tidak ada jenis cuti aktif.</Text>
               ) : (
@@ -253,12 +255,14 @@ export function LeaveListScreen() {
                 value={startDate}
                 onChange={setStartDate}
                 mode="date"
+                required
               />
               <DateField
                 label="Tanggal Selesai (YYYY-MM-DD)"
                 value={endDate}
                 onChange={setEndDate}
                 mode="date"
+                required
               />
               <TextField
                 label="Alasan"
@@ -266,6 +270,7 @@ export function LeaveListScreen() {
                 onChangeText={setReason}
                 placeholder="Tuliskan alasan pengajuan cuti…"
                 multiline
+                required
               />
               <Button
                 title="Kirim Pengajuan"

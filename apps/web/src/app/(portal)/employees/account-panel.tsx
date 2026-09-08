@@ -150,7 +150,7 @@ export function AccountPanel({
           </p>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="acc-username">Username</Label>
+              <Label htmlFor="acc-username" required>Username</Label>
               <Input
                 id="acc-username"
                 value={username}
@@ -159,7 +159,7 @@ export function AccountPanel({
               />
             </div>
             <div>
-              <Label htmlFor="acc-role">Peran / Hak Akses</Label>
+              <Label htmlFor="acc-role" required>Peran / Hak Akses</Label>
               <select
                 id="acc-role"
                 value={role}
@@ -175,7 +175,7 @@ export function AccountPanel({
             </div>
           </div>
           <div>
-            <Label htmlFor="acc-password">Password Awal</Label>
+            <Label htmlFor="acc-password" required>Password Awal</Label>
             <PasswordInput
               id="acc-password"
               value={password}
@@ -227,7 +227,7 @@ export function AccountPanel({
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="edit-username">Username</Label>
+                <Label htmlFor="edit-username" required>Username</Label>
                 <Input
                   id="edit-username"
                   disabled={isSuperAdminAccount}
@@ -237,7 +237,7 @@ export function AccountPanel({
                 />
               </div>
               <div>
-                <Label htmlFor="edit-role">Peran / Hak Akses</Label>
+                <Label htmlFor="edit-role" required>Peran / Hak Akses</Label>
                 <select
                   id="edit-role"
                   disabled={isSuperAdminAccount}
@@ -304,7 +304,7 @@ export function AccountPanel({
               </div>
               
               <div>
-                <Label htmlFor="reset-pass">Password Baru</Label>
+                <Label htmlFor="reset-pass" required>Password Baru</Label>
                 <div className="flex gap-3 mt-1">
                   <PasswordInput
                     id="reset-pass"

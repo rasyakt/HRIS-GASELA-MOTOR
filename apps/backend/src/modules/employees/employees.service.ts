@@ -19,7 +19,7 @@ import { assertPasswordComplexity } from '../../common/utils/password-validator'
 
 const EMPLOYEE_INCLUDE = {
   department: { select: { id: true, code: true, name: true } },
-  position: { select: { id: true, code: true, name: true } },
+  position: { select: { id: true, code: true, name: true, level: true } },
   manager: { select: { id: true, employeeNumber: true, fullName: true } },
   user: { select: { id: true, username: true, role: true, isActive: true } },
   _count: { select: { subordinates: true, familyMembers: true } },
@@ -33,6 +33,15 @@ import type {
   CreateFamilyMemberInput,
   UpdateFamilyMemberInput,
 } from './dto/employee.dto';
+
+function normalizeIndonesianPhone(phone?: string | null): string | null {
+  if (!phone || typeof phone !== 'string') return null;
+  let str = phone.trim().replace(/[^\d+]/g, '');
+  if (str.startsWith('+62')) str = str.slice(3);
+  else if (str.startsWith('62')) str = str.slice(2);
+  while (str.startsWith('0')) str = str.slice(1);
+  return str ? `+62${str}` : null;
+}
 
 @Injectable()
 export class EmployeesService {
@@ -68,6 +77,39 @@ export class EmployeesService {
           role: query.role as any,
         };
       }
+    }
+    if (query.managerCandidatesOnly) {
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        {
+          OR: [
+            { user: { role: { in: ['manager', 'owner', 'superadmin', 'admin', 'hrd'] } } },
+            { position: { level: { in: [1, 2] } } },
+            { position: { name: { contains: 'Manager' } } },
+            { position: { name: { contains: 'Supervisor' } } },
+            { position: { name: { contains: 'Direktur' } } },
+          ],
+        },
+        {
+          OR: [
+            { user: null },
+            { user: { role: { notIn: ['landing_admin'] } } },
+          ],
+        },
+        {
+          NOT: {
+            AND: [
+              { user: { role: 'employee' } },
+              {
+                OR: [
+                  { position: null },
+                  { position: { level: { gt: 2 } } },
+                ],
+              },
+            ],
+          },
+        },
+      ];
     }
 
     const [items, total] = await this.prisma.$transaction([
@@ -193,6 +235,8 @@ export class EmployeesService {
       birthDate,
       joinDate,
       permanentDate,
+      phone,
+      emergencyContactPhone,
       ...restInput
     } = input;
 
@@ -213,6 +257,8 @@ export class EmployeesService {
     return this.prisma.employee.create({
       data: {
         ...restInput,
+        phone: normalizeIndonesianPhone(phone),
+        emergencyContactPhone: normalizeIndonesianPhone(emergencyContactPhone),
         basicSalary: String(basicSalary),
         birthDate: birthDate ? new Date(birthDate) : null,
         joinDate: new Date(joinDate),
@@ -318,6 +364,8 @@ export class EmployeesService {
       birthDate: _bd,
       joinDate: _jd,
       permanentDate: _pd,
+      phone,
+      emergencyContactPhone,
       ...restInput
     } = input;
 
@@ -325,6 +373,12 @@ export class EmployeesService {
       where: { id },
       data: {
         ...restInput,
+        ...(input.phone !== undefined && {
+          phone: normalizeIndonesianPhone(phone),
+        }),
+        ...(input.emergencyContactPhone !== undefined && {
+          emergencyContactPhone: normalizeIndonesianPhone(emergencyContactPhone),
+        }),
         ...(basicSalary !== undefined && {
           basicSalary: String(basicSalary),
         }),

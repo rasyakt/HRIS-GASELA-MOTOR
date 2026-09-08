@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input, MaskedInput } from '@/components/ui/input';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { useAuthApi } from '@/lib/auth-api';
@@ -64,6 +65,32 @@ interface ManagerItem {
   id: number;
   fullName: string;
   employeeNumber: string;
+  department?: { id: number; code?: string; name: string } | null;
+  position?: { id: number; code?: string; name: string; level?: number | null } | null;
+  user?: { id: number; username: string; role: string; isActive: boolean } | null;
+}
+
+function isEligibleManager(m: ManagerItem): boolean {
+  if (m.user?.role === 'landing_admin') return false;
+
+  const managerialRoles = ['manager', 'owner', 'superadmin', 'admin', 'hrd'];
+  const hasManagerialRole = m.user?.role && managerialRoles.includes(m.user.role);
+
+  const isStructuralLevel = typeof m.position?.level === 'number' && m.position.level <= 2 && m.position.level > 0;
+
+  const posName = m.position?.name?.toLowerCase() || '';
+  const hasStructuralTitle =
+    posName.includes('manager') ||
+    posName.includes('supervisor') ||
+    posName.includes('direktur') ||
+    posName.includes('head') ||
+    posName.includes('lead');
+
+  if (m.user?.role === 'employee' && !isStructuralLevel && !hasStructuralTitle) {
+    return false;
+  }
+
+  return Boolean(hasManagerialRole || isStructuralLevel || hasStructuralTitle);
 }
 
 interface DocumentItem {
@@ -196,7 +223,7 @@ export default function EmployeesPage() {
 
   const managers = useQuery({
     queryKey: ['managers-list'],
-    queryFn: () => authApi<{ items: ManagerItem[] }>('/api/employees?limit=100'),
+    queryFn: () => authApi<{ items: ManagerItem[] }>('/api/employees?limit=100&managerCandidatesOnly=true'),
     enabled: drawerOpen,
   });
 
@@ -382,14 +409,14 @@ export default function EmployeesPage() {
     if (formData.phone.trim()) {
       const cleanPhone = formData.phone.trim();
       if (!/^(?:\+62|62|0)[0-9\- ]{7,18}$/.test(cleanPhone)) {
-        return setFormError('Nomor telepon tidak valid (contoh: 081234567890)');
+        return setFormError('Nomor telepon tidak valid (contoh: 81234567890)');
       }
     }
 
     if (formData.emergencyContactPhone.trim()) {
       const cleanEmerg = formData.emergencyContactPhone.trim();
       if (!/^(?:\+62|62|0)[0-9\- ]{7,18}$/.test(cleanEmerg)) {
-        return setFormError('Nomor telepon kontak darurat tidak valid (contoh: 081234567890)');
+        return setFormError('Nomor telepon kontak darurat tidak valid (contoh: 81234567890)');
       }
     }
 
@@ -889,7 +916,7 @@ export default function EmployeesPage() {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <div className="flex items-center justify-between">
-                              <Label htmlFor="employeeNumber">NIK / Nomor Karyawan</Label>
+                              <Label htmlFor="employeeNumber" required>NIK / Nomor Karyawan</Label>
                               {!selectedEmployeeId && isEditMode && (
                                 <button
                                   type="button"
@@ -912,7 +939,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="fullName">Nama Lengkap</Label>
+                            <Label htmlFor="fullName" required>Nama Lengkap</Label>
                             <Input
                               id="fullName"
                               disabled={!isEditMode}
@@ -925,7 +952,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email" required>Email Perusahaan</Label>
                             <Input
                               id="email"
                               type="email"
@@ -936,22 +963,20 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="phone">Nomor Telepon</Label>
-                            <Input
+                            <Label htmlFor="phone" optional>Nomor Telepon</Label>
+                            <PhoneInput
                               id="phone"
-                              type="tel"
-                              inputMode="tel"
                               disabled={!isEditMode}
                               value={formData.phone}
-                              onChange={(e) => handleInputChange('phone', e.target.value.replace(/[^0-9+\-\s]/g, ''))}
-                              placeholder="081234567890"
+                              onChange={(val) => handleInputChange('phone', val)}
+                              placeholder="81234567890"
                             />
                           </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="birthDate">Tanggal Lahir</Label>
+                            <Label htmlFor="birthDate" optional>Tanggal Lahir</Label>
                             <Input
                               id="birthDate"
                               type="date"
@@ -962,7 +987,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="idCardNumber">Nomor KTP (16 Digit)</Label>
+                            <Label htmlFor="idCardNumber" optional>Nomor KTP (16 Digit)</Label>
                             <MaskedInput
                               id="idCardNumber"
                               maskType="nik"
@@ -977,7 +1002,7 @@ export default function EmployeesPage() {
                         </div>
 
                         <div>
-                          <Label htmlFor="address">Alamat Domisili</Label>
+                          <Label htmlFor="address" optional>Alamat Domisili</Label>
                           <textarea
                             id="address"
                             disabled={!isEditMode}
@@ -993,7 +1018,7 @@ export default function EmployeesPage() {
                           <h4 className="text-xs font-bold text-zinc-700 tracking-wider uppercase">Kontak Darurat</h4>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <Label htmlFor="emergencyContactName">Nama Kontak</Label>
+                              <Label htmlFor="emergencyContactName" optional>Nama Kontak</Label>
                               <Input
                                 id="emergencyContactName"
                                 disabled={!isEditMode}
@@ -1002,16 +1027,14 @@ export default function EmployeesPage() {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="emergencyContactPhone">Nomor Telepon</Label>
-                              <MaskedInput
+                              <Label htmlFor="emergencyContactPhone" optional>Nomor Telepon</Label>
+                              <PhoneInput
                                 id="emergencyContactPhone"
                                 maskType="phone"
-                                type="tel"
-                                inputMode="tel"
                                 disabled={!isEditMode}
                                 value={formData.emergencyContactPhone}
-                                onChange={(e) => handleInputChange('emergencyContactPhone', e.target.value.replace(/[^0-9+\-\s]/g, ''))}
-                                placeholder="081234567890"
+                                onChange={(val) => handleInputChange('emergencyContactPhone', val)}
+                                placeholder="81234567890"
                               />
                             </div>
                           </div>
@@ -1026,7 +1049,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="departmentId">Departemen</Label>
+                            <Label htmlFor="departmentId" optional>Departemen</Label>
                             <select
                               id="departmentId"
                               disabled={!isEditMode}
@@ -1041,7 +1064,7 @@ export default function EmployeesPage() {
                             </select>
                           </div>
                           <div>
-                            <Label htmlFor="positionId">Posisi</Label>
+                            <Label htmlFor="positionId" optional>Posisi</Label>
                             <select
                               id="positionId"
                               disabled={!isEditMode}
@@ -1059,7 +1082,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="joinDate">Tanggal Bergabung</Label>
+                            <Label htmlFor="joinDate" required>Tanggal Bergabung</Label>
                             <Input
                               id="joinDate"
                               type="date"
@@ -1069,7 +1092,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="permanentDate">Tanggal Karyawan Tetap</Label>
+                            <Label htmlFor="permanentDate" optional>Tanggal Karyawan Tetap</Label>
                             <Input
                               id="permanentDate"
                               type="date"
@@ -1082,7 +1105,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="employmentStatus">Status Pekerjaan</Label>
+                            <Label htmlFor="employmentStatus" required>Status Pekerjaan</Label>
                             <select
                               id="employmentStatus"
                               disabled={!isEditMode}
@@ -1097,7 +1120,7 @@ export default function EmployeesPage() {
                             </select>
                           </div>
                           <div>
-                            <Label htmlFor="employmentType">Tipe Pekerjaan</Label>
+                            <Label htmlFor="employmentType" required>Tipe Pekerjaan</Label>
                             <select
                               id="employmentType"
                               disabled={!isEditMode}
@@ -1114,7 +1137,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="basicSalary">Gaji Pokok</Label>
+                            <Label htmlFor="basicSalary" required>Gaji Pokok</Label>
                             <CurrencyInput
                               id="basicSalary"
                               disabled={!isEditMode}
@@ -1124,7 +1147,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="ptkpStatus">Status PTKP (Pajak PPh21)</Label>
+                            <Label htmlFor="ptkpStatus" required>Status PTKP (Pajak PPh21)</Label>
                             <select
                               id="ptkpStatus"
                               disabled={!isEditMode}
@@ -1146,7 +1169,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-3 gap-4">
                           <div className="col-span-1">
-                            <Label htmlFor="bankName">Nama Bank</Label>
+                            <Label htmlFor="bankName" optional>Nama Bank</Label>
                             <Input
                               id="bankName"
                               disabled={!isEditMode}
@@ -1156,7 +1179,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div className="col-span-1">
-                            <Label htmlFor="bankAccountNumber">Nomor Rekening</Label>
+                            <Label htmlFor="bankAccountNumber" optional>Nomor Rekening</Label>
                             <MaskedInput
                               id="bankAccountNumber"
                               maskType="bank"
@@ -1168,7 +1191,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div className="col-span-1">
-                            <Label htmlFor="bankAccountName">Atas Nama</Label>
+                            <Label htmlFor="bankAccountName" optional>Atas Nama</Label>
                             <Input
                               id="bankAccountName"
                               disabled={!isEditMode}
@@ -1181,7 +1204,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="taxNumber">Nomor NPWP</Label>
+                            <Label htmlFor="taxNumber" optional>Nomor NPWP</Label>
                             <MaskedInput
                               id="taxNumber"
                               maskType="npwp"
@@ -1192,7 +1215,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="managerId">Atasan Langsung (Manager)</Label>
+                            <Label htmlFor="managerId" optional>Atasan Langsung (Manager)</Label>
                             <select
                               id="managerId"
                               disabled={!isEditMode}
@@ -1202,11 +1225,21 @@ export default function EmployeesPage() {
                             >
                               <option value="">Pilih Manager</option>
                               {managers.data?.items
-                                .filter((m) => m.id !== selectedEmployeeId)
-                                .map((m) => (
-                                  <option key={m.id} value={m.id}>{m.fullName} ({m.employeeNumber})</option>
-                                ))}
+                                .filter((m) => m.id !== selectedEmployeeId && (isEligibleManager(m) || m.id === Number(formData.managerId)))
+                                .map((m) => {
+                                  const positionName = m.position?.name;
+                                  const deptName = m.department?.name;
+                                  const meta = [positionName, deptName].filter(Boolean).join(' • ');
+                                  return (
+                                    <option key={m.id} value={m.id}>
+                                      {m.fullName} ({m.employeeNumber}){meta ? ` — ${meta}` : ''}
+                                    </option>
+                                  );
+                                })}
                             </select>
+                            <p className="mt-1 text-xs text-zinc-500">
+                              Hanya role manajerial (Manager, Owner, Direktur, Supervisor, HRD) yang dapat dipilih sebagai atasan.
+                            </p>
                           </div>
                         </div>
                       </div>

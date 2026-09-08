@@ -148,7 +148,7 @@ export function TrainingPanel({ employeeId }: { employeeId: number }) {
         >
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="tr-name">Nama Pelatihan</Label>
+              <Label htmlFor="tr-name" required>Nama Pelatihan</Label>
               <Input
                 id="tr-name"
                 value={form.trainingName}
@@ -157,7 +157,7 @@ export function TrainingPanel({ employeeId }: { employeeId: number }) {
               />
             </div>
             <div>
-              <Label htmlFor="tr-provider">Penyelenggara (Opsional)</Label>
+              <Label htmlFor="tr-provider" optional>Penyelenggara</Label>
               <Input
                 id="tr-provider"
                 value={form.trainingProvider}
@@ -169,7 +169,7 @@ export function TrainingPanel({ employeeId }: { employeeId: number }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="tr-start">Tanggal Mulai</Label>
+              <Label htmlFor="tr-start" required>Tanggal Mulai</Label>
               <Input
                 id="tr-start"
                 type="date"
@@ -178,7 +178,7 @@ export function TrainingPanel({ employeeId }: { employeeId: number }) {
               />
             </div>
             <div>
-              <Label htmlFor="tr-end">Tanggal Selesai</Label>
+              <Label htmlFor="tr-end" optional>Tanggal Selesai</Label>
               <Input
                 id="tr-end"
                 type="date"
@@ -190,7 +190,7 @@ export function TrainingPanel({ employeeId }: { employeeId: number }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="tr-hours">Durasi (Jam)</Label>
+              <Label htmlFor="tr-hours" optional>Durasi (Jam)</Label>
               <PositiveNumberInput
                 id="tr-hours"
                 min={0}
@@ -200,7 +200,7 @@ export function TrainingPanel({ employeeId }: { employeeId: number }) {
               />
             </div>
             <div>
-              <Label htmlFor="tr-cost">Biaya Pelatihan</Label>
+              <Label htmlFor="tr-cost" optional>Biaya Pelatihan</Label>
               <CurrencyInput
                 id="tr-cost"
                 value={form.cost}
@@ -211,7 +211,7 @@ export function TrainingPanel({ employeeId }: { employeeId: number }) {
           </div>
 
           <div>
-            <Label htmlFor="tr-notes">Catatan</Label>
+            <Label htmlFor="tr-notes" optional>Catatan</Label>
             <textarea
               id="tr-notes"
               value={form.notes}

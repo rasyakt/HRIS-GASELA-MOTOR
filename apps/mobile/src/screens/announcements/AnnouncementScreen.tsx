@@ -16,6 +16,7 @@ import { fmtDate, fmtDateTime } from '../../lib/format';
 import { useAuthApi } from '../../services/auth-api';
 
 import { useTheme } from '../../theme/ThemeProvider';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const PRIORITY_MAP: Record<string, { label: string; color: string }> = {
   low:    { label: 'Rendah',  color: '#71717a' },
@@ -36,6 +37,7 @@ function PriorityBadge({ priority }: { priority: string }) {
 
 export function AnnouncementScreen() {
   const { tokens } = useTheme();
+  const insets = useSafeAreaInsets();
   const authApi = useAuthApi();
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<AnnouncementDto | null>(null);
@@ -85,7 +87,13 @@ export function AnnouncementScreen() {
     <View style={[styles.flex, { backgroundColor: tokens.colors.background }]}>
       <ScrollView
         style={styles.flex}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[
+          styles.container,
+          {
+            paddingTop: Math.max(insets.top, 16) + 16,
+            paddingBottom: Math.max(insets.bottom, 16) + 80,
+          },
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={list.isLoading}
@@ -94,6 +102,7 @@ export function AnnouncementScreen() {
               unread.refetch();
             }}
             tintColor={tokens.colors.primary}
+            progressViewOffset={Math.max(insets.top, 16) + 16}
           />
         }
       >

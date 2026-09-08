@@ -101,7 +101,7 @@ export default function OvertimePage() {
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="overtimeDate">Tanggal Lembur</Label>
+                <Label htmlFor="overtimeDate" required>Tanggal Lembur</Label>
                 <Input
                   id="overtimeDate"
                   type="date"
@@ -114,7 +114,7 @@ export default function OvertimePage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="startTime">Mulai</Label>
+                  <Label htmlFor="startTime" required>Mulai</Label>
                   <Input
                     id="startTime"
                     type="time"
@@ -126,7 +126,7 @@ export default function OvertimePage() {
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="endTime">Selesai</Label>
+                  <Label htmlFor="endTime" required>Selesai</Label>
                   <Input
                     id="endTime"
                     type="time"
@@ -139,7 +139,7 @@ export default function OvertimePage() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="purpose">Tujuan</Label>
+                <Label htmlFor="purpose" required>Tujuan</Label>
                 <textarea
                   id="purpose"
                   rows={3}

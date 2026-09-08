@@ -182,6 +182,7 @@ export function OvertimeScreen() {
                 value={overtimeDate}
                 onChange={setOvertimeDate}
                 mode="date"
+                required
               />
               <View style={styles.timeRow}>
                 <View style={styles.timeCol}>
@@ -190,6 +191,7 @@ export function OvertimeScreen() {
                     value={startTime}
                     onChange={setStartTime}
                     mode="time"
+                    required
                   />
                 </View>
                 <View style={styles.timeCol}>
@@ -198,6 +200,7 @@ export function OvertimeScreen() {
                     value={endTime}
                     onChange={setEndTime}
                     mode="time"
+                    required
                   />
                 </View>
               </View>
@@ -207,6 +210,7 @@ export function OvertimeScreen() {
                 onChangeText={setPurpose}
                 placeholder="Jelaskan tujuan lembur…"
                 multiline
+                required
               />
               <Button
                 title="Kirim Pengajuan"

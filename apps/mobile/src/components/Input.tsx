@@ -31,6 +31,8 @@ export interface InputProps extends Omit<TextInputProps, 'style'> {
   suffixIcon?: keyof typeof Ionicons.glyphMap;
   onSuffixPress?: () => void;
   containerStyle?: StyleProp<ViewStyle>;
+  required?: boolean;
+  optional?: boolean;
 }
 
 export function Input({
@@ -46,6 +48,8 @@ export function Input({
   containerStyle,
   secureTextEntry,
   maxLength,
+  required,
+  optional,
   ...rest
 }: InputProps) {
   const { tokens } = useTheme();
@@ -133,13 +137,21 @@ export function Input({
             ]}
           >
             {label}
+            {required && <Text style={{ color: tokens.colors.error, fontWeight: '700' }}> *</Text>}
+            {optional && <Text style={{ color: tokens.colors.textTertiary, fontWeight: '400', fontSize: 11 }}> (Opsional)</Text>}
           </Animated.Text>
           
           <TextInput
             value={value}
             onChangeText={onChangeText}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onFocus={(e) => {
+              setIsFocused(true);
+              rest.onFocus?.(e);
+            }}
+            onBlur={(e) => {
+              setIsFocused(false);
+              rest.onBlur?.(e);
+            }}
             editable={!disabled}
             secureTextEntry={currentSecureTextEntry}
             maxLength={maxLength}
