@@ -128,9 +128,9 @@ export function LoginScreen() {
           rememberMe,
         );
       }
-    } catch (err) {
+    } catch (err: any) {
       setError(
-        err instanceof ApiError
+        err instanceof ApiError || err instanceof Error
           ? err.message
           : 'Gagal menghubungi server. Periksa koneksi & alamat API.',
       );
