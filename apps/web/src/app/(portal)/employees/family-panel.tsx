@@ -163,7 +163,7 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs font-semibold text-zinc-700">Nama Lengkap *</Label>
+              <Label required className="text-xs font-semibold text-zinc-700">Nama Lengkap</Label>
               <Input
                 required
                 placeholder="mis. Siti Aminah"
@@ -174,7 +174,7 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-semibold text-zinc-700">Hubungan *</Label>
+              <Label required className="text-xs font-semibold text-zinc-700">Hubungan</Label>
               <select
                 value={form.relationship}
                 onChange={(e) => setForm({ ...form, relationship: e.target.value as any })}
@@ -188,7 +188,7 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-semibold text-zinc-700">NIK (16 Digit KTP/KK)</Label>
+              <Label optional className="text-xs font-semibold text-zinc-700">NIK (16 Digit KTP/KK)</Label>
               <Input
                 placeholder="16 digit NIK"
                 inputMode="numeric"
@@ -200,7 +200,7 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-semibold text-zinc-700">Tanggal Lahir</Label>
+              <Label optional className="text-xs font-semibold text-zinc-700">Tanggal Lahir</Label>
               <Input
                 type="date"
                 max={new Date().toISOString().slice(0, 10)}
@@ -211,7 +211,7 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-semibold text-zinc-700">Jenis Kelamin</Label>
+              <Label required className="text-xs font-semibold text-zinc-700">Jenis Kelamin</Label>
               <select
                 value={form.gender}
                 onChange={(e) => setForm({ ...form, gender: e.target.value as any })}

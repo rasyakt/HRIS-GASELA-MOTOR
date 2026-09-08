@@ -297,7 +297,7 @@ export default function DisciplinePage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-zinc-700">Pilih Karyawan *</Label>
+                <Label required className="text-xs font-semibold text-zinc-700">Pilih Karyawan</Label>
                 <select
                   required
                   value={form.employeeId}
@@ -315,7 +315,7 @@ export default function DisciplinePage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-zinc-700">Nomor Surat SP *</Label>
+                  <Label required className="text-xs font-semibold text-zinc-700">Nomor Surat SP</Label>
                   <Input
                     required
                     placeholder="mis. SP/001/HRD/2026"
@@ -325,7 +325,7 @@ export default function DisciplinePage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-zinc-700">Tingkat SP *</Label>
+                  <Label required className="text-xs font-semibold text-zinc-700">Tingkat SP</Label>
                   <select
                     value={form.level}
                     onChange={(e) => setForm({ ...form, level: e.target.value as any })}
@@ -339,7 +339,7 @@ export default function DisciplinePage() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-zinc-700">Alasan Pelanggaran *</Label>
+                <Label required className="text-xs font-semibold text-zinc-700">Alasan Pelanggaran</Label>
                 <textarea
                   required
                   rows={3}
@@ -352,7 +352,7 @@ export default function DisciplinePage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-zinc-700">Tanggal Terbit</Label>
+                  <Label required className="text-xs font-semibold text-zinc-700">Tanggal Terbit</Label>
                   <Input
                     type="date"
                     value={form.issuedDate}
@@ -361,7 +361,7 @@ export default function DisciplinePage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-zinc-700">Berlaku Sampai Tanggal</Label>
+                  <Label optional className="text-xs font-semibold text-zinc-700">Berlaku Sampai Tanggal</Label>
                   <Input
                     type="date"
                     value={form.effectiveUntil}

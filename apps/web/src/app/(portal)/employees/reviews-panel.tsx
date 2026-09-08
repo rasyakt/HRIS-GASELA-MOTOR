@@ -173,7 +173,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
         >
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="rev-reviewer">Reviewer</Label>
+              <Label htmlFor="rev-reviewer" required>Reviewer</Label>
               <select
                 id="rev-reviewer"
                 value={form.reviewerId}
@@ -191,7 +191,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
               </select>
             </div>
             <div>
-              <Label htmlFor="rev-status">Status</Label>
+              <Label htmlFor="rev-status" required>Status</Label>
               <select
                 id="rev-status"
                 value={form.status}
@@ -209,7 +209,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
 
           <div className="grid grid-cols-4 gap-4">
             <div>
-              <Label htmlFor="rev-month">Bulan</Label>
+              <Label htmlFor="rev-month" required>Bulan</Label>
               <select
                 id="rev-month"
                 value={form.periodMonth}
@@ -225,7 +225,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
               </select>
             </div>
             <div>
-              <Label htmlFor="rev-year">Tahun</Label>
+              <Label htmlFor="rev-year" required>Tahun</Label>
               <PositiveNumberInput
                 id="rev-year"
                 min={2000}
@@ -236,7 +236,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
               />
             </div>
             <div>
-              <Label htmlFor="rev-date">Tanggal Review</Label>
+              <Label htmlFor="rev-date" required>Tanggal Review</Label>
               <Input
                 id="rev-date"
                 type="date"
@@ -245,7 +245,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
               />
             </div>
             <div>
-              <Label htmlFor="rev-score">Skor (0-100)</Label>
+              <Label htmlFor="rev-score" optional>Skor (0-100)</Label>
               <PositiveNumberInput
                 id="rev-score"
                 min={0}
@@ -258,7 +258,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
           </div>
 
           <div>
-            <Label htmlFor="rev-strengths">Kelebihan</Label>
+            <Label htmlFor="rev-strengths" optional>Kelebihan</Label>
             <textarea
               id="rev-strengths"
               value={form.strengths}
@@ -268,7 +268,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
             />
           </div>
           <div>
-            <Label htmlFor="rev-improve">Area yang Perlu Ditingkatkan</Label>
+            <Label htmlFor="rev-improve" optional>Area yang Perlu Ditingkatkan</Label>
             <textarea
               id="rev-improve"
               value={form.areasForImprovement}
@@ -278,7 +278,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
             />
           </div>
           <div>
-            <Label htmlFor="rev-goals">Tujuan Periode Berikutnya</Label>
+            <Label htmlFor="rev-goals" optional>Tujuan Periode Berikutnya</Label>
             <textarea
               id="rev-goals"
               value={form.goalsNextPeriod}

@@ -890,7 +890,7 @@ export default function EmployeesPage() {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <div className="flex items-center justify-between">
-                              <Label htmlFor="employeeNumber">NIK / Nomor Karyawan</Label>
+                              <Label htmlFor="employeeNumber" required>NIK / Nomor Karyawan</Label>
                               {!selectedEmployeeId && isEditMode && (
                                 <button
                                   type="button"
@@ -913,7 +913,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="fullName">Nama Lengkap</Label>
+                            <Label htmlFor="fullName" required>Nama Lengkap</Label>
                             <Input
                               id="fullName"
                               disabled={!isEditMode}
@@ -926,7 +926,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email" required>Email Perusahaan</Label>
                             <Input
                               id="email"
                               type="email"
@@ -937,7 +937,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="phone">Nomor Telepon</Label>
+                            <Label htmlFor="phone" optional>Nomor Telepon</Label>
                             <PhoneInput
                               id="phone"
                               disabled={!isEditMode}
@@ -950,7 +950,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="birthDate">Tanggal Lahir</Label>
+                            <Label htmlFor="birthDate" optional>Tanggal Lahir</Label>
                             <Input
                               id="birthDate"
                               type="date"
@@ -961,7 +961,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="idCardNumber">Nomor KTP (16 Digit)</Label>
+                            <Label htmlFor="idCardNumber" optional>Nomor KTP (16 Digit)</Label>
                             <MaskedInput
                               id="idCardNumber"
                               maskType="nik"
@@ -976,7 +976,7 @@ export default function EmployeesPage() {
                         </div>
 
                         <div>
-                          <Label htmlFor="address">Alamat Domisili</Label>
+                          <Label htmlFor="address" optional>Alamat Domisili</Label>
                           <textarea
                             id="address"
                             disabled={!isEditMode}
@@ -992,7 +992,7 @@ export default function EmployeesPage() {
                           <h4 className="text-xs font-bold text-zinc-700 tracking-wider uppercase">Kontak Darurat</h4>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <Label htmlFor="emergencyContactName">Nama Kontak</Label>
+                              <Label htmlFor="emergencyContactName" optional>Nama Kontak</Label>
                               <Input
                                 id="emergencyContactName"
                                 disabled={!isEditMode}
@@ -1001,7 +1001,7 @@ export default function EmployeesPage() {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="emergencyContactPhone">Nomor Telepon</Label>
+                              <Label htmlFor="emergencyContactPhone" optional>Nomor Telepon</Label>
                               <PhoneInput
                                 id="emergencyContactPhone"
                                 maskType="phone"
@@ -1023,7 +1023,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="departmentId">Departemen</Label>
+                            <Label htmlFor="departmentId" optional>Departemen</Label>
                             <select
                               id="departmentId"
                               disabled={!isEditMode}
@@ -1038,7 +1038,7 @@ export default function EmployeesPage() {
                             </select>
                           </div>
                           <div>
-                            <Label htmlFor="positionId">Posisi</Label>
+                            <Label htmlFor="positionId" optional>Posisi</Label>
                             <select
                               id="positionId"
                               disabled={!isEditMode}
@@ -1056,7 +1056,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="joinDate">Tanggal Bergabung</Label>
+                            <Label htmlFor="joinDate" required>Tanggal Bergabung</Label>
                             <Input
                               id="joinDate"
                               type="date"
@@ -1066,7 +1066,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="permanentDate">Tanggal Karyawan Tetap</Label>
+                            <Label htmlFor="permanentDate" optional>Tanggal Karyawan Tetap</Label>
                             <Input
                               id="permanentDate"
                               type="date"
@@ -1079,7 +1079,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="employmentStatus">Status Pekerjaan</Label>
+                            <Label htmlFor="employmentStatus" required>Status Pekerjaan</Label>
                             <select
                               id="employmentStatus"
                               disabled={!isEditMode}
@@ -1094,7 +1094,7 @@ export default function EmployeesPage() {
                             </select>
                           </div>
                           <div>
-                            <Label htmlFor="employmentType">Tipe Pekerjaan</Label>
+                            <Label htmlFor="employmentType" required>Tipe Pekerjaan</Label>
                             <select
                               id="employmentType"
                               disabled={!isEditMode}
@@ -1111,7 +1111,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="basicSalary">Gaji Pokok</Label>
+                            <Label htmlFor="basicSalary" required>Gaji Pokok</Label>
                             <CurrencyInput
                               id="basicSalary"
                               disabled={!isEditMode}
@@ -1121,7 +1121,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="ptkpStatus">Status PTKP (Pajak PPh21)</Label>
+                            <Label htmlFor="ptkpStatus" required>Status PTKP (Pajak PPh21)</Label>
                             <select
                               id="ptkpStatus"
                               disabled={!isEditMode}
@@ -1143,7 +1143,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-3 gap-4">
                           <div className="col-span-1">
-                            <Label htmlFor="bankName">Nama Bank</Label>
+                            <Label htmlFor="bankName" optional>Nama Bank</Label>
                             <Input
                               id="bankName"
                               disabled={!isEditMode}
@@ -1153,7 +1153,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div className="col-span-1">
-                            <Label htmlFor="bankAccountNumber">Nomor Rekening</Label>
+                            <Label htmlFor="bankAccountNumber" optional>Nomor Rekening</Label>
                             <MaskedInput
                               id="bankAccountNumber"
                               maskType="bank"
@@ -1165,7 +1165,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div className="col-span-1">
-                            <Label htmlFor="bankAccountName">Atas Nama</Label>
+                            <Label htmlFor="bankAccountName" optional>Atas Nama</Label>
                             <Input
                               id="bankAccountName"
                               disabled={!isEditMode}
@@ -1178,7 +1178,7 @@ export default function EmployeesPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="taxNumber">Nomor NPWP</Label>
+                            <Label htmlFor="taxNumber" optional>Nomor NPWP</Label>
                             <MaskedInput
                               id="taxNumber"
                               maskType="npwp"
@@ -1189,7 +1189,7 @@ export default function EmployeesPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="managerId">Atasan Langsung (Manager)</Label>
+                            <Label htmlFor="managerId" optional>Atasan Langsung (Manager)</Label>
                             <select
                               id="managerId"
                               disabled={!isEditMode}

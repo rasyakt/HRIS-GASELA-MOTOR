@@ -840,7 +840,7 @@ function ShiftsManagementCard() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
               <div className="space-y-1 md:col-span-2">
-                <Label htmlFor="shift-name" className="text-xs">Nama Shift</Label>
+                <Label htmlFor="shift-name" required className="text-xs">Nama Shift</Label>
                 <Input
                   id="shift-name"
                   placeholder="Contoh: Shift Pagi, Shift Malam"
@@ -852,7 +852,7 @@ function ShiftsManagementCard() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="shift-start" className="text-xs">Jam Masuk</Label>
+                <Label htmlFor="shift-start" required className="text-xs">Jam Masuk</Label>
                 <Input
                   id="shift-start"
                   type="time"
@@ -864,7 +864,7 @@ function ShiftsManagementCard() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="shift-hours" className="text-xs">Durasi Kerja (Jam)</Label>
+                <Label htmlFor="shift-hours" required className="text-xs">Durasi Kerja (Jam)</Label>
                 <Input
                   id="shift-hours"
                   type="number"
@@ -879,7 +879,7 @@ function ShiftsManagementCard() {
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="shift-end" className="text-xs">Jam Keluar</Label>
+                  <Label htmlFor="shift-end" required className="text-xs">Jam Keluar</Label>
                   <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Otomatis</span>
                 </div>
                 <Input
@@ -893,7 +893,7 @@ function ShiftsManagementCard() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="shift-grace" className="text-xs">Toleransi (Mnt)</Label>
+                <Label htmlFor="shift-grace" optional className="text-xs">Toleransi (Mnt)</Label>
                 <Input
                   id="shift-grace"
                   type="number"
@@ -1633,7 +1633,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="flex flex-wrap items-end gap-3">
               <div className="space-y-1">
-                <Label htmlFor="hol-date">Tanggal</Label>
+                <Label htmlFor="hol-date" required>Tanggal</Label>
                 <Input
                   id="hol-date"
                   type="date"
@@ -1642,7 +1642,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="hol-name">Nama Libur</Label>
+                <Label htmlFor="hol-name" required>Nama Libur</Label>
                 <Input
                   id="hol-name"
                   value={holName}
