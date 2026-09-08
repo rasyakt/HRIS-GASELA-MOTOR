@@ -50,14 +50,6 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
             };
           });
 
-          // Indicator animation
-          const indicatorStyle = useAnimatedStyle(() => {
-            return {
-              opacity: withTiming(isFocused ? 1 : 0, timingConfig(AnimationDurations.fast)),
-              transform: [{ scale: withTiming(isFocused ? 1 : 0.5, timingConfig(AnimationDurations.fast)) }],
-            };
-          });
-
           const color = isFocused ? tokens.colors.primary : tokens.colors.textTertiary;
 
           return (
@@ -70,13 +62,6 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
             >
               <Animated.View style={[styles.iconContainer, animatedStyle]}>
                 {options.tabBarIcon && options.tabBarIcon({ focused: isFocused, color, size: 24 })}
-                <Animated.View
-                  style={[
-                    styles.indicator,
-                    { backgroundColor: tokens.colors.primary },
-                    indicatorStyle,
-                  ]}
-                />
               </Animated.View>
 
               <Text
@@ -128,14 +113,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 2,
     height: 28,
-    position: 'relative',
-  },
-  indicator: {
-    position: 'absolute',
-    bottom: -4,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
   },
   label: {
     textAlign: 'center',

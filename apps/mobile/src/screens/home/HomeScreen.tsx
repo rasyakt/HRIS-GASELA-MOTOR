@@ -306,7 +306,18 @@ export function HomeScreen() {
                   )}
                 </View>
               </View>
-              <Avatar name={user?.fullName || '?'} size="md" border />
+              <Pressable
+                onPress={() => {
+                  triggerHapticFeedback('light');
+                  (navigation as any).navigate('Profile');
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Buka Profil"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={({ pressed }) => [{ opacity: pressed ? 0.75 : 1 }]}
+              >
+                <Avatar name={user?.fullName || '?'} size="md" border />
+              </Pressable>
             </View>
           </LinearGradient>
         </Animated.View>
@@ -615,7 +626,7 @@ export function HomeScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  container: { paddingHorizontal: 20, paddingBottom: 110 },
+  container: { paddingHorizontal: 20, paddingBottom: 130 },
   headerBackground: {
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
