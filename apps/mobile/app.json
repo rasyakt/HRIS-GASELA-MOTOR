@@ -18,10 +18,20 @@
     },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#18181b"
+    },
     "userInterfaceStyle": "light",
     "scheme": "gaselahris",
     "ios": {
       "supportsTablet": true,
+      "splash": {
+        "image": "./assets/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#18181b"
+      },
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Lokasi digunakan untuk validasi check-in/check-out kantor",
         "NSCameraUsageDescription": "Kamera digunakan untuk foto check-in/check-out",
@@ -31,10 +41,15 @@
     "android": {
       "package": "com.gasela.hris",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#18181b",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "splash": {
+        "image": "./assets/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#18181b"
       },
       "permissions": [
         "ACCESS_FINE_LOCATION",
@@ -51,6 +66,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "expo-splash-screen",
       "expo-location",
       "@react-native-community/datetimepicker",
       "expo-secure-store",
