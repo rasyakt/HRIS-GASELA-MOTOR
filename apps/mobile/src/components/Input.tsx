@@ -144,8 +144,14 @@ export function Input({
           <TextInput
             value={value}
             onChangeText={onChangeText}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onFocus={(e) => {
+              setIsFocused(true);
+              rest.onFocus?.(e);
+            }}
+            onBlur={(e) => {
+              setIsFocused(false);
+              rest.onBlur?.(e);
+            }}
             editable={!disabled}
             secureTextEntry={currentSecureTextEntry}
             maxLength={maxLength}

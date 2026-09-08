@@ -41,6 +41,7 @@
         "USE_BIOMETRIC",
         "USE_FINGERPRINT"
       ],
+      "softwareKeyboardLayoutMode": "pan",
       "predictiveBackGestureEnabled": false,
       "usesCleartextTraffic": true
     },

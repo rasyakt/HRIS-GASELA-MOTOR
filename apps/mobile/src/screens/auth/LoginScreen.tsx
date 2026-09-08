@@ -1,6 +1,7 @@
 import type { LoginResponse } from '@gasela/shared-types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,6 +18,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GaselaLogo } from '../../components/ui';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
@@ -31,6 +33,8 @@ import { AnimationDurations, timingConfig } from '../../animations';
 
 export function LoginScreen() {
   const { tokens } = useTheme();
+  const insets = useSafeAreaInsets();
+  const scrollViewRef = useRef<ScrollView>(null);
   const setSession = useAuthStore((s) => s.setSession);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -38,6 +42,30 @@ export function LoginScreen() {
   const [hasSavedAccount, setHasSavedAccount] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  // Keyboard show/hide listeners for smooth scrolling
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => {
+        setIsKeyboardVisible(true);
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 120);
+      }
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setIsKeyboardVisible(false);
+      }
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   // Animations
   const logoOpacity = useSharedValue(0);
@@ -160,17 +188,27 @@ export function LoginScreen() {
       />
       
       <ScrollView
-        contentContainerStyle={styles.container}
+        ref={scrollViewRef}
+        contentContainerStyle={[
+          styles.container,
+          {
+            paddingTop: Math.max(insets.top, 24) + (isKeyboardVisible ? 8 : 24),
+            paddingBottom: Math.max(insets.bottom, 24) + (isKeyboardVisible ? 160 : 32),
+          },
+        ]}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <Animated.View style={[styles.logoWrapper, animatedLogoStyle]}>
-          <GaselaLogo size="lg" showText={false} />
-          <Text style={[styles.welcomeText, { color: tokens.colors.textPrimary }]}>
+        <Animated.View style={[styles.logoWrapper, animatedLogoStyle, isKeyboardVisible && styles.logoWrapperCompact]}>
+          <GaselaLogo size={isKeyboardVisible ? "md" : "lg"} showText={false} />
+          <Text style={[styles.welcomeText, { color: tokens.colors.textPrimary }, isKeyboardVisible && styles.welcomeTextCompact]}>
             Selamat Datang!
           </Text>
-          <Text style={[styles.subtitle, { color: tokens.colors.textSecondary }]}>
-            Masuk menggunakan akun karyawan Anda.
-          </Text>
+          {!isKeyboardVisible && (
+            <Text style={[styles.subtitle, { color: tokens.colors.textSecondary }]}>
+              Masuk menggunakan akun karyawan Anda.
+            </Text>
+          )}
         </Animated.View>
 
         <Animated.View style={[styles.formWrapper, animatedFormStyle]}>
@@ -208,6 +246,11 @@ export function LoginScreen() {
                 prefixIcon="person-outline"
                 containerStyle={styles.inputSpacing}
                 required
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                  }, 120);
+                }}
               />
               
               <Input
@@ -222,6 +265,11 @@ export function LoginScreen() {
                 prefixIcon="lock-closed-outline"
                 containerStyle={styles.inputSpacing}
                 required
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                  }, 120);
+                }}
               />
 
               <View style={styles.rememberMeRow}>
@@ -263,7 +311,7 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 24,
+    paddingHorizontal: 24,
   },
   logoWrapper: {
     alignItems: 'center',
@@ -271,11 +319,18 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     alignSelf: 'center',
   },
+  logoWrapperCompact: {
+    marginBottom: 14,
+  },
   welcomeText: {
     fontSize: 24,
     fontWeight: '700',
     textAlign: 'center',
     marginTop: 20,
+  },
+  welcomeTextCompact: {
+    fontSize: 20,
+    marginTop: 8,
   },
   subtitle: {
     marginTop: 8,
