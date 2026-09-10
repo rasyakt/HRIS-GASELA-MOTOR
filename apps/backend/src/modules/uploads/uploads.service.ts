@@ -7,11 +7,12 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { createReadStream, existsSync, mkdirSync } from 'fs';
-import { writeFile, rm, rename, mkdir } from 'fs/promises';
+import { writeFile, rm, rename } from 'fs/promises';
 import { join, extname, isAbsolute } from 'path';
 import { Readable } from 'stream';
 import { sanitizeSvg } from '../../common/utils/html-sanitizer';
 import { validateHumanFaceInImage } from '../../common/utils/face-validator.util';
+import { FaceWorkerPool } from '../../common/utils/face-worker-pool';
 
 export type UploadCategory = 'avatar' | 'attendance' | 'document' | 'landing';
 
@@ -121,9 +122,19 @@ export class UploadsService {
       }
     }
 
-    // FACE RECOGNITION VALIDATION: Attendance photo must contain human facial features
+    // FACE RECOGNITION VALIDATION: Attendance photo must contain human facial features.
+    // Dijalankan di Worker Thread terpisah agar main Event Loop tidak terblokir
+    // saat banyak karyawan absensi bersamaan di jam puncak.
     if (category === 'attendance') {
-      const faceResult = validateHumanFaceInImage(file.buffer);
+      let faceResult;
+      try {
+        const pool = FaceWorkerPool.getInstance();
+        faceResult = await pool.validate(file.buffer);
+      } catch {
+        // Fallback ke sinkronus jika worker pool gagal diinisialisasi
+        // (misalnya lingkungan test atau worker file belum di-build)
+        faceResult = validateHumanFaceInImage(file.buffer);
+      }
       if (!faceResult.hasFace) {
         this.logger.warn(
           `Attendance photo rejected: no human face detected (skinRatio: ${faceResult.skinRatio.toFixed(2)}, contrast: ${faceResult.facialContrast.toFixed(2)})`,
@@ -257,7 +268,22 @@ export class UploadsService {
     }
   }
 
+  /** Sinkronus (untuk endpoint verify-face yang lebih ringan / test) */
   checkFace(buffer: Buffer) {
     return validateHumanFaceInImage(buffer);
+  }
+
+  /** Async via Worker Thread (untuk production attendance upload) */
+  async checkFaceAsync(buffer: Buffer) {
+    try {
+      return await FaceWorkerPool.getInstance().validate(buffer);
+    } catch {
+      return validateHumanFaceInImage(buffer);
+    }
+  }
+
+  /** Status worker pool untuk monitoring */
+  workerPoolStatus() {
+    return FaceWorkerPool.getInstance().status();
   }
 }

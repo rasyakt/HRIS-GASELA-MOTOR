@@ -181,7 +181,10 @@ export class AnnouncementsService {
     return { id };
   }
 
-  async list(query: AnnouncementQuery): Promise<AnnouncementListDto> {
+  async list(
+    query: AnnouncementQuery,
+    currentEmployeeId?: number,
+  ): Promise<AnnouncementListDto> {
     const page = query.page ?? 1;
     const limit = Math.min(query.limit ?? 10, 100);
     const where: Record<string, unknown> = {};
@@ -204,7 +207,7 @@ export class AnnouncementsService {
       this.prisma.announcement.count({ where }),
     ]);
     return {
-      items: items.map((a) => this.toDto(a)),
+      items: items.map((a) => this.toDto(a, currentEmployeeId)),
       page,
       limit,
       total,
@@ -287,6 +290,59 @@ export class AnnouncementsService {
       update: {},
     });
     return { announcementId, read: true };
+  }
+
+  async markAllRead(employeeId: number) {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: employeeId },
+      select: { departmentId: true, positionId: true },
+    });
+    if (!employee) {
+      throw new NotFoundException('Karyawan tidak ditemukan');
+    }
+    const today = new Date();
+    const or: Prisma.AnnouncementWhereInput[] = [{ targetAudience: 'all' }];
+    if (employee.departmentId) {
+      or.push({
+        targetAudience: 'department',
+        targetDepartmentId: employee.departmentId,
+      });
+    }
+    if (employee.positionId) {
+      or.push({
+        targetAudience: 'position',
+        targetPositionId: employee.positionId,
+      });
+    }
+    or.push({ targetAudience: 'specific', targetEmployeeId: employeeId });
+    const unreadAnnouncements = await this.prisma.announcement.findMany({
+      where: {
+        isPublished: true,
+        publishDate: { lte: today },
+        OR: [{ expiryDate: null }, { expiryDate: { gte: today } }],
+        AND: { OR: or },
+        reads: { none: { employeeId } },
+      },
+      select: { id: true },
+    });
+
+    if (unreadAnnouncements.length > 0) {
+      await this.prisma.$transaction(
+        unreadAnnouncements.map((a) =>
+          this.prisma.announcementRead.upsert({
+            where: {
+              announcementId_employeeId: {
+                announcementId: a.id,
+                employeeId,
+              },
+            },
+            create: { announcementId: a.id, employeeId },
+            update: {},
+          }),
+        ),
+      );
+    }
+    return { markedCount: unreadAnnouncements.length };
   }
 
   async unreadCount(employeeId: number) {

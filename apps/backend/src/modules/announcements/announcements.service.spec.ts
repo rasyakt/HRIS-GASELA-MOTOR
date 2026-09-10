@@ -169,4 +169,13 @@ describe('AnnouncementsService', () => {
       expect(result).toEqual({ announcementId: 1, read: true });
     });
   });
+
+  describe('markAllRead', () => {
+    it('menandai semua pengumuman aktif sebagai sudah dibaca', async () => {
+      prisma.announcement.findMany.mockResolvedValue([{ id: 1 }, { id: 2 }]);
+      prisma.$transaction.mockResolvedValue([{}, {}]);
+      const result = await service.markAllRead(2);
+      expect(result).toEqual({ markedCount: 2 });
+    });
+  });
 });
