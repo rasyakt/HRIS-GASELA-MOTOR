@@ -33,6 +33,7 @@ import { flipJpegBuffer } from '../../common/utils/face-validator.util';
 export class UploadsController {
   constructor(private readonly uploadsService: UploadsService) {}
 
+
   @Throttle({ global: { limit: 10, ttl: 60000 } })
   @Post()
   @ApiOperation({ summary: 'Unggah file (avatar/attendance/document)' })
@@ -168,4 +169,14 @@ export class UploadsController {
       type: this.uploadsService.getMimeType(fileName),
     });
   }
+
+  @Roles('admin', 'superadmin', 'hrd', 'owner')
+  @Get('worker-pool/status')
+  @ApiOperation({
+    summary: 'Status Worker Pool face detection — monitoring kapasitas concurrent absensi',
+  })
+  workerPoolStatus() {
+    return { data: this.uploadsService.workerPoolStatus() };
+  }
 }
+

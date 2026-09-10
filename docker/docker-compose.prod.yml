@@ -23,7 +23,9 @@ services:
     env_file: ../apps/backend/.env
     environment:
       TZ: Asia/Jakarta
-      DATABASE_URL: mysql://root:${DB_ROOT_PASSWORD:?Isi DB_ROOT_PASSWORD di .env}@mysql:3306/gasela_hris
+      NODE_ENV: production
+      # Connection pool: 20 koneksi DB per container, cukup untuk 1.000 user/hari
+      DATABASE_URL: mysql://root:${DB_ROOT_PASSWORD:?Isi DB_ROOT_PASSWORD di .env}@mysql:3306/gasela_hris?connection_limit=20&pool_timeout=30&connect_timeout=10
       CORS_ORIGINS: ${CORS_ORIGINS:?Isi CORS_ORIGINS di .env}
     ports:
       - '3001:3001'
@@ -32,6 +34,22 @@ services:
         condition: service_healthy
     volumes:
       - backend-uploads:/app/uploads
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3001/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Resource limits untuk VPS 2 core / 4GB RAM
+    # Sesuaikan dengan spesifikasi server Anda
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
 
   web:
     build:

@@ -5,13 +5,35 @@ import { join } from 'path';
 import { UploadsService } from './uploads.service';
 import { ConfigService } from '@nestjs/config';
 
+// Mock validasi wajah agar tidak membaca pixel JPEG nyata
 jest.mock('../../common/utils/face-validator.util', () => ({
   validateHumanFaceInImage: jest.fn(() => ({
     hasFace: true,
     skinRatio: 0.35,
     facialContrast: 25,
   })),
+  flipJpegBuffer: jest.fn((buf: Buffer) => buf),
 }));
+
+// Mock FaceWorkerPool agar tidak spawn Worker Thread di environment test
+jest.mock('../../common/utils/face-worker-pool', () => ({
+  FaceWorkerPool: {
+    getInstance: jest.fn(() => ({
+      validate: jest.fn().mockResolvedValue({
+        hasFace: true,
+        skinRatio: 0.35,
+        facialContrast: 25,
+      }),
+      status: jest.fn().mockReturnValue({
+        poolSize: 2,
+        idleWorkers: 2,
+        busyWorkers: 0,
+        queuedTasks: 0,
+      }),
+    })),
+  },
+}));
+
 
 describe('UploadsService', () => {
   let service: UploadsService;
