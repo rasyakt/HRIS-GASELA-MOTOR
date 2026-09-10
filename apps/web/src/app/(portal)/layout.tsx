@@ -526,23 +526,12 @@ export default function PortalLayout({
                 {pageTitle}
               </h1>
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              {/* Mobile Quick Search icon trigger */}
-              {totalItemsCount > 1 && (
-                <button
-                  onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
-                  className="flex sm:hidden items-center justify-center size-8 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 transition-colors"
-                  title="Cari fitur"
-                >
-                  <Search className="size-4" />
-                </button>
-              )}
-
+            <div className="flex items-center gap-2 shrink-0">
               {/* Desktop Ctrl+K search trigger */}
               {totalItemsCount > 1 && (
                 <button
                   onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
-                  className="hidden sm:flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                  className="hidden sm:flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 cursor-pointer"
                 >
                   <Search className="size-3.5" />
                   <span>Cari fitur…</span>
@@ -550,28 +539,22 @@ export default function PortalLayout({
                 </button>
               )}
 
-              {/* Announcements / Notifications Quick Link */}
-              <Link
-                href="/announcements"
-                className="relative flex items-center justify-center size-8 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 transition-colors"
-                title="Pengumuman"
-              >
-                <Megaphone className="size-4" />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 flex size-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-zinc-950" />
-                )}
-              </Link>
+              {/* Desktop Dark / Light Theme Toggle */}
+              <div className="hidden sm:block">
+                <ThemeToggle />
+              </div>
 
-              {/* Dark / Light Theme Toggle */}
-              <ThemeToggle />
-
+              {/* User Profile Avatar & Dropdown */}
               <div className="relative">
                 <button
                   onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                  className="flex items-center gap-2 rounded-full p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none"
+                  className="flex items-center gap-2 rounded-full p-0.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none cursor-pointer"
                 >
-                  <div className="flex size-7 sm:size-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold uppercase shadow-2xs">
+                  <div className="relative flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold uppercase shadow-2xs">
                     {user.fullName.split(' ').map((n) => n[0]).slice(0, 2).join('')}
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 flex size-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-zinc-950" />
+                    )}
                   </div>
                   <span className="hidden sm:inline text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-200 mr-1 max-w-32 truncate">
                     {user.fullName}
@@ -593,6 +576,13 @@ export default function PortalLayout({
                           {ROLE_LABEL[user.role]}
                         </p>
                       </div>
+
+                      {/* Mobile Theme Toggle inside Menu */}
+                      <div className="sm:hidden flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 transition-colors mb-0.5">
+                        <span className="text-zinc-500 dark:text-zinc-400">Tema Gelap/Terang</span>
+                        <ThemeToggle />
+                      </div>
+
                       <Link
                         href="/profile"
                         onClick={() => setProfileMenuOpen(false)}
@@ -601,10 +591,13 @@ export default function PortalLayout({
                         <User className="size-4" />
                         Profil Saya
                       </Link>
+
+                      <div className="h-px bg-zinc-100 dark:border-zinc-800 my-1" />
+
                       <button
                         onClick={handleLogout}
                         disabled={loggingOut}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors"
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
                       >
                         <LogOut className="size-4" />
                         {loggingOut ? 'Keluar…' : 'Keluar'}
