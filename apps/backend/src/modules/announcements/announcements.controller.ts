@@ -64,8 +64,11 @@ export class AnnouncementsController {
   @Roles('admin', 'hrd', 'owner')
   @Get()
   @ApiOperation({ summary: 'Semua pengumuman (admin/hrd/owner, pagination)' })
-  list(@Query(new ZodValidationPipe()) query: AnnouncementQueryDto) {
-    return this.announcementsService.list(query);
+  list(
+    @CurrentUser() user: AuthUser,
+    @Query(new ZodValidationPipe()) query: AnnouncementQueryDto,
+  ) {
+    return this.announcementsService.list(query, user.employeeId);
   }
 
   @Get('my')
@@ -87,6 +90,12 @@ export class AnnouncementsController {
       user.employeeId,
       body.announcementId,
     );
+  }
+
+  @Post('read-all')
+  @ApiOperation({ summary: 'Tandai semua pengumuman aktif sudah dibaca' })
+  markAllRead(@CurrentUser() user: AuthUser) {
+    return this.announcementsService.markAllRead(user.employeeId);
   }
 
   @Get('unread-count')
