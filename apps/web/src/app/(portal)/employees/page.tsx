@@ -132,7 +132,7 @@ export default function EmployeesPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [drawerTab, setDrawerTab] = useState<
-    'profile' | 'job' | 'documents' | 'review' | 'training' | 'asset' | 'account'
+    'profile' | 'job' | 'documents' | 'review' | 'training' | 'asset' | 'family' | 'account'
   >('profile');
 
   // Form States
@@ -822,24 +822,34 @@ export default function EmployeesPage() {
               {/* Detail Tabs (Only when employee selected) */}
               {selectedEmployeeId && (
                 <>
-                  {/* Mobile Tab Selector (Zero-scroll, instant pick) */}
-                  <div className="sm:hidden px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/70">
-                    <div className="relative">
+                  {/* Mobile Tab Selector (Zero-scroll, simple & professional) */}
+                  <div className="sm:hidden px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/90 dark:bg-zinc-900/80">
+                    <div className="relative flex items-center">
+                      <div className="pointer-events-none absolute left-3 flex items-center text-zinc-600 dark:text-zinc-300">
+                        {drawerTab === 'profile' && <User className="size-3.5" />}
+                        {drawerTab === 'job' && <Briefcase className="size-3.5" />}
+                        {drawerTab === 'documents' && <FileText className="size-3.5" />}
+                        {drawerTab === 'review' && <Award className="size-3.5" />}
+                        {drawerTab === 'training' && <GraduationCap className="size-3.5" />}
+                        {drawerTab === 'asset' && <Package className="size-3.5" />}
+                        {drawerTab === 'family' && <HeartHandshake className="size-3.5" />}
+                        {drawerTab === 'account' && <Shield className="size-3.5" />}
+                      </div>
                       <select
                         aria-label="Pilih bagian detail karyawan"
                         value={drawerTab}
                         onChange={(e) => setDrawerTab(e.target.value as any)}
-                        className="w-full appearance-none rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-xs font-semibold text-zinc-900 dark:text-zinc-100 shadow-2xs focus:outline-none focus:ring-2 focus:ring-primary pr-8 cursor-pointer"
+                        className="w-full appearance-none rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 pl-9 pr-8 py-2 text-xs font-semibold text-zinc-900 dark:text-zinc-100 shadow-2xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
                       >
-                        <option value="profile">👤 Profil Pribadi</option>
-                        <option value="job">💼 Pekerjaan &amp; Gaji</option>
-                        <option value="documents">📄 Dokumen &amp; Berkas</option>
-                        <option value="review">⭐ Review Kinerja</option>
-                        <option value="training">🎓 Pelatihan &amp; Sertifikasi</option>
-                        <option value="asset">📦 Aset Perusahaan</option>
-                        <option value="family">🤝 Data Keluarga</option>
+                        <option value="profile">Profil Pribadi</option>
+                        <option value="job">Pekerjaan &amp; Gaji</option>
+                        <option value="documents">Dokumen &amp; Berkas</option>
+                        <option value="review">Review Kinerja</option>
+                        <option value="training">Pelatihan &amp; Sertifikasi</option>
+                        <option value="asset">Aset Perusahaan</option>
+                        <option value="family">Data Keluarga</option>
                         {user && roleAtLeast(user.role, 'admin') && (
-                          <option value="account">🛡️ Akun Pengguna</option>
+                          <option value="account">Akun Pengguna</option>
                         )}
                       </select>
                       <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-4 text-zinc-400" />

@@ -152,10 +152,13 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
         {/* Prefix Badge +62 */}
         <div
           className={cn(
-            'flex h-full shrink-0 select-none items-center gap-1 border-r border-input bg-zinc-100/90 px-2.5 font-medium text-xs text-zinc-600 dark:bg-zinc-800/80 dark:text-zinc-400 rounded-l-[7px]'
+            'flex h-full shrink-0 select-none items-center gap-1.5 border-r border-input bg-zinc-100/90 px-2.5 font-medium text-xs text-zinc-600 dark:bg-zinc-800/80 dark:text-zinc-400 rounded-l-[7px]'
           )}
         >
-          <span className="text-xs">🇮🇩</span>
+          <svg className="size-3.5 rounded-[2px] shadow-2xs border border-zinc-200 dark:border-zinc-700 overflow-hidden shrink-0" viewBox="0 0 3 2">
+            <rect width="3" height="1" fill="#e11d48" />
+            <rect y="1" width="3" height="1" fill="#ffffff" />
+          </svg>
           <span className="font-semibold text-zinc-700 dark:text-zinc-200">+62</span>
         </div>
 

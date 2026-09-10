@@ -13,6 +13,7 @@ import {
   ChevronUp,
   Loader2,
   FileCheck,
+  ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -234,8 +235,9 @@ export function ImportEmployeesModal({ isOpen, onClose, onSuccess }: ImportEmplo
                   </p>
                 </div>
 
-                <div className="border-t border-zinc-100 pt-2 text-[10px] text-zinc-400">
-                  🛡️ <strong>Prinsip Keamanan & Transaksi:</strong> Sistem menerapkan transaksi atomik (All-or-Nothing). Jika terdapat 1 baris yang keliru, sistem tidak akan menyimpan data parsial agar tidak terjadi data ganda saat Anda mengunggah ulang.
+                <div className="border-t border-zinc-100 dark:border-zinc-800 pt-2 text-[10px] text-zinc-400 flex items-center gap-1">
+                  <ShieldCheck className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span><strong>Prinsip Keamanan &amp; Transaksi:</strong> Sistem menerapkan transaksi atomik (All-or-Nothing). Jika terdapat 1 baris yang keliru, sistem tidak akan menyimpan data parsial agar tidak terjadi data ganda saat Anda mengunggah ulang.</span>
                 </div>
               </div>
             )}

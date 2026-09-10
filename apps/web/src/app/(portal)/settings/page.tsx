@@ -1601,17 +1601,22 @@ export default function SettingsPage() {
       </div>
 
       {/* ── SUB-MENU TABS ── */}
-      {/* Mobile Menu Dropdown (Zero-scroll, instant pick) */}
+      {/* Mobile Menu Dropdown (Zero-scroll, simple & professional) */}
       <div className="sm:hidden">
         <label className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5 block">
           Menu Pengaturan
         </label>
-        <div className="relative">
+        <div className="relative flex items-center">
+          <div className="pointer-events-none absolute left-3 flex items-center text-zinc-600 dark:text-zinc-300">
+            {activeTab === 'company' && <Building2 className="size-4" />}
+            {activeTab === 'shifts' && <Clock className="size-4" />}
+            {activeTab === 'holidays' && <CalendarDays className="size-4" />}
+          </div>
           <select
             aria-label="Pilih menu pengaturan"
             value={activeTab}
             onChange={(e) => handleTabChange(e.target.value as SettingsTab)}
-            className="w-full appearance-none rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100 shadow-2xs focus:outline-none focus:ring-2 focus:ring-primary pr-9 cursor-pointer"
+            className="w-full appearance-none rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-9.5 pr-9 py-2.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100 shadow-2xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
           >
             {SETTINGS_TABS.map((tab) => (
               <option key={tab.id} value={tab.id}>
