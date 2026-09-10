@@ -861,7 +861,82 @@ export default function PayrollPage() {
                 <p className="text-sm text-zinc-400">Memuat…</p>
               ) : data && data.items.length > 0 ? (
                 <>
-                  <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+                  {/* Mobile View for Admin (Cards) */}
+                  <div className="grid grid-cols-1 gap-3 lg:hidden">
+                    {data.items.map((r) => {
+                      const selectable =
+                        r.status === 'draft' || r.status === 'approved';
+                      return (
+                        <div
+                          key={r.id}
+                          className={`flex flex-col gap-2 rounded-xl border p-3.5 transition-all ${
+                            selected.has(r.id)
+                              ? 'border-primary bg-primary/5 dark:border-zinc-700 dark:bg-zinc-800/60'
+                              : 'border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 shadow-2xs'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              {selectable && (
+                                <input
+                                  type="checkbox"
+                                  className="size-4 rounded accent-zinc-900 dark:accent-amber-500"
+                                  checked={selected.has(r.id)}
+                                  onChange={() => toggle(r.id)}
+                                />
+                              )}
+                              <div className="min-w-0">
+                                <p className="font-semibold text-sm text-zinc-900 dark:text-white truncate">
+                                  {r.employeeName}
+                                </p>
+                                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
+                                  {r.payrollNumber}
+                                </p>
+                              </div>
+                            </div>
+                            <Badge className={`${badgeClass(r.status)} text-[10px] shrink-0`}>
+                              {statusLabel(r.status)}
+                            </Badge>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2 text-xs pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                            <div>
+                              <p className="text-zinc-500 dark:text-zinc-400 text-[10px]">Periode</p>
+                              <p className="font-medium text-zinc-800 dark:text-zinc-200">
+                                {fmtMonthYear(r.month, r.year)}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-zinc-500 dark:text-zinc-400 text-[10px]">Bruto</p>
+                              <p className="font-mono text-zinc-600 dark:text-zinc-300">
+                                {fmtRupiah(r.grossSalary)}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-zinc-500 dark:text-zinc-400 text-[10px]">Bersih</p>
+                              <p className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                                {fmtRupiah(r.netSalary)}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full sm:w-auto text-xs"
+                              onClick={() => setDetailId(r.id)}
+                            >
+                              Lihat Detail Slip
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Desktop View for Admin (Table) */}
+                  <div className="hidden lg:block overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
                     <table className="w-full text-xs md:text-sm whitespace-nowrap">
                       <thead>
                         <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400">
@@ -978,57 +1053,62 @@ export default function PayrollPage() {
                   )}
 
                   {isAdmin && selected.size > 0 && (
-                    <div className="mt-4 flex items-center gap-2 border-t border-zinc-200 pt-4">
-                      <span className="text-sm text-zinc-600">
+                    <div className="fixed bottom-14 lg:bottom-4 inset-x-3 sm:inset-x-auto sm:right-6 z-40 flex flex-wrap items-center justify-between sm:justify-start gap-2 rounded-xl border border-zinc-200 bg-white/95 backdrop-blur-md p-3 shadow-xl dark:border-zinc-700 dark:bg-zinc-900/95">
+                      <span className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100 mr-1">
                         {selected.size} slip dipilih
                       </span>
-                      <Button
-                        size="sm"
-                        onClick={() => approve.mutate()}
-                        disabled={approve.isPending}
-                      >
-                        {approve.isPending ? (
-                          <Loader2
-                            data-icon="inline-start"
-                            className="animate-spin"
-                          />
-                        ) : (
-                          <CheckCheck data-icon="inline-start" />
-                        )}
-                        Setujui
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => markPaid.mutate()}
-                        disabled={markPaid.isPending}
-                      >
-                        {markPaid.isPending ? (
-                          <Loader2
-                            data-icon="inline-start"
-                            className="animate-spin"
-                          />
-                        ) : (
-                          <Wallet data-icon="inline-start" />
-                        )}
-                        Tandai Dibayar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => deleteDrafts.mutate()}
-                        disabled={deleteDrafts.isPending}
-                      >
-                        {deleteDrafts.isPending ? (
-                          <Loader2
-                            data-icon="inline-start"
-                            className="animate-spin text-white"
-                          />
-                        ) : (
-                          <Trash2 data-icon="inline-start" className="size-3.5" />
-                        )}
-                        Hapus Draft
-                      </Button>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Button
+                          size="sm"
+                          onClick={() => approve.mutate()}
+                          disabled={approve.isPending}
+                          className="text-xs"
+                        >
+                          {approve.isPending ? (
+                            <Loader2
+                              data-icon="inline-start"
+                              className="animate-spin"
+                            />
+                          ) : (
+                            <CheckCheck data-icon="inline-start" />
+                          )}
+                          Setujui
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => markPaid.mutate()}
+                          disabled={markPaid.isPending}
+                          className="text-xs"
+                        >
+                          {markPaid.isPending ? (
+                            <Loader2
+                              data-icon="inline-start"
+                              className="animate-spin"
+                            />
+                          ) : (
+                            <Wallet data-icon="inline-start" />
+                          )}
+                          Tandai Dibayar
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => deleteDrafts.mutate()}
+                          disabled={deleteDrafts.isPending}
+                          className="text-xs"
+                        >
+                          {deleteDrafts.isPending ? (
+                            <Loader2
+                              data-icon="inline-start"
+                              className="animate-spin text-white"
+                            />
+                          ) : (
+                            <Trash2 data-icon="inline-start" className="size-3.5" />
+                          )}
+                          Hapus Draft
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </>
@@ -1060,24 +1140,24 @@ export default function PayrollPage() {
                 {/* Mobile View (Cards) */}
                 <div className="grid grid-cols-1 gap-3 lg:hidden">
                   {data.items.map((r) => (
-                    <div key={r.id} className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3">
+                    <div key={r.id} className="flex flex-col gap-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3.5 shadow-2xs">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-zinc-900 text-sm">{fmtMonthYear(r.month, r.year)}</span>
+                        <span className="font-semibold text-zinc-900 dark:text-white text-sm">{fmtMonthYear(r.month, r.year)}</span>
                         <Badge className={badgeClass(r.status)}>{statusLabel(r.status)}</Badge>
                       </div>
-                      <p className="text-xs text-zinc-500 font-mono mb-1">{r.payrollNumber}</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono mb-1">{r.payrollNumber}</p>
                       
-                      <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-zinc-100 dark:border-zinc-800">
                         <div>
-                          <p className="text-zinc-500 mb-0.5">Gaji Bruto</p>
-                          <p className="font-medium text-zinc-600">{fmtRupiah(r.grossSalary)}</p>
+                          <p className="text-zinc-500 dark:text-zinc-400 mb-0.5">Gaji Bruto</p>
+                          <p className="font-medium text-zinc-700 dark:text-zinc-300 font-mono">{fmtRupiah(r.grossSalary)}</p>
                         </div>
                         <div>
-                          <p className="text-zinc-500 mb-0.5">Gaji Bersih</p>
-                          <p className="font-bold text-zinc-900">{fmtRupiah(r.netSalary)}</p>
+                          <p className="text-zinc-500 dark:text-zinc-400 mb-0.5">Gaji Bersih</p>
+                          <p className="font-bold text-zinc-900 dark:text-zinc-100 font-mono">{fmtRupiah(r.netSalary)}</p>
                         </div>
                       </div>
-                      <div className="mt-2 text-right border-t border-zinc-200 pt-2">
+                      <div className="mt-2 text-right border-t border-zinc-100 dark:border-zinc-800 pt-2">
                         <Button
                           variant="outline"
                           size="sm"

@@ -156,37 +156,48 @@ export default function ApprovalsPage() {
                         Diajukan {fmtDateTime(r.createdAt)}
                       </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <Button
-                        size="xs"
-                        onClick={() => decideLeave.mutate({ id: r.id, status: 'approved' })}
-                        disabled={busy}
-                      >
-                        <Check data-icon="inline-start" />
-                        Setujui
-                      </Button>
-                      {rejectingId !== r.id ? (
-                        <Button
-                          variant="outline"
-                          size="xs"
-                          onClick={() => {
-                            setRejectingId(r.id);
-                            setRejectError(null);
-                          }}
-                          disabled={busy}
-                        >
-                          <X data-icon="inline-start" />
-                          Tolak
-                        </Button>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            placeholder="Alasan penolakan…"
-                            className="h-7 w-48 rounded-lg border border-input bg-transparent dark:bg-zinc-800 px-2 text-xs text-zinc-900 dark:text-zinc-100 outline-none focus-visible:border-ring"
-                            value={rejectReason}
-                            onChange={(e) => setRejectReason(e.target.value)}
-                          />
+                    <div className="flex w-full sm:w-auto items-center justify-end gap-2 shrink-0">
+                      {rejectingId !== r.id && (
+                        <>
+                          <Button
+                            size="xs"
+                            onClick={() => decideLeave.mutate({ id: r.id, status: 'approved' })}
+                            disabled={busy}
+                          >
+                            <Check data-icon="inline-start" />
+                            Setujui
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="xs"
+                            onClick={() => {
+                              setRejectingId(r.id);
+                              setRejectError(null);
+                            }}
+                            disabled={busy}
+                          >
+                            <X data-icon="inline-start" />
+                            Tolak
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {rejectingId === r.id && (
+                    <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 space-y-2">
+                      <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                        Alasan Penolakan Cuti:
+                      </p>
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        <input
+                          type="text"
+                          placeholder="Tulis alasan penolakan (min. 5 karakter)…"
+                          className="h-8 flex-1 rounded-lg border border-input bg-transparent dark:bg-zinc-800 px-2.5 text-xs text-zinc-900 dark:text-zinc-100 outline-none focus-visible:border-ring"
+                          value={rejectReason}
+                          onChange={(e) => setRejectReason(e.target.value)}
+                        />
+                        <div className="flex items-center gap-1.5 justify-end">
                           <Button
                             size="xs"
                             variant="destructive"
@@ -198,7 +209,7 @@ export default function ApprovalsPage() {
                             ) : (
                               <X data-icon="inline-start" />
                             )}
-                            Tolak
+                            Konfirmasi Tolak
                           </Button>
                           <Button
                             size="xs"
@@ -208,11 +219,11 @@ export default function ApprovalsPage() {
                             Batal
                           </Button>
                         </div>
+                      </div>
+                      {rejectError && (
+                        <p className="text-xs text-red-600 dark:text-red-400">{rejectError}</p>
                       )}
                     </div>
-                  </div>
-                  {rejectingId === r.id && rejectError && (
-                    <p className="mt-2 text-xs text-red-600 dark:text-red-400">{rejectError}</p>
                   )}
                 </div>
               ))}
@@ -254,30 +265,32 @@ export default function ApprovalsPage() {
                         Diajukan {fmtDateTime(r.createdAt)}
                       </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <Button
-                        size="xs"
-                        onClick={() => decideOvertime.mutate({ id: r.id, status: 'approved' })}
-                        disabled={busy}
-                      >
-                        <Check data-icon="inline-start" />
-                        Setujui
-                      </Button>
+                    <div className="flex w-full sm:w-auto items-center justify-end gap-2 shrink-0">
                       {rejectingId !== r.id ? (
-                        <Button
-                          variant="outline"
-                          size="xs"
-                          onClick={() => {
-                            setRejectingId(r.id);
-                            setRejectError(null);
-                          }}
-                          disabled={busy}
-                        >
-                          <X data-icon="inline-start" />
-                          Tolak
-                        </Button>
+                        <>
+                          <Button
+                            size="xs"
+                            onClick={() => decideOvertime.mutate({ id: r.id, status: 'approved' })}
+                            disabled={busy}
+                          >
+                            <Check data-icon="inline-start" />
+                            Setujui
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="xs"
+                            onClick={() => {
+                              setRejectingId(r.id);
+                              setRejectError(null);
+                            }}
+                            disabled={busy}
+                          >
+                            <X data-icon="inline-start" />
+                            Tolak
+                          </Button>
+                        </>
                       ) : (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
                           <Button
                             size="xs"
                             variant="destructive"

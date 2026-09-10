@@ -759,12 +759,12 @@ export default function EmployeesPage() {
         return (
           <div className="fixed inset-0 z-50 overflow-hidden">
             <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm transition-opacity" onClick={handleCloseDrawer} />
-            <div className="pointer-events-none fixed inset-0 flex items-center justify-center p-4">
-              <div className="pointer-events-auto w-full max-w-3xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+            <div className="pointer-events-none fixed inset-0 flex items-center justify-center p-2 sm:p-4">
+              <div className="pointer-events-auto w-full max-w-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 p-6">
+                <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80 p-4 sm:p-6">
                   <div>
-                    <h3 className="text-lg font-bold text-zinc-900 flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                       {selectedEmployeeId ? (isEditMode && canEditTarget ? 'Ubah Data Karyawan' : 'Detail Karyawan') : 'Tambah Karyawan Baru'}
                       {isTargetSuperadmin && (
                         <Badge className="bg-amber-600 text-white font-semibold text-[10px]">
@@ -773,17 +773,17 @@ export default function EmployeesPage() {
                       )}
                     </h3>
                     {selectedEmployeeId && (
-                      <p className="text-xs text-zinc-500 mt-1">ID: {selectedEmployeeId} · NIK: {formData.employeeNumber}</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">ID: {selectedEmployeeId} · NIK: {formData.employeeNumber}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     {selectedEmployeeId && !isEditMode && canEditTarget && (
                       <Button onClick={() => setIsEditMode(true)} variant="outline" size="sm">
                         <Edit className="mr-1.5 size-4" />
                         Ubah
                       </Button>
                     )}
-                    <button onClick={handleCloseDrawer} className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors">
+                    <button onClick={handleCloseDrawer} className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors">
                       <X className="size-5" />
                     </button>
                   </div>
@@ -791,7 +791,7 @@ export default function EmployeesPage() {
 
               {/* Detail Tabs (Only when employee selected) */}
               {selectedEmployeeId && (
-                <div className="border-b border-zinc-200 bg-white overflow-x-auto">
+                <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-x-auto no-scrollbar">
                   <div className="flex min-w-max px-4">
                     <button
                       onClick={() => setDrawerTab('profile')}
@@ -888,7 +888,7 @@ export default function EmployeesPage() {
               )}
 
               {/* Form Content / Details body */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
                 {formError && <ErrorBanner message={formError} />}
 
                 {isTargetSuperadmin && user?.role !== 'superadmin' && (
@@ -913,7 +913,7 @@ export default function EmployeesPage() {
                     {/* Tab 1: Profile & Personal */}
                     {(drawerTab === 'profile' || !selectedEmployeeId) && (
                       <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <div className="flex items-center justify-between">
                               <Label htmlFor="employeeNumber" required>NIK / Nomor Karyawan</Label>
@@ -950,7 +950,7 @@ export default function EmployeesPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="email" required>Email Perusahaan</Label>
                             <Input
@@ -974,7 +974,7 @@ export default function EmployeesPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="birthDate" optional>Tanggal Lahir</Label>
                             <Input
@@ -1016,7 +1016,7 @@ export default function EmployeesPage() {
 
                         <div className="rounded-md bg-zinc-50 p-4 border border-zinc-100 space-y-3">
                           <h4 className="text-xs font-bold text-zinc-700 tracking-wider uppercase">Kontak Darurat</h4>
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <Label htmlFor="emergencyContactName" optional>Nama Kontak</Label>
                               <Input
@@ -1047,7 +1047,7 @@ export default function EmployeesPage() {
                       <div className="space-y-4">
                         {!selectedEmployeeId && <div className="h-px bg-zinc-200 my-4" />}
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="departmentId" optional>Departemen</Label>
                             <select
@@ -1080,7 +1080,7 @@ export default function EmployeesPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="joinDate" required>Tanggal Bergabung</Label>
                             <Input
@@ -1103,7 +1103,7 @@ export default function EmployeesPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="employmentStatus" required>Status Pekerjaan</Label>
                             <select
@@ -1135,7 +1135,7 @@ export default function EmployeesPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="basicSalary" required>Gaji Pokok</Label>
                             <CurrencyInput
@@ -1202,7 +1202,7 @@ export default function EmployeesPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="taxNumber" optional>Nomor NPWP</Label>
                             <MaskedInput
@@ -1258,7 +1258,7 @@ export default function EmployeesPage() {
                           Tambah Dokumen Baru
                         </h4>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="docType">Tipe Dokumen</Label>
                             <select
@@ -1418,7 +1418,7 @@ export default function EmployeesPage() {
 
               {/* Bottom Actions footer */}
               {isEditMode && canEditTarget && (drawerTab === 'profile' || drawerTab === 'job' || !selectedEmployeeId) && (
-                <div className="border-t border-zinc-100 bg-zinc-50/50 p-6 flex items-center justify-between gap-3 shrink-0">
+                <div className="border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 p-4 sm:p-6 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
                   {selectedEmployeeId && !isTargetSuperadmin ? (
                     <Button
                       type="button"
@@ -1428,7 +1428,7 @@ export default function EmployeesPage() {
                           deactivateEmployee.mutate();
                         }
                       }}
-                      className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                      className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 w-full sm:w-auto"
                     >
                       Nonaktifkan Karyawan
                     </Button>
@@ -1436,13 +1436,14 @@ export default function EmployeesPage() {
                     <div />
                   )}
 
-                  <div className="flex items-center gap-3">
-                    <Button type="button" variant="outline" onClick={handleCloseDrawer}>
+                  <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                    <Button type="button" variant="outline" className="flex-1 sm:flex-initial" onClick={handleCloseDrawer}>
                       Batal
                     </Button>
                     <Button
                       type="submit"
                       form="employee-form"
+                      className="flex-1 sm:flex-initial"
                       disabled={createEmployee.isPending || updateEmployee.isPending}
                     >
                       {(createEmployee.isPending || updateEmployee.isPending) && (

@@ -796,7 +796,7 @@ export default function ReportsPage() {
       )}
 
       {/* ── TAB BAR ── */}
-      <div className="flex items-center gap-1 border-b border-zinc-200 dark:border-zinc-800 mb-6 overflow-x-auto">
+      <div className="flex items-center gap-1 border-b border-zinc-200 dark:border-zinc-800 mb-6 overflow-x-auto no-scrollbar">
         {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.key;
@@ -819,7 +819,7 @@ export default function ReportsPage() {
 
       {/* ── FILTER BAR (horizontal, full-width) ── */}
       <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5 mb-6 shadow-2xs">
-        <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+        <div className="flex flex-col xl:flex-row xl:items-end gap-4">
           <div className="flex items-center gap-2 shrink-0">
             <div className="rounded-lg bg-zinc-100 dark:bg-zinc-800 p-2">
               <Filter className="size-4 text-zinc-600 dark:text-zinc-400" />
@@ -852,10 +852,10 @@ export default function ReportsPage() {
             )}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
             <Button
               variant="outline"
-              className="border-red-200 dark:border-red-900/50 bg-red-50/60 dark:bg-red-950/40 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/60 font-semibold text-xs gap-1.5 px-4 py-2.5 h-auto shadow-2xs"
+              className="border-red-200 dark:border-red-900/50 bg-red-50/60 dark:bg-red-950/40 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/60 font-semibold text-xs gap-1.5 px-4 py-2.5 h-auto shadow-2xs w-full sm:w-auto justify-center"
               onClick={() => {
                 setPdfPreviewKind(activeTab);
                 setPdfPreviewOpen(true);
@@ -865,7 +865,7 @@ export default function ReportsPage() {
               <span>Pratinjau &amp; Cetak PDF</span>
             </Button>
             <Button
-              className="text-xs font-semibold gap-1.5 px-4 py-2.5 h-auto shadow-2xs"
+              className="text-xs font-semibold gap-1.5 px-4 py-2.5 h-auto shadow-2xs w-full sm:w-auto justify-center"
               disabled={downloading !== null}
               onClick={() => downloadCsv(activeTab)}
             >
@@ -987,7 +987,7 @@ export default function ReportsPage() {
             {attTotal === 0 ? (
               <EmptyState message="Tidak ada data kehadiran yang sesuai filter." />
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
                 <table className="w-full text-xs md:text-sm whitespace-nowrap">
                   <thead>
                     <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 text-left">
@@ -1177,7 +1177,7 @@ export default function ReportsPage() {
             {leaveTotal === 0 ? (
               <EmptyState message="Tidak ada data cuti yang sesuai filter." />
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
                 <table className="w-full text-xs md:text-sm whitespace-nowrap">
                   <thead>
                     <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 text-left">
@@ -1297,7 +1297,7 @@ export default function ReportsPage() {
             {payRecs.length === 0 ? (
               <EmptyState message="Belum ada data penggajian yang di-generate untuk bulan/tahun ini. Silakan generate gaji terlebih dahulu di menu Penggajian (Payroll)." />
             ) : (
-              <div className="overflow-x-auto max-h-90 overflow-y-auto">
+              <div className="overflow-x-auto max-h-90 overflow-y-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
                 <table className="w-full text-xs md:text-sm whitespace-nowrap">
                   <thead className="sticky top-0 z-10">
                     <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 text-left">

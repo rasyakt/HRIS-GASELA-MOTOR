@@ -106,7 +106,7 @@ function BpjsSettingForm({
             Atur persentase potongan iuran BPJS karyawan dan kontribusi perusahaan tanpa perlu mengedit kode JSON.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <Button type="button" variant="outline" size="sm" onClick={handleResetGov} className="text-xs">
             <RotateCcw className="size-3.5 mr-1" />
             Standar Pemerintah 2024
@@ -471,7 +471,7 @@ function OfficeLocationSettingForm({
             Titik pusat geofence presensi check-in/out karyawan dan peta di Dashboard Admin.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <Button
             type="button"
             variant="outline"
@@ -935,9 +935,80 @@ function ShiftsManagementCard() {
         {shifts.isLoading ? (
           <p className="text-xs text-zinc-400">Memuat data shift…</p>
         ) : shifts.data && shifts.data.length > 0 ? (
-          <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
-            <table className="w-full text-xs text-left">
-              <thead className="bg-zinc-50 dark:bg-zinc-850 text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 font-semibold">
+          <>
+            {/* Mobile View for Shifts (Cards) */}
+            <div className="grid grid-cols-1 gap-3 lg:hidden">
+              {shifts.data.map((s) => (
+                <div
+                  key={s.id}
+                  className="flex flex-col gap-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3.5 shadow-2xs"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-sm text-zinc-900 dark:text-white">{s.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleStatusMutation.mutate({ id: s.id, isActive: !s.isActive })}
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold transition-colors ${
+                        s.isActive
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/50'
+                          : 'bg-zinc-100 text-zinc-600 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700'
+                      }`}
+                    >
+                      {s.isActive ? 'Aktif' : 'Nonaktif'}
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-xs pt-1 border-t border-zinc-100 dark:border-zinc-800">
+                    <div>
+                      <p className="text-[10px] text-zinc-400 dark:text-zinc-500">Jam Kerja</p>
+                      <p className="font-mono font-medium text-zinc-800 dark:text-zinc-200">
+                        {s.startTime.slice(0, 5)} - {s.endTime.slice(0, 5)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-zinc-400 dark:text-zinc-500">Toleransi</p>
+                      <p className="font-medium text-zinc-800 dark:text-zinc-200">
+                        +{s.gracePeriodMinutes} mnt
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-zinc-400 dark:text-zinc-500">Durasi</p>
+                      <p className="font-mono font-medium text-zinc-800 dark:text-zinc-200">
+                        {s.workHours} jam
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="xs"
+                      onClick={() => handleStartEdit(s)}
+                      className="text-xs gap-1"
+                    >
+                      <Pencil className="size-3" /> Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="xs"
+                      onClick={() => {
+                        if (confirm(`Hapus shift "${s.name}"?`)) {
+                          deleteMutation.mutate(s.id);
+                        }
+                      }}
+                      className="text-xs gap-1"
+                    >
+                      <Trash2 className="size-3" /> Hapus
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop View for Shifts (Table) */}
+            <div className="hidden lg:block overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-zinc-50 dark:bg-zinc-850 text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 font-semibold">
                 <tr>
                   <th className="px-3.5 py-2.5">Nama Shift</th>
                   <th className="px-3.5 py-2.5">Jam Masuk</th>
@@ -1031,6 +1102,7 @@ function ShiftsManagementCard() {
               </tbody>
             </table>
           </div>
+        </>
         ) : (
           <p className="text-xs text-zinc-500">Belum ada shift yang terdaftar.</p>
         )}
@@ -1525,7 +1597,7 @@ export default function SettingsPage() {
       </div>
 
       {/* ── SUB-MENU TABS ── */}
-      <div className="flex items-center gap-1.5 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto pb-px">
+      <div className="flex items-center gap-1.5 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto pb-px no-scrollbar">
         {SETTINGS_TABS.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;

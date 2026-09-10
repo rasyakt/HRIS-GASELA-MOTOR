@@ -326,6 +326,51 @@ export default function PortalLayout({
     }
   }
 
+  const bottomNavItems = useMemo(() => {
+    if (!user) return [];
+    if (user.role === 'admin' || user.role === 'hrd' || user.role === 'superadmin') {
+      return [
+        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/employees', label: 'Karyawan', icon: Users },
+        { href: '/approvals', label: 'Approval', icon: CheckCheck, badge: pendingApprovalsCount },
+        { href: '/attendance', label: 'Presensi', icon: Clock },
+        { label: 'Menu', icon: Menu, isMenuTrigger: true },
+      ];
+    }
+    if (user.role === 'manager') {
+      return [
+        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/approvals', label: 'Approval', icon: CheckCheck, badge: pendingApprovalsCount },
+        { href: '/attendance', label: 'Presensi', icon: Clock },
+        { href: '/leave', label: 'Cuti', icon: CalendarDays },
+        { label: 'Menu', icon: Menu, isMenuTrigger: true },
+      ];
+    }
+    if (user.role === 'owner') {
+      return [
+        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/reports', label: 'Laporan', icon: BarChart3 },
+        { href: '/employees', label: 'Karyawan', icon: Users },
+        { href: '/announcements', label: 'Info', icon: Megaphone, badge: unreadCount },
+        { label: 'Menu', icon: Menu, isMenuTrigger: true },
+      ];
+    }
+    if (user.role === 'landing_admin') {
+      return [
+        { href: '/landing-cms', label: 'CMS', icon: Globe },
+        { href: '/profile', label: 'Profil', icon: User },
+      ];
+    }
+    // Employee
+    return [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/attendance', label: 'Presensi', icon: Clock },
+      { href: '/leave', label: 'Cuti', icon: CalendarDays },
+      { href: '/announcements', label: 'Info', icon: Megaphone, badge: unreadCount },
+      { href: '/profile', label: 'Profil', icon: User },
+    ];
+  }, [user, pendingApprovalsCount, unreadCount]);
+
   if (!hasHydrated || !user) {
     return (
       <div className="flex min-h-screen flex-1 items-center justify-center bg-zinc-50 dark:bg-zinc-950">
@@ -341,20 +386,29 @@ export default function PortalLayout({
     const collapsed = !isMobile && isCollapsed;
     return (
       <aside className={`flex h-full flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 transition-all duration-300 ${
-        collapsed ? 'w-16' : 'w-64'
+        isMobile ? 'w-full' : (collapsed ? 'w-16' : 'w-64')
       }`}>
         <div className="flex h-14 items-center border-b border-zinc-100 dark:border-zinc-800/80 px-4 justify-between">
           <GaselaLogo variant="full-dark" size="sm" showText={!collapsed} />
-          {!isMobile && (
+          {!isMobile ? (
             <button
               onClick={toggleCollapse}
               className="rounded-lg p-1.5 hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-850 dark:hover:text-white transition-colors focus:outline-none"
+              title={collapsed ? 'Perluas sidebar' : 'Perkecil sidebar'}
             >
               {collapsed ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
             </button>
+          ) : (
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="rounded-lg p-1.5 hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-850 dark:hover:text-white transition-colors focus:outline-none"
+              title="Tutup menu"
+            >
+              <X className="size-5" />
+            </button>
           )}
         </div>
-        <nav className="flex-1 space-y-4 overflow-y-auto p-3">
+        <nav className="flex-1 space-y-4 overflow-y-auto p-3 no-scrollbar">
           {visibleGroups.map((group) => {
             const isGroupCollapsed = collapsedGroups[group.label] === true;
             return (
@@ -416,6 +470,29 @@ export default function PortalLayout({
             );
           })}
         </nav>
+
+        {/* Mobile Drawer Footer User Profile */}
+        {isMobile && (
+          <div className="border-t border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-900/60 p-3">
+            <div className="flex items-center gap-2.5 px-2 py-1.5 mb-2">
+              <div className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold uppercase shrink-0">
+                {user.fullName.split(' ').map((n) => n[0]).slice(0, 2).join('')}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{user.fullName}</p>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">{ROLE_LABEL[user.role]}</p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="flex w-full items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+            >
+              <LogOut className="size-3.5" />
+              <span>{loggingOut ? 'Keluar…' : 'Keluar'}</span>
+            </button>
+          </div>
+        )}
       </aside>
     );
   };
@@ -426,40 +503,51 @@ export default function PortalLayout({
         <CommandPalette />
         <OfflineBanner />
         {totalItemsCount > 1 && <div className="hidden lg:block h-full">{sidebar(false)}</div>}
+        
+        {/* Mobile Drawer Overlay */}
         {totalItemsCount > 1 && mobileOpen && (
-          <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="fixed inset-0 z-50 lg:hidden">
             <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-xs"
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
               onClick={() => setMobileOpen(false)}
             />
-            <div className="absolute inset-y-0 left-0">{sidebar(true)}</div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-3 left-68 text-white"
-              onClick={() => setMobileOpen(false)}
-            >
-              <X />
-            </Button>
+            <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] shadow-2xl z-10 animate-in slide-in-from-left duration-200">
+              {sidebar(true)}
+            </div>
           </div>
         )}
+
         <div className="flex min-w-0 flex-1 flex-col h-full overflow-hidden">
-          <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 lg:px-6 dark:border-zinc-800 dark:bg-zinc-950">
-            <div className="flex items-center gap-3">
+          <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-3 sm:px-4 lg:px-6 dark:border-zinc-800 dark:bg-zinc-950">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               {totalItemsCount > 1 && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="lg:hidden"
+                  className="lg:hidden shrink-0 size-8"
                   onClick={() => setMobileOpen(true)}
+                  title="Buka menu"
                 >
-                  <Menu />
+                  <Menu className="size-5" />
                 </Button>
               )}
-              <h1 className="text-base font-semibold text-zinc-900 dark:text-white">{pageTitle}</h1>
+              <h1 className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white truncate">
+                {pageTitle}
+              </h1>
             </div>
-            <div className="flex items-center gap-2">
-              {/* Ctrl+K search trigger */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* Mobile Quick Search icon trigger */}
+              {totalItemsCount > 1 && (
+                <button
+                  onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
+                  className="flex sm:hidden items-center justify-center size-8 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 transition-colors"
+                  title="Cari fitur"
+                >
+                  <Search className="size-4" />
+                </button>
+              )}
+
+              {/* Desktop Ctrl+K search trigger */}
               {totalItemsCount > 1 && (
                 <button
                   onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
@@ -477,12 +565,12 @@ export default function PortalLayout({
               <div className="relative">
                 <button
                   onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                  className="flex items-center gap-2.5 rounded-full p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none"
+                  className="flex items-center gap-2 rounded-full p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none"
                 >
-                  <div className="flex size-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold uppercase shadow-2xs">
+                  <div className="flex size-7 sm:size-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold uppercase shadow-2xs">
                     {user.fullName.split(' ').map((n) => n[0]).slice(0, 2).join('')}
                   </div>
-                  <span className="hidden sm:inline text-sm font-semibold text-zinc-700 dark:text-zinc-200 mr-1">
+                  <span className="hidden sm:inline text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-200 mr-1 max-w-32 truncate">
                     {user.fullName}
                   </span>
                 </button>
@@ -493,7 +581,7 @@ export default function PortalLayout({
                       className="fixed inset-0 z-30"
                       onClick={() => setProfileMenuOpen(false)}
                     />
-                    <div className="absolute right-0 top-11 z-40 w-56 rounded-xl border border-zinc-200 bg-white p-2 shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
+                    <div className="absolute right-0 top-11 z-40 w-56 rounded-xl border border-zinc-200 bg-white p-2 shadow-xl dark:border-zinc-800 dark:bg-zinc-900 animate-in fade-in zoom-in-95 duration-100">
                       <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-800 mb-1">
                         <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">
                           {user.fullName}
@@ -524,9 +612,50 @@ export default function PortalLayout({
               </div>
             </div>
           </header>
-          <main className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-900 p-4 lg:p-6">
+
+          <main className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-900 p-3 sm:p-4 lg:p-6 pb-24 lg:pb-6">
             <ErrorBoundary>{children}</ErrorBoundary>
           </main>
+
+          {/* Mobile Bottom Navigation Bar */}
+          {totalItemsCount > 1 && (
+            <nav className="fixed bottom-0 inset-x-0 z-30 flex items-center justify-around border-t border-zinc-200/90 bg-white/95 backdrop-blur-md px-1 py-1 dark:border-zinc-800 dark:bg-zinc-950/95 lg:hidden pb-safe">
+              {bottomNavItems.map((item) => {
+                const active = item.isMenuTrigger
+                  ? mobileOpen
+                  : (item.href ? (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) : false);
+                return (
+                  <button
+                    key={item.label}
+                    onClick={() => {
+                      if (item.isMenuTrigger) {
+                        setMobileOpen(true);
+                      } else if (item.href) {
+                        router.push(item.href);
+                      }
+                    }}
+                    className={`relative flex flex-1 flex-col items-center justify-center py-1 text-[10px] sm:text-[11px] font-medium transition-colors ${
+                      active
+                        ? 'text-primary dark:text-zinc-100 font-bold'
+                        : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    <div className="relative">
+                      <item.icon className={`size-5 ${active ? 'stroke-[2.25]' : 'stroke-1.5'}`} />
+                      {item.badge !== undefined && item.badge > 0 && (
+                        <span className="absolute -top-1 -right-2 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-red-500 px-1 text-[8px] font-bold text-white shadow-xs">
+                          {item.badge > 99 ? '99+' : item.badge}
+                        </span>
+                      )}
+                    </div>
+                    <span className="mt-0.5 tracking-tight truncate max-w-[56px] sm:max-w-[64px]">
+                      {item.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
+          )}
         </div>
       </div>
     </PortalThemeProvider>
