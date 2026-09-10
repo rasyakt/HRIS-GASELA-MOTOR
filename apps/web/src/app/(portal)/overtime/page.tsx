@@ -112,7 +112,7 @@ export default function OvertimePage() {
                   <p className="text-xs text-red-600 dark:text-red-400">{errors.overtimeDate.message}</p>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="startTime" required>Mulai</Label>
                   <Input

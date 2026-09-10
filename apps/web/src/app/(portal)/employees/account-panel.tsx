@@ -144,11 +144,11 @@ export function AccountPanel({
 
       {!userAccount ? (
         // CREATE ACCOUNT FORM
-        <form onSubmit={handleCreate} className="rounded-lg border border-zinc-200 p-4 space-y-4 bg-zinc-50/50">
-          <p className="text-xs text-zinc-500">
+        <form onSubmit={handleCreate} className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-4 space-y-4 bg-zinc-50/50 dark:bg-zinc-900/50">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
             Karyawan <strong>{employeeName}</strong> belum memiliki akun login. Gunakan form di bawah untuk membuatkannya akun baru.
           </p>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="acc-username" required>Username</Label>
               <Input
@@ -164,13 +164,13 @@ export function AccountPanel({
                 id="acc-role"
                 value={role}
                 onChange={(e) => setRole(e.target.value as any)}
-                className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+                className="mt-1 block w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
               >
-                <option value="employee">Karyawan (Staff/Mekanik/Sales)</option>
-                <option value="manager">Manager / Supervisor</option>
-                <option value="hrd">HRD / Admin Kantor</option>
-                <option value="owner">Owner / Direksi</option>
-                <option value="admin">Administrator IT</option>
+                <option value="employee" className="dark:bg-zinc-800">Karyawan (Staff/Mekanik/Sales)</option>
+                <option value="manager" className="dark:bg-zinc-800">Manager / Supervisor</option>
+                <option value="hrd" className="dark:bg-zinc-800">HRD / Admin Kantor</option>
+                <option value="owner" className="dark:bg-zinc-800">Owner / Direksi</option>
+                <option value="admin" className="dark:bg-zinc-800">Administrator IT</option>
               </select>
             </div>
           </div>
@@ -181,11 +181,13 @@ export function AccountPanel({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Minimal 6 karakter"
+              className="bg-white dark:bg-zinc-800"
             />
           </div>
           <Button
             type="submit"
             disabled={createAccount.isPending}
+            className="w-full sm:w-auto"
           >
             {createAccount.isPending && (
               <Loader2 className="mr-1.5 size-4 animate-spin" />
@@ -209,8 +211,8 @@ export function AccountPanel({
             </div>
           )}
 
-          <form onSubmit={handleUpdate} className="rounded-lg border border-zinc-200 p-4 space-y-4 bg-white">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
+          <form onSubmit={handleUpdate} className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-4 space-y-4 bg-white dark:bg-zinc-900">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
               <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Pengaturan Akun</span>
               <div className="flex items-center gap-1.5">
                 {isActive ? (
@@ -225,7 +227,7 @@ export function AccountPanel({
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="edit-username" required>Username</Label>
                 <Input
@@ -243,17 +245,17 @@ export function AccountPanel({
                   disabled={isSuperAdminAccount}
                   value={role}
                   onChange={(e) => setRole(e.target.value as any)}
-                  className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 disabled:bg-zinc-100 disabled:text-zinc-500"
+                  className="mt-1 block w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 disabled:bg-zinc-100 dark:disabled:bg-zinc-800/50 disabled:text-zinc-500"
                 >
                   {isSuperAdminAccount ? (
-                    <option value="superadmin">Superadmin (Developer) — Permanen</option>
+                    <option value="superadmin" className="dark:bg-zinc-800">Superadmin (Developer) — Permanen</option>
                   ) : (
                     <>
-                      <option value="employee">Karyawan (Staff/Mekanik/Sales)</option>
-                      <option value="manager">Manager / Supervisor</option>
-                      <option value="hrd">HRD / Admin Kantor</option>
-                      <option value="owner">Owner / Direksi</option>
-                      <option value="admin">Administrator IT</option>
+                      <option value="employee" className="dark:bg-zinc-800">Karyawan (Staff/Mekanik/Sales)</option>
+                      <option value="manager" className="dark:bg-zinc-800">Manager / Supervisor</option>
+                      <option value="hrd" className="dark:bg-zinc-800">HRD / Admin Kantor</option>
+                      <option value="owner" className="dark:bg-zinc-800">Owner / Direksi</option>
+                      <option value="admin" className="dark:bg-zinc-800">Administrator IT</option>
                     </>
                   )}
                 </select>
@@ -267,9 +269,9 @@ export function AccountPanel({
                     id="edit-active"
                     checked={isActive}
                     onChange={(e) => setIsActive(e.target.checked)}
-                    className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+                    className="rounded border-zinc-300 dark:border-zinc-700 text-zinc-900 focus:ring-zinc-500"
                   />
-                  <Label htmlFor="edit-active" className="cursor-pointer font-normal text-zinc-700">Akun Aktif (Dapat Login)</Label>
+                  <Label htmlFor="edit-active" className="cursor-pointer font-normal text-zinc-700 dark:text-zinc-300">Akun Aktif (Dapat Login)</Label>
                 </div>
               </div>
             )}
@@ -278,6 +280,7 @@ export function AccountPanel({
               <Button
                 type="submit"
                 disabled={updateAccount.isPending}
+                className="w-full sm:w-auto"
               >
                 {updateAccount.isPending && (
                   <Loader2 className="mr-1.5 size-4 animate-spin" />
@@ -298,25 +301,25 @@ export function AccountPanel({
               </div>
             </div>
           ) : (
-            <form onSubmit={handleReset} className="rounded-lg border border-zinc-200 p-4 space-y-4 bg-zinc-50/50">
-              <div className="pb-2 border-b border-zinc-200">
-                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Reset Kata Sandi</span>
+            <form onSubmit={handleReset} className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-4 space-y-4 bg-zinc-50/50 dark:bg-zinc-900/50">
+              <div className="pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Reset Kata Sandi</span>
               </div>
               
               <div>
                 <Label htmlFor="reset-pass" required>Password Baru</Label>
-                <div className="flex gap-3 mt-1">
+                <div className="flex flex-col sm:flex-row gap-3 mt-1">
                   <PasswordInput
                     id="reset-pass"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimal 6 karakter"
-                    className="bg-white"
+                    className="bg-white dark:bg-zinc-800 flex-1"
                   />
                   <Button
                     type="submit"
                     disabled={resetPassword.isPending}
-                    className="shrink-0"
+                    className="w-full sm:w-auto shrink-0"
                   >
                     {resetPassword.isPending && (
                       <Loader2 className="mr-1.5 size-4 animate-spin" />

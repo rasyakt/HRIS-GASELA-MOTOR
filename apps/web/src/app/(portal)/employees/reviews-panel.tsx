@@ -137,10 +137,10 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-zinc-800 flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <h4 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
           <Award className="size-4" />
-          Performance Review
+          Penilaian Kinerja (Performance Review)
         </h4>
         {!showForm && (
           <Button
@@ -153,6 +153,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
               setError(null);
               setShowForm(true);
             }}
+            className="w-full sm:w-auto text-xs"
           >
             <Plus className="mr-1.5 size-4" />
             Tambah Review
@@ -169,22 +170,22 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="rounded-lg border border-zinc-200 p-4 space-y-4 bg-zinc-50/50"
+          className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-4 space-y-4 bg-zinc-50/50 dark:bg-zinc-900/50"
         >
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <Label htmlFor="rev-reviewer" required>Reviewer</Label>
               <select
                 id="rev-reviewer"
                 value={form.reviewerId}
                 onChange={(e) => setForm({ ...form, reviewerId: e.target.value })}
-                className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+                className="mt-1 block w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
               >
-                <option value="">Pilih Reviewer</option>
+                <option value="" className="dark:bg-zinc-800">Pilih Reviewer</option>
                 {managers.data?.items
                   .filter((m) => m.id !== employeeId)
                   .map((m) => (
-                    <option key={m.id} value={m.id}>
+                    <option key={m.id} value={m.id} className="dark:bg-zinc-800">
                       {m.fullName}
                     </option>
                   ))}
@@ -196,10 +197,10 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
                 id="rev-status"
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value })}
-                className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+                className="mt-1 block w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
               >
                 {STATUS_OPTIONS.map((s) => (
-                  <option key={s.value} value={s.value}>
+                  <option key={s.value} value={s.value} className="dark:bg-zinc-800">
                     {s.label}
                   </option>
                 ))}
@@ -207,18 +208,18 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div>
               <Label htmlFor="rev-month" required>Bulan</Label>
               <select
                 id="rev-month"
                 value={form.periodMonth}
                 onChange={(e) => setForm({ ...form, periodMonth: e.target.value })}
-                className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+                className="mt-1 block w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
               >
-                <option value="">Bulan</option>
+                <option value="" className="dark:bg-zinc-800">Bulan</option>
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m}>
+                  <option key={m} value={m} className="dark:bg-zinc-800">
                     {m}
                   </option>
                 ))}
@@ -263,7 +264,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
               id="rev-strengths"
               value={form.strengths}
               onChange={(e) => setForm({ ...form, strengths: e.target.value })}
-              className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+              className="mt-1 block w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
               rows={2}
             />
           </div>
@@ -273,7 +274,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
               id="rev-improve"
               value={form.areasForImprovement}
               onChange={(e) => setForm({ ...form, areasForImprovement: e.target.value })}
-              className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+              className="mt-1 block w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
               rows={2}
             />
           </div>
@@ -283,15 +284,16 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
               id="rev-goals"
               value={form.goalsNextPeriod}
               onChange={(e) => setForm({ ...form, goalsNextPeriod: e.target.value })}
-              className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+              className="mt-1 block w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
               rows={2}
             />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
             <Button
               type="submit"
               disabled={saveReview.isPending}
+              className="w-full sm:w-auto text-xs"
             >
               {saveReview.isPending && (
                 <Loader2 className="mr-1.5 size-4 animate-spin" />
@@ -306,6 +308,7 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
                 setEditingId(null);
                 setForm(EMPTY_FORM);
               }}
+              className="w-full sm:w-auto text-xs"
             >
               Batal
             </Button>
@@ -322,11 +325,11 @@ export function ReviewsPanel({ employeeId }: { employeeId: number }) {
           {reviews.data.map((r) => (
             <div
               key={r.id}
-              className="flex items-start justify-between gap-3 p-3 rounded-lg border border-zinc-200 bg-white"
+              className="flex items-start justify-between gap-3 p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-sm text-zinc-900">
+                  <span className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
                     {r.periodMonth}/{r.periodYear}
                   </span>
                   {r.overallScore !== null && (

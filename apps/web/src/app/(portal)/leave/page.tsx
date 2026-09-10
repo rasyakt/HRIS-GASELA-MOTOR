@@ -181,7 +181,7 @@ export default function LeavePage() {
                       <p className="text-xs text-red-600 dark:text-red-400">{errors.leaveTypeId.message}</p>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <Label htmlFor="startDate" required>Tanggal Mulai</Label>
                       <Input

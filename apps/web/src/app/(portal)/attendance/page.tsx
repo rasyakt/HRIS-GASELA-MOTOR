@@ -619,11 +619,12 @@ export default function AttendancePage() {
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setEarlyLeaveModalOpen(false)}
+                className="w-full sm:w-auto"
               >
                 Batal
               </Button>
@@ -631,7 +632,7 @@ export default function AttendancePage() {
                 size="sm"
                 onClick={handleConfirmEarlyLeave}
                 disabled={!earlyLeaveReason.trim() || earlyLeaveReason.trim().length < 3}
-                className="bg-amber-600 hover:bg-amber-700 text-white"
+                className="bg-amber-600 hover:bg-amber-700 text-white w-full sm:w-auto"
               >
                 Lanjut Foto Wajah &amp; Check-out
               </Button>

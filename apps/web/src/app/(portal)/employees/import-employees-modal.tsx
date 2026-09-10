@@ -133,44 +133,44 @@ export function ImportEmployeesModal({ isOpen, onClose, onSuccess }: ImportEmplo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <Card className="w-full max-w-2xl bg-white shadow-2xl border-zinc-200 overflow-hidden flex flex-col max-h-[90vh]">
+      <Card className="w-full max-w-2xl bg-white dark:bg-zinc-900 shadow-2xl border-zinc-200 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header Modal */}
-        <CardHeader className="flex flex-row items-center justify-between border-b border-zinc-100 bg-zinc-50/70 px-6 py-4">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-850 px-4 sm:px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700">
+            <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
               <FileSpreadsheet className="size-5" />
             </div>
             <div>
-              <CardTitle className="text-base font-bold text-zinc-900">
+              <CardTitle className="text-base font-bold text-zinc-900 dark:text-white">
                 Import Data Karyawan dari Excel
               </CardTitle>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                 Tambahkan banyak karyawan sekaligus menggunakan template spreadsheet resmi.
               </p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0 text-zinc-400 hover:text-zinc-700">
+          <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">
             <X className="size-4" />
           </Button>
         </CardHeader>
 
         {/* Isi Modal */}
-        <CardContent className="p-6 space-y-5 overflow-y-auto flex-1 text-zinc-800">
+        <CardContent className="p-4 sm:p-6 space-y-5 overflow-y-auto flex-1 text-zinc-800 dark:text-zinc-200">
           {errorMsg && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-3.5 text-xs text-red-700 flex items-start gap-2.5">
-              <AlertCircle className="size-4 text-red-600 shrink-0 mt-0.5" />
+            <div className="rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/40 p-3.5 text-xs text-red-700 dark:text-red-300 flex items-start gap-2.5">
+              <AlertCircle className="size-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
               <div className="flex-1">{errorMsg}</div>
             </div>
           )}
 
           {/* Langkah 1: Unduh Template */}
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-850/50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h4 className="text-xs font-bold text-zinc-900 flex items-center gap-1.5">
+              <h4 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
                 <span className="flex size-5 items-center justify-center rounded-full bg-emerald-600 text-[11px] font-bold text-white">1</span>
                 Unduh Template Resmi (.xlsx)
               </h4>
-              <p className="text-xs text-zinc-500 mt-1 pl-6">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 pl-6">
                 Gunakan template standar yang sudah dilengkapi contoh data dan daftar opsi resmi.
               </p>
             </div>
@@ -192,21 +192,21 @@ export function ImportEmployeesModal({ isOpen, onClose, onSuccess }: ImportEmplo
           </div>
 
           {/* Langkah 2: Panduan Kolom Wajib & Opsional */}
-          <div className="rounded-xl border border-zinc-200 overflow-hidden">
+          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
             <button
               type="button"
               onClick={() => setShowGuide(!showGuide)}
-              className="w-full px-4 py-3 bg-zinc-50 hover:bg-zinc-100 flex items-center justify-between transition-colors text-left"
+              className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-850 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-between transition-colors text-left"
             >
               <div className="flex items-center gap-2">
-                <HelpCircle className="size-4 text-zinc-500" />
-                <span className="text-xs font-bold text-zinc-800">Panduan Kolom Wajib & Aturan Pengisian</span>
+                <HelpCircle className="size-4 text-zinc-500 dark:text-zinc-400" />
+                <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">Panduan Kolom Wajib &amp; Aturan Pengisian</span>
               </div>
-              {showGuide ? <ChevronUp className="size-4 text-zinc-500" /> : <ChevronDown className="size-4 text-zinc-500" />}
+              {showGuide ? <ChevronUp className="size-4 text-zinc-500 dark:text-zinc-400" /> : <ChevronDown className="size-4 text-zinc-500 dark:text-zinc-400" />}
             </button>
 
             {showGuide && (
-              <div className="p-4 bg-white text-xs space-y-3.5 border-t border-zinc-100">
+              <div className="p-4 bg-white dark:bg-zinc-900 text-xs space-y-3.5 border-t border-zinc-100 dark:border-zinc-800">
                 <div>
                   <h5 className="font-bold text-emerald-800 flex items-center gap-1.5 mb-2">
                     <Badge className="bg-emerald-600 text-white font-bold text-[10px]">WAJIB DIISI</Badge>
@@ -282,27 +282,27 @@ export function ImportEmployeesModal({ isOpen, onClose, onSuccess }: ImportEmplo
             {!selectedFile ? (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-zinc-300 hover:border-emerald-500 rounded-2xl p-6 text-center cursor-pointer transition-colors bg-zinc-50/50 hover:bg-emerald-50/20"
+                className="border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-emerald-500 rounded-2xl p-6 text-center cursor-pointer transition-colors bg-zinc-50/50 dark:bg-zinc-850/40 hover:bg-emerald-50/20 dark:hover:bg-emerald-950/20"
               >
                 <Upload className="size-8 text-zinc-400 mx-auto mb-2" />
-                <p className="text-xs font-semibold text-zinc-700">
+                <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                   Klik di sini untuk memilih file spreadsheet Excel
                 </p>
                 <p className="text-[11px] text-zinc-400 mt-1">Format didukung: .xlsx atau .xls (Maksimal 20MB, maks. 500 baris)</p>
               </div>
             ) : (
-              <div className="rounded-xl border border-emerald-300 bg-emerald-50/60 p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-600 text-white">
+              <div className="rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2 rounded-lg bg-emerald-600 text-white shrink-0">
                     <FileCheck className="size-5" />
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-zinc-900">{selectedFile.name}</p>
-                    <p className="text-[11px] text-zinc-500">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">{selectedFile.name}</p>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{(selectedFile.size / 1024).toFixed(1)} KB</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button type="button" variant="ghost" size="sm" onClick={handleReset} className="text-xs text-zinc-500">
+                <div className="flex items-center gap-2 justify-end shrink-0">
+                  <Button type="button" variant="ghost" size="sm" onClick={handleReset} className="text-xs text-zinc-500 dark:text-zinc-400">
                     Ganti
                   </Button>
                   <Button

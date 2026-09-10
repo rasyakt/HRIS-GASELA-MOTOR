@@ -160,7 +160,7 @@ function CreateForm({ onDone }: { onDone: () => void }) {
             className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
           />
         </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           <div className="space-y-1">
             <Label htmlFor="ann-priority">Prioritas</Label>
             <select
@@ -266,10 +266,11 @@ function CreateForm({ onDone }: { onDone: () => void }) {
           </div>
         )}
 
-        <div className="flex items-center gap-2 pt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-2">
           <Button
             onClick={() => create.mutate()}
             disabled={create.isPending || !title.trim() || content.trim().length < 5}
+            className="w-full sm:w-auto"
           >
             {create.isPending ? (
               <Loader2 data-icon="inline-start" className="animate-spin" />
@@ -389,30 +390,30 @@ function AnnouncementDetailModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 bg-zinc-50/50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 border-t border-zinc-100 bg-zinc-50/50 p-3 sm:p-4 dark:border-zinc-800 dark:bg-zinc-900/50 shrink-0">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             {canManage && !item.isPublished && onPublish && (
-              <Button size="sm" onClick={onPublish}>
+              <Button size="sm" onClick={onPublish} className="w-full sm:w-auto">
                 <Send data-icon="inline-start" />
                 Publikasikan Sekarang
               </Button>
             )}
             {canManage && onDelete && (
-              <Button size="sm" variant="outline" className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40" onClick={onDelete}>
+              <Button size="sm" variant="outline" className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 w-full sm:w-auto" onClick={onDelete}>
                 <Trash2 data-icon="inline-start" />
                 Hapus Pengumuman
               </Button>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             {isUnread && onMarkRead && (
-              <Button size="sm" variant="outline" onClick={onMarkRead}>
+              <Button size="sm" variant="outline" onClick={onMarkRead} className="w-full sm:w-auto">
                 <CheckCheck data-icon="inline-start" />
                 Tandai Sudah Dibaca
               </Button>
             )}
-            <Button size="sm" variant="outline" onClick={onClose}>
+            <Button size="sm" variant="outline" onClick={onClose} className="w-full sm:w-auto">
               Tutup
             </Button>
           </div>

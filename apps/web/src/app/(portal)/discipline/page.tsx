@@ -362,37 +362,37 @@ export default function DisciplinePage() {
       {/* Modal Form Terbitkan SP */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-              <h3 className="text-base font-bold text-zinc-900 flex items-center gap-2">
+          <div className="w-full max-w-lg rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+              <h3 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                 <AlertTriangle className="size-5 text-amber-500" /> Terbitkan Surat Peringatan (SP)
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-zinc-400 hover:text-zinc-700 text-sm font-bold">
+              <button onClick={() => setIsModalOpen(false)} className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 text-sm font-bold">
                 ✕
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1">
-                <Label required className="text-xs font-semibold text-zinc-700">Pilih Karyawan</Label>
+                <Label required className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Pilih Karyawan</Label>
                 <select
                   required
                   value={form.employeeId}
                   onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
-                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-950"
+                  className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
                 >
-                  <option value="">-- Pilih Karyawan --</option>
+                  <option value="" className="dark:bg-zinc-800">-- Pilih Karyawan --</option>
                   {employeesQuery.data?.items.map((emp: any) => (
-                    <option key={emp.id} value={emp.id}>
+                    <option key={emp.id} value={emp.id} className="dark:bg-zinc-800">
                       {emp.fullName} ({emp.employeeNumber}) — {emp.department?.name || 'No Dept'}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label required className="text-xs font-semibold text-zinc-700">Nomor Surat SP</Label>
+                  <Label required className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Nomor Surat SP</Label>
                   <Input
                     required
                     placeholder="mis. SP/001/HRD/2026"
@@ -402,34 +402,34 @@ export default function DisciplinePage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label required className="text-xs font-semibold text-zinc-700">Tingkat SP</Label>
+                  <Label required className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Tingkat SP</Label>
                   <select
                     value={form.level}
                     onChange={(e) => setForm({ ...form, level: e.target.value as any })}
-                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-950"
+                    className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
                   >
-                    <option value="SP1">Surat Peringatan 1 (SP1)</option>
-                    <option value="SP2">Surat Peringatan 2 (SP2)</option>
-                    <option value="SP3">Surat Peringatan 3 (SP3)</option>
+                    <option value="SP1" className="dark:bg-zinc-800">Surat Peringatan 1 (SP1)</option>
+                    <option value="SP2" className="dark:bg-zinc-800">Surat Peringatan 2 (SP2)</option>
+                    <option value="SP3" className="dark:bg-zinc-800">Surat Peringatan 3 (SP3)</option>
                   </select>
                 </div>
               </div>
 
               <div className="space-y-1">
-                <Label required className="text-xs font-semibold text-zinc-700">Alasan Pelanggaran</Label>
+                <Label required className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Alasan Pelanggaran</Label>
                 <textarea
                   required
                   rows={3}
                   placeholder="Jelaskan jenis dan tanggal terjadinya pelanggaran secara detail..."
                   value={form.violationReason}
                   onChange={(e) => setForm({ ...form, violationReason: e.target.value })}
-                  className="w-full rounded-md border border-zinc-300 bg-white p-3 text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-950"
+                  className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-400"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label required className="text-xs font-semibold text-zinc-700">Tanggal Terbit</Label>
+                  <Label required className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Tanggal Terbit</Label>
                   <Input
                     type="date"
                     value={form.issuedDate}
@@ -438,7 +438,7 @@ export default function DisciplinePage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label optional className="text-xs font-semibold text-zinc-700">Berlaku Sampai Tanggal</Label>
+                  <Label optional className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Berlaku Sampai Tanggal</Label>
                   <Input
                     type="date"
                     value={form.effectiveUntil}
@@ -450,15 +450,15 @@ export default function DisciplinePage() {
 
               {errorMsg && <p className="text-xs font-medium text-red-500">{errorMsg}</p>}
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
-                <Button type="button" variant="outline" size="sm" onClick={() => setIsModalOpen(false)} className="text-xs">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                <Button type="button" variant="outline" size="sm" onClick={() => setIsModalOpen(false)} className="text-xs w-full sm:w-auto">
                   Batal
                 </Button>
                 <Button
                   type="submit"
                   disabled={createMutation.isPending}
                   size="sm"
-                  className="text-xs gap-1.5"
+                  className="text-xs gap-1.5 w-full sm:w-auto"
                 >
                   {createMutation.isPending ? <Loader2 className="size-3.5 animate-spin" /> : 'Terbitkan Surat Peringatan'}
                 </Button>

@@ -794,7 +794,7 @@ function ShiftsManagementCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between text-zinc-900 dark:text-white">
+        <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-zinc-900 dark:text-white">
           <span className="flex items-center gap-2">
             <Clock className="size-4 text-zinc-700 dark:text-zinc-300" />
             Jadwal Shift Kerja &amp; Toleransi Keterlambatan
@@ -806,7 +806,7 @@ function ShiftsManagementCard() {
                 resetForm();
                 setIsCreating(true);
               }}
-              className="text-xs gap-1.5"
+              className="text-xs gap-1.5 w-full sm:w-auto shrink-0"
             >
               <Plus className="size-3.5" />
               Tambah Shift
@@ -912,18 +912,18 @@ function ShiftsManagementCard() {
               </p>
             )}
 
-            <div className="flex justify-end gap-2 pt-1">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-1">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={resetForm}
                 disabled={isSaving}
-                className="text-xs"
+                className="text-xs w-full sm:w-auto"
               >
                 Batal
               </Button>
-              <Button type="submit" size="sm" disabled={isSaving} className="text-xs gap-1.5">
+              <Button type="submit" size="sm" disabled={isSaving} className="text-xs gap-1.5 w-full sm:w-auto">
                 {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
                 {editingId ? 'Simpan Perubahan' : 'Buat Shift'}
               </Button>
@@ -1225,12 +1225,12 @@ function EmployeeNumberFormatCard({
   return (
     <Card className="mt-6 border border-zinc-200 dark:border-zinc-800">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 text-base text-zinc-900 dark:text-white">
             <UserCheck className="size-4 text-primary" />
             Format Nomor Karyawan (NIK Otomatis)
           </div>
-          <Badge className="bg-primary/10 text-primary border-primary/20 text-xs font-mono">
+          <Badge className="bg-primary/10 text-primary border-primary/20 text-xs font-mono w-fit">
             Preview: {calcPreview(formatVal)}
           </Badge>
         </CardTitle>
@@ -1290,7 +1290,7 @@ function EmployeeNumberFormatCard({
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
           <div className="text-xs text-zinc-500">
             Contoh NIK Karyawan Pertama: <span className="font-mono font-bold text-zinc-800 dark:text-zinc-200">{calcPreview(formatVal)}</span>
           </div>
@@ -1298,7 +1298,7 @@ function EmployeeNumberFormatCard({
             size="sm"
             disabled={!isDirty || saving}
             onClick={() => onSave('employee.number_format', formatVal)}
-            className="gap-1.5 text-xs"
+            className="gap-1.5 text-xs w-full sm:w-auto shrink-0"
           >
             {saving ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
             Simpan Format
@@ -1360,24 +1360,26 @@ function ShiftCheckoutPolicyCard({
             >
               Batas Waktu Awal Check-out Sebelum Shift Selesai (Menit)
             </Label>
-            <div className="flex items-center gap-2">
-              <Input
-                id="checkout-buffer"
-                type="number"
-                min="0"
-                max="300"
-                value={bufferVal}
-                onChange={(e) => setBufferVal(e.target.value)}
-                className="w-28 font-mono text-sm"
-              />
-              <span className="text-xs text-zinc-500 font-medium">menit sebelum jam pulang</span>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
+              <div className="flex items-center gap-2">
+                <Input
+                  id="checkout-buffer"
+                  type="number"
+                  min="0"
+                  max="300"
+                  value={bufferVal}
+                  onChange={(e) => setBufferVal(e.target.value)}
+                  className="w-24 sm:w-28 font-mono text-sm"
+                />
+                <span className="text-xs text-zinc-500 font-medium">menit sebelum jam pulang</span>
+              </div>
               <Button
                 size="sm"
                 onClick={() =>
                   onSave('attendance.checkout_earliest_buffer_minutes', bufferVal)
                 }
                 disabled={!isDirty || saving}
-                className="ml-auto"
+                className="w-full sm:w-auto sm:ml-auto text-xs"
               >
                 {saving ? (
                   <Loader2 className="size-3.5 animate-spin mr-1" />
@@ -1435,7 +1437,7 @@ function SettingRow({
 
   return (
     <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 p-4">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="min-w-0">
           <div className="font-mono text-sm font-medium text-zinc-900 dark:text-white">
             {setting.key}
@@ -1448,6 +1450,7 @@ function SettingRow({
           size="sm"
           onClick={() => onSave(value)}
           disabled={!dirty || saving}
+          className="shrink-0 w-full sm:w-auto"
         >
           {saving ? (
             <Loader2 className="size-3.5 animate-spin mr-1" />
@@ -1630,14 +1633,14 @@ export default function SettingsPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+              <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <span>Pengaturan Perusahaan &amp; Lokasi</span>
                   <p className="text-xs font-normal text-zinc-500 dark:text-zinc-400 mt-1">
                     Nama resmi entitas, koordinat GPS kantor pusat, radius geofence, dan tarif BPJS Ketenagakerjaan &amp; Kesehatan.
                   </p>
                 </div>
-                <Badge>
+                <Badge className="w-fit">
                   {settings.data
                     ? `${settings.data.filter((s) => s.key !== 'portal.theme_config' && s.key !== 'attendance.photo_retention_days' && s.key !== 'employee.number_format').length} item`
                     : '…'}

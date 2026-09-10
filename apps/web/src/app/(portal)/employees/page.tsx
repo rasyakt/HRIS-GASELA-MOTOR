@@ -510,12 +510,12 @@ export default function EmployeesPage() {
           </p>
         </div>
         {user && (roleAtLeast(user.role, 'hrd') || user.role === 'owner') && (
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            <Button variant="outline" onClick={() => setImportModalOpen(true)} className="w-full sm:w-auto text-xs">
               <FileSpreadsheet className="mr-1.5 size-4 text-emerald-600" />
               Import Excel
             </Button>
-            <Button onClick={handleOpenCreate}>
+            <Button onClick={handleOpenCreate} className="w-full sm:w-auto text-xs">
               <Plus className="mr-1.5 size-4" />
               Karyawan Baru
             </Button>

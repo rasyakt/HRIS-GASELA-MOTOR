@@ -236,10 +236,10 @@ function DetailModal({
           {downloadError && (
             <p className="text-sm text-red-600">{downloadError}</p>
           )}
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button
               variant="outline"
-              className="flex-1"
+              className="flex-1 w-full sm:w-auto"
               onClick={handleDownload}
               disabled={downloading}
             >
@@ -252,13 +252,13 @@ function DetailModal({
             </Button>
             <Button
               variant="outline"
-              className="flex-1"
+              className="flex-1 w-full sm:w-auto"
               onClick={handlePrint}
             >
               <Printer data-icon="inline-start" />
               Cetak
             </Button>
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
               Tutup
             </Button>
           </div>
@@ -330,13 +330,13 @@ function SalaryComponentsModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <Card className="w-full max-w-2xl bg-white shadow-xl">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-zinc-100 pb-4">
+      <Card className="w-full max-w-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 dark:border-zinc-800 pb-4">
           <div>
-            <CardTitle className="text-base font-bold text-zinc-900">Kelola Komponen Gaji &amp; THR</CardTitle>
-            <p className="text-xs text-zinc-500 mt-0.5">Tambah, aktifkan/non-aktifkan, atau ubah komponen pendapatan/potongan gaji.</p>
+            <CardTitle className="text-base font-bold text-zinc-900 dark:text-white">Kelola Komponen Gaji &amp; THR</CardTitle>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Tambah, aktifkan/non-aktifkan, atau ubah komponen pendapatan/potongan gaji.</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
             <Button
               size="sm"
               variant={showAddForm ? 'secondary' : 'default'}
@@ -351,7 +351,7 @@ function SalaryComponentsModal({ onClose }: { onClose: () => void }) {
         <CardContent className="pt-4 space-y-4 max-h-[70vh] overflow-y-auto">
           {/* Form Tambah Komponen Baru */}
           {showAddForm && (
-            <form onSubmit={handleCreate} className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-3">
+            <form onSubmit={handleCreate} className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/30 space-y-3">
               <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider">Tambah Komponen Gaji Baru</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -444,10 +444,10 @@ function SalaryComponentsModal({ onClose }: { onClose: () => void }) {
                     key={c.id}
                     className={`rounded-xl border p-4 transition-colors ${
                       !isActive
-                        ? 'border-zinc-200 bg-zinc-50 opacity-60'
+                        ? 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/40 opacity-60'
                         : isThr
-                        ? 'border-amber-300 bg-amber-50/70'
-                        : 'border-zinc-200 bg-white'
+                        ? 'border-amber-300 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/30'
+                        : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900'
                     }`}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

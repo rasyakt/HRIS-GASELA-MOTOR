@@ -123,10 +123,10 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
           <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-            <Users className="size-4 text-primary" /> Data Keluarga & Tanggungan BPJS
+            <Users className="size-4 text-primary" /> Data Keluarga &amp; Tanggungan BPJS
           </h3>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
             Daftar anggota keluarga karyawan yang terdaftar dan/atau menjadi tanggungan BPJS.
@@ -136,7 +136,7 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
           <Button
             size="sm"
             onClick={() => setIsAdding(true)}
-            className="text-xs shrink-0 gap-1.5"
+            className="text-xs shrink-0 gap-1.5 w-full sm:w-auto"
           >
             <Plus className="size-3.5" /> Tambah Anggota
           </Button>
@@ -145,9 +145,9 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
 
       {/* Form Add */}
       {isAdding && (
-        <form onSubmit={handleAdd} className="rounded-xl border border-zinc-200 bg-zinc-50/80 p-4 space-y-4">
-          <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
-            <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
+        <form onSubmit={handleAdd} className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/50 p-4 space-y-4">
+          <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2">
+            <span className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
               Tambah Anggota Keluarga Baru
             </span>
             <Button
@@ -238,12 +238,12 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
 
           {error && <p className="text-xs font-medium text-red-500">{error}</p>}
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
             <Button
               type="submit"
               disabled={isSubmitting}
               size="sm"
-              className="text-xs gap-1.5"
+              className="text-xs gap-1.5 w-full sm:w-auto"
             >
               {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : 'Simpan Anggota'}
             </Button>
@@ -262,24 +262,24 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
           {familyMembers.map((member) => (
             <div
               key={member.id}
-              className="group relative flex items-start justify-between rounded-xl border border-zinc-200 bg-white p-4 transition-all hover:border-zinc-300 hover:shadow-sm"
+              className="group relative flex items-start justify-between rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 transition-all hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-sm"
             >
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-zinc-900">{member.fullName}</span>
-                  <Badge className="text-[10px] bg-zinc-100 text-zinc-700 border-zinc-200">
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{member.fullName}</span>
+                  <Badge className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700">
                     {RELATION_MAP[member.relationship] || member.relationship}
                   </Badge>
                 </div>
                 {member.idCardNumber && (
-                  <div className="text-xs text-zinc-500 flex items-center gap-1.5 font-mono">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-mono">
                     <span>NIK:</span>
                     <MaskedField value={member.idCardNumber} type="nik" allowCopy />
                   </div>
                 )}
                 <div className="flex items-center gap-2 pt-1">
                   {member.isBpjsDependent ? (
-                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-medium">
+                    <Badge className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 text-[10px] font-medium">
                       Tanggungan BPJS
                     </Badge>
                   ) : (
@@ -298,7 +298,7 @@ export function FamilyPanel({ employeeId, familyMembers = [], onRefresh }: Famil
                 size="sm"
                 disabled={deletingId === member.id}
                 onClick={() => handleDelete(member.id)}
-                className="text-zinc-400 hover:text-red-600 size-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="text-zinc-400 hover:text-red-600 size-8 p-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
               >
                 {deletingId === member.id ? (
                   <Loader2 className="size-4 animate-spin" />
