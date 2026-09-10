@@ -23,6 +23,7 @@ import {
   Trash2,
   UserCheck,
   X,
+  ChevronDown,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -1600,7 +1601,30 @@ export default function SettingsPage() {
       </div>
 
       {/* ── SUB-MENU TABS ── */}
-      <div className="flex items-center gap-1.5 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto pb-px no-scrollbar">
+      {/* Mobile Menu Dropdown (Zero-scroll, instant pick) */}
+      <div className="sm:hidden">
+        <label className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5 block">
+          Menu Pengaturan
+        </label>
+        <div className="relative">
+          <select
+            aria-label="Pilih menu pengaturan"
+            value={activeTab}
+            onChange={(e) => handleTabChange(e.target.value as SettingsTab)}
+            className="w-full appearance-none rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100 shadow-2xs focus:outline-none focus:ring-2 focus:ring-primary pr-9 cursor-pointer"
+          >
+            {SETTINGS_TABS.map((tab) => (
+              <option key={tab.id} value={tab.id}>
+                {tab.label} {tab.badge !== undefined ? `(${tab.badge})` : ''}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400" />
+        </div>
+      </div>
+
+      {/* Desktop & Tablet Navigation Sub-Tabs */}
+      <div className="hidden sm:flex items-center gap-1.5 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto pb-px no-scrollbar">
         {SETTINGS_TABS.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;

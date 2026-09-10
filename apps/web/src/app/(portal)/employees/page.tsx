@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, X, User, Briefcase, FileText, Upload, Trash2, Loader2, Edit, Award, GraduationCap, Package, Shield, HeartHandshake, Download, RotateCcw, FileSpreadsheet } from 'lucide-react';
+import { Search, Plus, X, User, Briefcase, FileText, Upload, Trash2, Loader2, Edit, Award, GraduationCap, Package, Shield, HeartHandshake, Download, RotateCcw, FileSpreadsheet, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -531,7 +531,37 @@ export default function EmployeesPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex border-b border-zinc-200 dark:border-zinc-800 mb-4 overflow-x-auto">
+          {/* Mobile Role Filter: Zero-scroll wrapped pill chips */}
+          <div className="flex sm:hidden flex-wrap gap-1.5 mb-3.5">
+            {[
+              { value: 'all', label: 'Semua' },
+              { value: 'employee', label: 'Karyawan' },
+              { value: 'manager', label: 'Manager' },
+              { value: 'hrd', label: 'HRD' },
+              { value: 'owner', label: 'Owner' },
+              { value: 'admin', label: 'Admin' },
+              { value: 'none', label: 'Belum Akun' },
+            ].map((tab) => (
+              <button
+                type="button"
+                key={tab.value}
+                onClick={() => {
+                  setPage(1);
+                  setSelectedRole(tab.value);
+                }}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  selectedRole === tab.value
+                    ? 'bg-primary text-primary-foreground shadow-2xs font-bold'
+                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Desktop Role Filter Tabs */}
+          <div className="hidden sm:flex border-b border-zinc-200 dark:border-zinc-800 mb-4 overflow-x-auto no-scrollbar">
             {[
               { value: 'all', label: 'Semua Karyawan' },
               { value: 'employee', label: 'Role Karyawan' },
@@ -548,7 +578,7 @@ export default function EmployeesPage() {
                   setPage(1);
                   setSelectedRole(tab.value);
                 }}
-                className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
+                className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                   selectedRole === tab.value
                     ? 'border-primary text-primary bg-primary/5 dark:border-primary dark:text-primary dark:bg-primary/10'
                     : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
@@ -791,100 +821,127 @@ export default function EmployeesPage() {
 
               {/* Detail Tabs (Only when employee selected) */}
               {selectedEmployeeId && (
-                <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-x-auto no-scrollbar">
-                  <div className="flex min-w-max px-4">
-                    <button
-                      onClick={() => setDrawerTab('profile')}
-                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
-                        drawerTab === 'profile'
-                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
-                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
-                      }`}
-                    >
-                      <User className="size-3.5" />
-                      Profil
-                    </button>
-                    <button
-                      onClick={() => setDrawerTab('job')}
-                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
-                        drawerTab === 'job'
-                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
-                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
-                      }`}
-                    >
-                      <Briefcase className="size-3.5" />
-                      Pekerjaan & Gaji
-                    </button>
-                    <button
-                      onClick={() => setDrawerTab('documents')}
-                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
-                        drawerTab === 'documents'
-                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
-                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
-                      }`}
-                    >
-                      <FileText className="size-3.5" />
-                      Dokumen
-                    </button>
-                    <button
-                      onClick={() => setDrawerTab('review')}
-                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
-                        drawerTab === 'review'
-                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
-                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
-                      }`}
-                    >
-                      <Award className="size-3.5" />
-                      Review
-                    </button>
-                    <button
-                      onClick={() => setDrawerTab('training')}
-                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
-                        drawerTab === 'training'
-                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
-                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
-                      }`}
-                    >
-                      <GraduationCap className="size-3.5" />
-                      Pelatihan
-                    </button>
-                    <button
-                      onClick={() => setDrawerTab('asset')}
-                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
-                        drawerTab === 'asset'
-                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
-                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
-                      }`}
-                    >
-                      <Package className="size-3.5" />
-                      Aset
-                    </button>
-                    <button
-                      onClick={() => setDrawerTab('family' as any)}
-                      className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
-                        (drawerTab as string) === 'family'
-                          ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
-                          : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
-                      }`}
-                    >
-                      <HeartHandshake className="size-3.5" />
-                      Keluarga
-                    </button>
-                    {user && roleAtLeast(user.role, 'admin') && (
+                <>
+                  {/* Mobile Tab Selector (Zero-scroll, instant pick) */}
+                  <div className="sm:hidden px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/70">
+                    <div className="relative">
+                      <select
+                        aria-label="Pilih bagian detail karyawan"
+                        value={drawerTab}
+                        onChange={(e) => setDrawerTab(e.target.value as any)}
+                        className="w-full appearance-none rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-xs font-semibold text-zinc-900 dark:text-zinc-100 shadow-2xs focus:outline-none focus:ring-2 focus:ring-primary pr-8 cursor-pointer"
+                      >
+                        <option value="profile">👤 Profil Pribadi</option>
+                        <option value="job">💼 Pekerjaan &amp; Gaji</option>
+                        <option value="documents">📄 Dokumen &amp; Berkas</option>
+                        <option value="review">⭐ Review Kinerja</option>
+                        <option value="training">🎓 Pelatihan &amp; Sertifikasi</option>
+                        <option value="asset">📦 Aset Perusahaan</option>
+                        <option value="family">🤝 Data Keluarga</option>
+                        {user && roleAtLeast(user.role, 'admin') && (
+                          <option value="account">🛡️ Akun Pengguna</option>
+                        )}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-4 text-zinc-400" />
+                    </div>
+                  </div>
+
+                  {/* Desktop Tab Bar */}
+                  <div className="hidden sm:block border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-x-auto no-scrollbar">
+                    <div className="flex min-w-max px-4">
                       <button
-                        onClick={() => setDrawerTab('account')}
+                        onClick={() => setDrawerTab('profile')}
                         className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
-                          drawerTab === 'account'
+                          drawerTab === 'profile'
                             ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
                             : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
                         }`}
                       >
-                        <Shield className="size-3.5" />
-                        Akun
+                        <User className="size-3.5" />
+                        Profil
                       </button>
-                    )}
+                      <button
+                        onClick={() => setDrawerTab('job')}
+                        className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                          drawerTab === 'job'
+                            ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                            : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
+                        }`}
+                      >
+                        <Briefcase className="size-3.5" />
+                        Pekerjaan & Gaji
+                      </button>
+                      <button
+                        onClick={() => setDrawerTab('documents')}
+                        className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                          drawerTab === 'documents'
+                            ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                            : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
+                        }`}
+                      >
+                        <FileText className="size-3.5" />
+                        Dokumen
+                      </button>
+                      <button
+                        onClick={() => setDrawerTab('review')}
+                        className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                          drawerTab === 'review'
+                            ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                            : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
+                        }`}
+                      >
+                        <Award className="size-3.5" />
+                        Review
+                      </button>
+                      <button
+                        onClick={() => setDrawerTab('training')}
+                        className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                          drawerTab === 'training'
+                            ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                            : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
+                        }`}
+                      >
+                        <GraduationCap className="size-3.5" />
+                        Pelatihan
+                      </button>
+                      <button
+                        onClick={() => setDrawerTab('asset')}
+                        className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                          drawerTab === 'asset'
+                            ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                            : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
+                        }`}
+                      >
+                        <Package className="size-3.5" />
+                        Aset
+                      </button>
+                      <button
+                        onClick={() => setDrawerTab('family' as any)}
+                        className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                          (drawerTab as string) === 'family'
+                            ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                            : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
+                        }`}
+                      >
+                        <HeartHandshake className="size-3.5" />
+                        Keluarga
+                      </button>
+                      {user && roleAtLeast(user.role, 'admin') && (
+                        <button
+                          onClick={() => setDrawerTab('account')}
+                          className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-all whitespace-nowrap ${
+                            drawerTab === 'account'
+                              ? 'border-primary text-primary bg-primary/5 font-semibold dark:border-primary dark:text-primary dark:bg-primary/10'
+                              : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50/30 dark:text-zinc-400 dark:hover:text-zinc-100'
+                          }`}
+                        >
+                          <Shield className="size-3.5" />
+                          Akun
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </>
               )}
 
               {/* Form Content / Details body */}

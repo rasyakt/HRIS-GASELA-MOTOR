@@ -896,7 +896,33 @@ export default function DeveloperPage() {
       </div>
 
       {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-1.5 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto pb-px">
+      {/* Mobile Segmented Control (Zero Horizontal Scrolling) */}
+      <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 mb-6 sm:hidden">
+        {DEV_TABS.map((tab) => {
+          const Icon = tab.icon;
+          const active = activeTab === tab.id;
+          return (
+            <button
+              type="button"
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex flex-col items-center justify-center gap-1 py-2 px-1 text-[11px] font-semibold rounded-lg transition-all cursor-pointer ${
+                active
+                  ? 'bg-white dark:bg-zinc-900 text-primary font-bold shadow-2xs'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+              }`}
+            >
+              <Icon className={`size-4 ${active ? 'text-primary' : 'text-zinc-400'}`} />
+              <span className="truncate max-w-full">
+                {tab.id === 'theme' ? 'Tema' : tab.id === 'retention' ? 'Retensi' : 'Diagnostik'}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Desktop & Tablet Navigation Sub-Tabs */}
+      <div className="hidden sm:flex items-center gap-1.5 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto pb-px no-scrollbar">
         {DEV_TABS.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;

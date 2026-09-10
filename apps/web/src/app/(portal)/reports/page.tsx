@@ -796,15 +796,40 @@ export default function ReportsPage() {
       )}
 
       {/* ── TAB BAR ── */}
-      <div className="flex items-center gap-1 border-b border-zinc-200 dark:border-zinc-800 mb-6 overflow-x-auto no-scrollbar">
+      {/* Mobile Segmented Control (Zero Horizontal Scrolling) */}
+      <div className={`grid ${visibleTabs.length === 2 ? 'grid-cols-2' : 'grid-cols-3'} gap-1 p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 mb-6 sm:hidden`}>
         {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.key;
           return (
             <button
+              type="button"
               key={tab.key}
               onClick={() => { setActiveTab(tab.key); setCsvMsg(null); }}
-              className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all focus:outline-none whitespace-nowrap ${
+              className={`flex items-center justify-center gap-1.5 py-2 px-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                active
+                  ? 'bg-white dark:bg-zinc-900 text-primary font-bold shadow-2xs'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+              }`}
+            >
+              <Icon className={`size-3.5 ${active ? 'text-primary' : 'text-zinc-400'}`} />
+              <span className="truncate">{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Desktop & Tablet Tab Bar */}
+      <div className="hidden sm:flex items-center gap-1 border-b border-zinc-200 dark:border-zinc-800 mb-6 overflow-x-auto no-scrollbar">
+        {visibleTabs.map((tab) => {
+          const Icon = tab.icon;
+          const active = activeTab === tab.key;
+          return (
+            <button
+              type="button"
+              key={tab.key}
+              onClick={() => { setActiveTab(tab.key); setCsvMsg(null); }}
+              className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all focus:outline-none whitespace-nowrap cursor-pointer ${
                 active
                   ? 'border-primary text-primary font-bold dark:border-primary dark:text-primary bg-primary/5 dark:bg-primary/10'
                   : 'border-transparent text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700'
