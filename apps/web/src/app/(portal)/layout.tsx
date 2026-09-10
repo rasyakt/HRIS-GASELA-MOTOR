@@ -50,6 +50,13 @@ interface NavItem {
   exact?: boolean;
 }
 
+interface BottomNavItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: number;
+}
+
 interface NavGroup {
   label: string;
   items: NavItem[];
@@ -326,50 +333,34 @@ export default function PortalLayout({
     }
   }
 
-  const bottomNavItems = useMemo(() => {
-    if (!user) return [];
-    if (user.role === 'admin' || user.role === 'hrd' || user.role === 'superadmin') {
-      return [
-        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { href: '/employees', label: 'Karyawan', icon: Users },
-        { href: '/approvals', label: 'Approval', icon: CheckCheck, badge: pendingApprovalsCount },
-        { href: '/attendance', label: 'Presensi', icon: Clock },
-        { label: 'Menu', icon: Menu, isMenuTrigger: true },
-      ];
-    }
-    if (user.role === 'manager') {
-      return [
-        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { href: '/approvals', label: 'Approval', icon: CheckCheck, badge: pendingApprovalsCount },
-        { href: '/attendance', label: 'Presensi', icon: Clock },
-        { href: '/leave', label: 'Cuti', icon: CalendarDays },
-        { label: 'Menu', icon: Menu, isMenuTrigger: true },
-      ];
-    }
-    if (user.role === 'owner') {
-      return [
-        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { href: '/reports', label: 'Laporan', icon: BarChart3 },
-        { href: '/employees', label: 'Karyawan', icon: Users },
-        { href: '/announcements', label: 'Info', icon: Megaphone, badge: unreadCount },
-        { label: 'Menu', icon: Menu, isMenuTrigger: true },
-      ];
-    }
+  const isManagement = useMemo(() => {
+    if (!user) return false;
+    return (
+      user.role === 'admin' ||
+      user.role === 'hrd' ||
+      user.role === 'superadmin' ||
+      user.role === 'owner' ||
+      user.role === 'manager'
+    );
+  }, [user]);
+
+  const bottomNavItems = useMemo<BottomNavItem[]>(() => {
+    if (!user || isManagement) return [];
     if (user.role === 'landing_admin') {
       return [
         { href: '/landing-cms', label: 'CMS', icon: Globe },
         { href: '/profile', label: 'Profil', icon: User },
       ];
     }
-    // Employee
+    // Employee: 5 core self-service items, zero menu redundancy
     return [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/attendance', label: 'Presensi', icon: Clock },
       { href: '/leave', label: 'Cuti', icon: CalendarDays },
-      { href: '/announcements', label: 'Info', icon: Megaphone, badge: unreadCount },
-      { href: '/profile', label: 'Profil', icon: User },
+      { href: '/overtime', label: 'Lembur', icon: Timer },
+      { href: '/payroll', label: 'Gaji', icon: ReceiptText },
     ];
-  }, [user, pendingApprovalsCount, unreadCount]);
+  }, [user, isManagement]);
 
   if (!hasHydrated || !user) {
     return (
@@ -504,8 +495,8 @@ export default function PortalLayout({
         <OfflineBanner />
         {totalItemsCount > 1 && <div className="hidden lg:block h-full">{sidebar(false)}</div>}
         
-        {/* Mobile Drawer Overlay */}
-        {totalItemsCount > 1 && mobileOpen && (
+        {/* Mobile Drawer Overlay - Only for Management roles */}
+        {isManagement && mobileOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div
               className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
@@ -520,13 +511,13 @@ export default function PortalLayout({
         <div className="flex min-w-0 flex-1 flex-col h-full overflow-hidden">
           <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-3 sm:px-4 lg:px-6 dark:border-zinc-800 dark:bg-zinc-950">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              {totalItemsCount > 1 && (
+              {isManagement && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="lg:hidden shrink-0 size-8"
+                  className="lg:hidden shrink-0 size-8 cursor-pointer"
                   onClick={() => setMobileOpen(true)}
-                  title="Buka menu"
+                  title="Buka menu navigasi"
                 >
                   <Menu className="size-5" />
                 </Button>
@@ -558,6 +549,18 @@ export default function PortalLayout({
                   <kbd className="rounded border border-zinc-200 bg-white px-1 py-0.5 text-[10px] font-semibold dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">⌘K</kbd>
                 </button>
               )}
+
+              {/* Announcements / Notifications Quick Link */}
+              <Link
+                href="/announcements"
+                className="relative flex items-center justify-center size-8 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 transition-colors"
+                title="Pengumuman"
+              >
+                <Megaphone className="size-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 flex size-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-zinc-950" />
+                )}
+              </Link>
 
               {/* Dark / Light Theme Toggle */}
               <ThemeToggle />
@@ -613,28 +616,24 @@ export default function PortalLayout({
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-900 p-3 sm:p-4 lg:p-6 pb-24 lg:pb-6">
+          <main className={`flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-900 p-3 sm:p-4 lg:p-6 lg:pb-6 ${
+            isManagement ? 'pb-6' : 'pb-20'
+          }`}>
             <ErrorBoundary>{children}</ErrorBoundary>
           </main>
 
-          {/* Mobile Bottom Navigation Bar */}
-          {totalItemsCount > 1 && (
+          {/* Mobile Bottom Navigation Bar - Only for Regular Employees / Non-management */}
+          {!isManagement && bottomNavItems.length > 0 && (
             <nav className="fixed bottom-0 inset-x-0 z-30 flex items-center justify-around border-t border-zinc-200/90 bg-white/95 backdrop-blur-md px-1 py-1 dark:border-zinc-800 dark:bg-zinc-950/95 lg:hidden pb-safe">
               {bottomNavItems.map((item) => {
-                const active = item.isMenuTrigger
-                  ? mobileOpen
-                  : (item.href ? (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) : false);
+                const active = item.href ? (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) : false;
                 return (
                   <button
                     key={item.label}
                     onClick={() => {
-                      if (item.isMenuTrigger) {
-                        setMobileOpen(true);
-                      } else if (item.href) {
-                        router.push(item.href);
-                      }
+                      if (item.href) router.push(item.href);
                     }}
-                    className={`relative flex flex-1 flex-col items-center justify-center py-1 text-[10px] sm:text-[11px] font-medium transition-colors ${
+                    className={`relative flex flex-1 flex-col items-center justify-center py-1 text-[10px] sm:text-[11px] font-medium transition-colors cursor-pointer ${
                       active
                         ? 'text-primary dark:text-zinc-100 font-bold'
                         : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
