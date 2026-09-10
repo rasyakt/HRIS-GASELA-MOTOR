@@ -79,29 +79,29 @@ export function CompanyLocationMapCard({
       }`}
     >
       {/* Header - Clean, focused & uncluttered */}
-      <div className="flex items-center justify-between gap-3 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-700">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800">
+        <div className="flex items-start sm:items-center gap-3 min-w-0">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-700 mt-0.5 sm:mt-0">
             <MapPin className="size-4.5 text-zinc-800 dark:text-zinc-200" />
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 Lokasi Kantor &amp; Titik Presensi
               </h3>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60">
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60 shrink-0">
                 <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Geofence Aktif
               </span>
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
               {companyName} · Radius Presensi {radiusMeters} Meter
             </p>
           </div>
         </div>
 
-        {/* Header Action Buttons (Simplified) */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        {/* Header Action Buttons (Responsive on Mobile) */}
+        <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto w-full sm:w-auto justify-end pt-1 sm:pt-0 border-t sm:border-t-0 border-zinc-100/60 dark:border-zinc-800/60">
           <a
             href={googleMapsUrl}
             target="_blank"
@@ -110,7 +110,7 @@ export function CompanyLocationMapCard({
             title="Buka lokasi di Google Maps"
           >
             <ExternalLink className="size-3.5 text-zinc-400" />
-            <span className="hidden sm:inline">Buka Maps</span>
+            <span>Buka Maps</span>
           </a>
 
           <Link href="/settings">
@@ -151,8 +151,8 @@ export function CompanyLocationMapCard({
             referrerPolicy="strict-origin-when-cross-origin"
           />
 
-          {/* Floating HUD Badge - Top Left */}
-          <div className="pointer-events-none absolute top-3 left-3 flex flex-wrap gap-2">
+          {/* Floating HUD Badge - Top Left (Desktop only to prevent collision on mobile) */}
+          <div className="pointer-events-none absolute top-3 left-3 hidden sm:flex flex-wrap gap-2 z-10">
             <div className="pointer-events-auto flex items-center gap-2 rounded-lg border border-zinc-200/80 dark:border-zinc-700 bg-white/95 dark:bg-zinc-900/90 px-2.5 py-1.5 text-xs backdrop-blur-sm shadow-sm">
               <span className="size-2 rounded-full bg-emerald-500" />
               <span className="font-semibold text-zinc-900 dark:text-zinc-100">{companyName}</span>
@@ -162,12 +162,12 @@ export function CompanyLocationMapCard({
           </div>
 
           {/* Floating Map Provider Toggle - Top Right */}
-          <div className="absolute top-3 right-3 flex items-center">
+          <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center z-10">
             <div className="inline-flex rounded-lg border border-zinc-200/80 dark:border-zinc-700/80 p-0.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm shadow-sm text-xs">
               <button
                 type="button"
                 onClick={() => setMapProvider('osm')}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                className={`px-2 sm:px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-medium transition-all cursor-pointer ${
                   mapProvider === 'osm'
                     ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-2xs'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
@@ -178,7 +178,7 @@ export function CompanyLocationMapCard({
               <button
                 type="button"
                 onClick={() => setMapProvider('google')}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                className={`px-2 sm:px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-medium transition-all cursor-pointer ${
                   mapProvider === 'google'
                     ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-2xs'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
