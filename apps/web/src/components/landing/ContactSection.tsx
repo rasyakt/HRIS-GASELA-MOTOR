@@ -12,11 +12,41 @@ import { useRef } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { MapPin, Phone, Mail, ArrowUpRight } from 'lucide-react';
+import { MapPin, Phone, Mail, ArrowUpRight, Clock, MessageCircle, Navigation } from 'lucide-react';
 import Link from 'next/link';
 import { useLandingContent } from './LandingContentProvider';
 
 gsap.registerPlugin(ScrollTrigger);
+
+const OFFICE_DETAILS: Record<
+  string,
+  {
+    hours: string;
+    waText: string;
+    mapsQuery: string;
+  }
+> = {
+  motor: {
+    hours: 'Senin – Minggu | 08.00 – 17.00 WIB',
+    waText: 'Halo Admin Gasela Motor, saya ingin booking servis / tanya suku cadang kendaraan.',
+    mapsQuery: 'Gasela Motor Jl. Raya Cikoneng No.135 Ciamis',
+  },
+  sellular: {
+    hours: 'Setiap Hari | 07.30 – 18.00 WIB',
+    waText: 'Halo Admin Gasela Sellular & Plastik, saya ingin menanyakan ketersediaan produk / percetakan.',
+    mapsQuery: 'Gasela Sellular & Plastik Cikoneng Ciamis',
+  },
+  futsal: {
+    hours: 'Setiap Hari | 08.00 – 23.00 WIB',
+    waText: 'Halo Admin Gasela Futsal Stadium, saya ingin booking jadwal lapangan futsal.',
+    mapsQuery: 'Gasela Futsal Stadium Jl. Raya Cikoneng Ciamis',
+  },
+  makaroni: {
+    hours: 'Senin – Sabtu | 08.00 – 17.00 WIB',
+    waText: 'Halo Admin Makaroni Cap Ikan Tawes, saya ingin pemesanan camilan / keagenan reseller.',
+    mapsQuery: 'Makaroni Cap Ikan Tawes Jl. Tentara Pelajar Cikoneng Ciamis',
+  },
+};
 
 export function ContactSection() {
   const { content } = useLandingContent();
@@ -95,37 +125,73 @@ export function ContactSection() {
 
         {/* ── Branch Office Grid ── */}
         <div className="contact-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {contact.offices.map((office) => (
-            <div
-              key={office.id}
-              className="contact-card group p-5 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900/90 border border-slate-200/80 dark:border-zinc-800/80 hover:border-slate-300 dark:hover:border-zinc-700 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between"
-            >
-              <div>
-                <h3 className="font-sans text-[15px] sm:text-base font-bold text-slate-900 dark:text-white tracking-tight mb-1.5">
-                  {office.name}
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed mb-5">
-                  {office.services}
-                </p>
-              </div>
+          {contact.offices.map((office) => {
+            const detail = OFFICE_DETAILS[office.id];
+            return (
+              <div
+                key={office.id}
+                className="contact-card group p-5 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900/90 border border-slate-200/80 dark:border-zinc-800/80 hover:border-slate-300 dark:hover:border-zinc-700 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between"
+              >
+                <div>
+                  <h3 className="font-sans text-[15px] sm:text-base font-bold text-slate-900 dark:text-white tracking-tight mb-1.5">
+                    {office.name}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed mb-4">
+                    {office.services}
+                  </p>
+                </div>
 
-              <div className="space-y-2.5 pt-4 border-t border-slate-100 dark:border-zinc-800/70 text-xs">
-                <div className="flex items-start gap-2 text-slate-600 dark:text-zinc-400">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0 mt-0.5" />
-                  <span className="line-clamp-2 leading-relaxed">{office.address}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
-                  <a
-                    href={`tel:${office.phone.replace(/[^0-9+]/g, '')}`}
-                    className="font-medium text-slate-700 dark:text-zinc-300 hover:text-amber-700 dark:hover:text-amber-400 transition-colors"
-                  >
-                    {office.phone}
-                  </a>
+                <div className="space-y-2.5 pt-4 border-t border-slate-100 dark:border-zinc-800/70 text-xs">
+                  <div className="flex items-start gap-2 text-slate-600 dark:text-zinc-400">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0 mt-0.5" />
+                    <span className="line-clamp-2 leading-relaxed">{office.address}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-600 dark:text-zinc-400">
+                    <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
+                    <span className="font-medium text-[11px] text-slate-700 dark:text-zinc-300">
+                      {detail?.hours ?? '08.00 – 17.00 WIB'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
+                    <a
+                      href={`tel:${office.phone.replace(/[^0-9+]/g, '')}`}
+                      className="font-medium text-slate-700 dark:text-zinc-300 hover:text-amber-700 dark:hover:text-amber-400 transition-colors"
+                    >
+                      {office.phone}
+                    </a>
+                  </div>
+
+                  {/* Direct Actions: WhatsApp & Google Maps */}
+                  <div className="pt-2.5 flex items-center gap-2">
+                    <a
+                      href={`https://wa.me/6285921894777?text=${encodeURIComponent(
+                        detail?.waText ?? `Halo Admin ${office.name}, saya ingin bertanya perihal layanan.`,
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 dark:text-emerald-300 font-semibold text-[11px] border border-emerald-200/70 dark:border-emerald-800/50 transition-colors shadow-2xs"
+                    >
+                      <MessageCircle className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                      <span>Chat WA</span>
+                    </a>
+                    <a
+                      href={`https://maps.google.com/?q=${encodeURIComponent(
+                        detail?.mapsQuery ?? `${office.name} Cikoneng Ciamis`,
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-1 py-1.5 px-2.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-300 font-medium text-[11px] border border-slate-200/80 dark:border-zinc-700/80 transition-colors shadow-2xs"
+                      title="Lihat Petunjuk Arah"
+                    >
+                      <Navigation className="w-3 h-3 text-slate-400 dark:text-zinc-400" />
+                      <span>Rute</span>
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* ── Headquarters Secretariat Card ── */}

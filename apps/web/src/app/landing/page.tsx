@@ -14,7 +14,10 @@ import type { Metadata } from 'next';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { AboutSection } from '@/components/landing/AboutSection';
 import { ScrollAnimationSection } from '@/components/landing/ScrollAnimationSection';
+import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
+import { FaqSection } from '@/components/landing/FaqSection';
 import { ContactSection } from '@/components/landing/ContactSection';
+import { WhatsAppWidget } from '@/components/landing/WhatsAppWidget';
 import { CompanyJsonLd, FaqJsonLd, ItemListJsonLd } from '@/components/landing/JsonLd';
 
 // ── SEO Metadata ──────────────────────────────────────────────────────────────
@@ -149,8 +152,17 @@ export default function LandingPage() {
         <ScrollAnimationSection />
       </section>
 
-      {/* 4. Contact & branch directory */}
+      {/* 4. Customer reviews & verified social proof */}
+      <TestimonialsSection />
+
+      {/* 5. Interactive FAQ accordion */}
+      <FaqSection />
+
+      {/* 6. Contact & branch directory */}
       <ContactSection />
+
+      {/* 7. Floating WhatsApp multi-channel widget */}
+      <WhatsAppWidget />
     </>
   );
 }
