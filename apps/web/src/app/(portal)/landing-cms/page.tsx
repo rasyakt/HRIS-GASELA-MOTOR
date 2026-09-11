@@ -57,12 +57,29 @@ const SECTION_DESCRIPTIONS: Record<LandingSection, string> = {
   marquee: 'Teks berjalan (ticker) yang menampilkan slogan & lini bisnis.',
   about: 'Profil pendiri, sejarah CV GASELA sejak 1996, visi misi & nilai perusahaan.',
   portfolio: 'Daftar 4 unit bisnis utama: Motor, Futsal, Sellular, dan Makaroni.',
-  contact: 'Nomor telepon, WhatsApp, email, dan alamat Google Maps tiap cabang.',
+  contact: 'Nomor telepon, integrasi Widget WhatsApp CS, email resmi, dan direktori cabang Google Maps.',
   footer: 'Hak cipta, tautan sosial media, dan informasi legal.',
 };
 
 const IMAGE_FIELD = /(image|logo|icon|photo|background|banner)/i;
-const TEXTAREA_FIELD = /(desc|subtitle|paragraph|quote|address|copy|text|bio)/i;
+const TEXTAREA_FIELD = /(desc|subtitle|paragraph|quote|address|copy|text|bio|notice|message)/i;
+
+const CUSTOM_LABELS: Record<string, string> = {
+  whatsappWidgetEnabled: 'Aktifkan Widget WhatsApp Mengambang',
+  whatsappNumber: 'Nomor WhatsApp CS Resmi (08xx / 62xx)',
+  whatsappButtonLabel: 'Teks Tombol WhatsApp Mengambang',
+  whatsappTitle: 'Judul Pop-up WhatsApp',
+  whatsappSubtitle: 'Subjudul Pop-up WhatsApp',
+  whatsappNotice: 'Pesan Status CS (Online/Pelayanan Aktif)',
+  whatsappChannels: 'Daftar Saluran Chat WhatsApp per Unit Bisnis',
+  offices: 'Direktori Kantor & Cabang Fisik',
+  services: 'Layanan / Produk Utama',
+  addressLabel: 'Label Alamat Utama',
+  addressTitle: 'Judul Alamat Kantor Pusat',
+  addressSubtitle: 'Subjudul Alamat Kantor Pusat',
+  addressPhone: 'Telepon Kantor Pusat',
+  message: 'Template Pesan Chat Pembuka WhatsApp',
+};
 
 function isPlainObject(v: JsonValue): v is { [k: string]: JsonValue } {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -77,6 +94,7 @@ function isArrayOfPrimitives(v: JsonValue): v is JsonPrimitive[] {
 }
 
 function fieldLabel(key: string): string {
+  if (CUSTOM_LABELS[key]) return CUSTOM_LABELS[key];
   return key
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')

@@ -53,6 +53,10 @@ export function ContactSection() {
   const contact = content.contact;
   const sectionRef = useRef<HTMLElement>(null);
 
+  const rawPhone = contact?.whatsappNumber || '0859-2189-4777';
+  const cleanDigits = rawPhone.replace(/[^0-9]/g, '');
+  const targetWaPhone = cleanDigits.startsWith('0') ? '62' + cleanDigits.slice(1) : cleanDigits;
+
   useGSAP(
     () => {
       gsap.fromTo(
@@ -165,7 +169,7 @@ export function ContactSection() {
                   {/* Direct Actions: WhatsApp & Google Maps */}
                   <div className="pt-2.5 flex items-center gap-2">
                     <a
-                      href={`https://wa.me/6285921894777?text=${encodeURIComponent(
+                      href={`https://wa.me/${targetWaPhone}?text=${encodeURIComponent(
                         detail?.waText ?? `Halo Admin ${office.name}, saya ingin bertanya perihal layanan.`,
                       )}`}
                       target="_blank"

@@ -63,6 +63,14 @@ const officeSchema = z.object({
 export type BusinessUnit = z.infer<typeof businessUnitSchema>;
 export type Office = z.infer<typeof officeSchema>;
 
+export const whatsappChannelSchema = z.object({
+  id: z.string().min(1),
+  title: z.string(),
+  desc: z.string(),
+  message: z.string(),
+});
+export type WhatsappChannel = z.infer<typeof whatsappChannelSchema>;
+
 // ─────────────────────────────────────────────────────────────
 // Section schemas (what the admin can edit per section)
 // ─────────────────────────────────────────────────────────────
@@ -125,6 +133,14 @@ export const landingContactSchema = z.object({
   addressTitle: z.string(),
   addressSubtitle: z.string(),
   addressPhone: z.string(),
+  // WhatsApp Floating Widget (dikontrol oleh Admin CMS di tab Kontak)
+  whatsappWidgetEnabled: z.boolean().optional().default(true),
+  whatsappNumber: z.string().optional().default('0859-2189-4777'),
+  whatsappButtonLabel: z.string().optional().default('Tanya via WhatsApp'),
+  whatsappTitle: z.string().optional().default('Chat WhatsApp Resmi'),
+  whatsappSubtitle: z.string().optional().default('CV GASELA GROUP Cikoneng'),
+  whatsappNotice: z.string().optional().default('Customer service aktif melayani via WhatsApp'),
+  whatsappChannels: z.array(whatsappChannelSchema).optional().default([]),
 });
 
 export const landingFooterSchema = z.object({
@@ -373,6 +389,44 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     addressTitle: 'JL. Raya Cikoneng - Ciamis, Jawa Barat',
     addressSubtitle: 'Kecamatan Cikoneng, Kabupaten Ciamis — Indonesia',
     addressPhone: '(0265) 776103',
+    whatsappWidgetEnabled: true,
+    whatsappNumber: '0859-2189-4777',
+    whatsappButtonLabel: 'Tanya via WhatsApp',
+    whatsappTitle: 'Chat WhatsApp Resmi',
+    whatsappSubtitle: 'CV GASELA GROUP Cikoneng',
+    whatsappNotice: 'Customer service aktif melayani via WhatsApp',
+    whatsappChannels: [
+      {
+        id: 'holding',
+        title: 'Sekretariat Holding Grup',
+        desc: 'Informasi umum, kemitraan & kerjasama',
+        message: 'Halo Admin CV GASELA GROUP, saya ingin menanyakan informasi seputar kemitraan / perusahaan.',
+      },
+      {
+        id: 'motor',
+        title: 'DN Gasela Motor',
+        desc: 'Servis mobil, cuci steam, salon & spareparts',
+        message: 'Halo Admin Gasela Motor, saya ingin booking servis / tanya suku cadang kendaraan.',
+      },
+      {
+        id: 'futsal',
+        title: 'DN Gasela Futsal Stadium',
+        desc: 'Booking lapangan rumput sintetis & turnamen',
+        message: 'Halo Admin Gasela Futsal Stadium, saya ingin booking jadwal sewa lapangan futsal.',
+      },
+      {
+        id: 'sellular',
+        title: 'DN Gasela Sellular & Plastik',
+        desc: 'Plastik kemasan, bumbu pangan & cetak offset',
+        message: 'Halo Admin Gasela Sellular & Plastik, saya ingin menanyakan ketersediaan produk / percetakan.',
+      },
+      {
+        id: 'makaroni',
+        title: 'Makaroni Cap Ikan Tawes',
+        desc: 'Pemesanan camilan, grosir bal & kemitraan agen',
+        message: 'Halo Admin Makaroni Cap Ikan Tawes, saya tertarik memesan camilan makaroni grosir / keagenan.',
+      },
+    ],
   },
   footer: {
     brandName: 'CV. GASELA GROUP',
