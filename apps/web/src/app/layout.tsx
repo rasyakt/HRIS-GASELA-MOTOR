@@ -11,11 +11,11 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://gasela.my.id"),
   title: {
-    default: "CV GASELA GROUP — GaselaPulse HRIS Cikoneng, Ciamis",
+    default: "CV GASELA GROUP — Holding Perusahaan Cikoneng, Ciamis",
     template: "%s | CV GASELA GROUP",
   },
   description:
-    "CV GASELA GROUP adalah holding perusahaan terkemuka di Kecamatan Cikoneng, Kabupaten Ciamis, Jawa Barat, berdiri sejak 1996. Menaungi DN Gasela Motor (bengkel & otomotif), DN Gasela Futsal Stadium, DN Gasela Sellular & Plastik, dan Makaroni Spesial Cap Ikan Tawes.",
+    "CV GASELA GROUP adalah holding perusahaan terkemuka di Cikoneng, Ciamis sejak 1996. Menaungi DN Gasela Motor, DN Gasela Futsal, DN Gasela Sellular & Plastik, dan Makaroni Cap Ikan Tawes.",
   keywords: [
     // Brand utama — semua varian penulisan
     "CV GASELA",
@@ -105,7 +105,9 @@ export const metadata: Metadata = {
     // Informasi umum
     "profil perusahaan gasela",
     "holding company ciamis",
-    "konglomerasi bisnis ciamis",
+    "holding perusahaan ciamis",
+    "grup bisnis ciamis",
+    "pusat bisnis cikoneng",
     "perusahaan cikoneng",
   ],
   authors: [{ name: "CV GASELA GROUP", url: "https://gasela.my.id" }],
@@ -119,13 +121,13 @@ export const metadata: Metadata = {
     telephone: false,
   },
   alternates: {
-    canonical: "https://gasela.my.id/landing",
+    canonical: "https://gasela.my.id",
   },
   openGraph: {
-    title: "CV GASELA GROUP — Konglomerasi Bisnis Cikoneng, Ciamis sejak 1996",
+    title: "CV GASELA GROUP — Holding Perusahaan Cikoneng, Ciamis",
     description:
-      "Portal Resmi CV GASELA GROUP & Sistem Manajemen HRIS GaselaPulse. Menaungi Gasela Motor, Gasela Futsal Stadium, Gasela Sellular & Plastik, serta Makaroni Spesial Cap Ikan Tawes — Cikoneng, Ciamis, Jawa Barat.",
-    url: "https://gasela.my.id/landing",
+      "Holding perusahaan terkemuka di Cikoneng, Ciamis sejak 1996. Menaungi DN Gasela Motor, DN Gasela Futsal, DN Gasela Sellular & Plastik, serta Makaroni Cap Ikan Tawes.",
+    url: "https://gasela.my.id",
     siteName: "CV GASELA GROUP",
     images: [
       {
@@ -140,9 +142,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "CV GASELA GROUP — Cikoneng, Ciamis, Jawa Barat",
+    title: "CV GASELA GROUP — Holding Perusahaan Cikoneng, Ciamis",
     description:
-      "Holding perusahaan Cikoneng, Ciamis: Bengkel & Otomotif, Futsal Stadium, Toko Plastik & Sellular, dan Makaroni Spesial Cap Ikan Tawes. Berdiri sejak 1996.",
+      "Holding perusahaan terkemuka di Cikoneng, Ciamis sejak 1996: Gasela Motor, Gasela Futsal Stadium, Toko Plastik & Sellular, serta Makaroni Cap Ikan Tawes.",
     images: ["/gasela_hd_hero.png"],
   },
   robots: {
